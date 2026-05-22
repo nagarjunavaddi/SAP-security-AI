@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP Security AI Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #0a0a1a; color: #fff; }
+
+        .header {
+            background: #1a1a2e;
+            padding: 20px 30px;
+            border-bottom: 2px solid #00d4ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { color: #00d4ff; font-size: 24px; }
+        .header p { color: #888; font-size: 12px; margin-top: 4px; }
+        .connected { color: #00ff88; font-size: 13px; }
+
+        .main-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            margin: 30px 30px 0;
+        }
+        .main-tab {
+            padding: 20px;
+            text-align: center;
+            background: #1a1a2e;
+            color: #888;
+            border: 1px solid #333;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        .main-tab:first-child { border-radius: 10px 0 0 0; }
+        .main-tab:last-child { border-radius: 0 10px 0 0; }
+        .main-tab:hover { color: #00d4ff; background: #0d2137; }
+        .main-tab.active {
+            background: #0d2137;
+            color: #00d4ff;
+            border-color: #00d4ff;
+            border-bottom: 2px solid #0d2137;
+        }
+        .tab-icon { font-size: 28px; margin-bottom: 8px; }
+        .tab-title { font-size: 16px; font-weight: bold; }
+        .tab-desc { font-size: 11px; margin-top: 4px; color: #666; }
+        .main-tab.active .tab-desc { color: #00d4ff88; }
+
+        .tab-content {
+            display: none;
+            margin: 0 30px 20px;
+            background: #0d2137;
+            border-radius: 0 0 10px 10px;
+            border: 1px solid #00d4ff;
+            padding: 25px;
+        }
+        .tab-content.active { display: block; }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .service-card {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 18px;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .service-card:hover { border-color: #00d4ff; }
+        .service-card.selected { border-color: #00d4ff; background: #0a2040; }
+        .service-card h4 { color: #00d4ff; font-size: 14px; margin-bottom: 6px; }
+        .service-card p { color: #888; font-size: 12px; }
+
+        .result-area {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #333;
+            min-height: 180px;
+        }
+        .result-area h3 { color: #00d4ff; margin-bottom: 15px; font-size: 15px; }
+
+        .table { width: 100%; border-collapse: collapse; }
+        .table th {
+            background: #0a0a2a;
+            color: #00d4ff;
+            padding: 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+        .table td { padding: 10px; border-bottom: 1px solid #333; font-size: 12px; }
+        .table tr:hover { background: #ffffff08; }
+
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .critical { background: #ff000033; color: #ff4444; border: 1px solid #ff4444; }
+        .high { background: #ff880033; color: #ff8800; border: 1px solid #ff8800; }
+        .medium { background: #ffff0033; color: #ffff00; border: 1px solid #ffff00; }
+
+        .placeholder { color: #555; text-align: center; padding: 50px; font-size: 14px; }
+
+        .chat-section {
+            margin: 0 30px 30px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+        .chat-section h3 { color: #00d4ff; margin-bottom: 15px; }
+        .chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            background: #0a0a1a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .message { margin-bottom: 12px; }
+        .message.user { text-align: right; }
+        .message.user span {
+            background: #00d4ff22;
+            color: #00d4ff;
+            padding: 8px 15px;
+            border-radius: 15px;
+            display: inline-block;
+            max-width: 70%;
+        }
+        .message.ai span {
+            background: #ffffff11;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 15px;
+            display: inline-block;
+            max-width: 80%;
+        }
+        .chat-input { display: flex; gap: 10px; }
+        .chat-input input {
+            flex: 1;
+            background: #0a0a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .chat-input input:focus { outline: none; border-color: #00d4ff; }
+        .chat-input button {
+            background: #00d4ff;
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .chat-input button:hover { background: #00aacc; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>🔐 SAP Security AI Tool</h1>
+        <p>Powered by Gemini AI — Real-time Security Analysis</p>
+    </div>
+    <div class="connected">● System Connected</div>
+</div>
+
+<!-- Main Tabs -->
+<div class="main-tabs">
+    <div class="main-tab active" id="tab-btn-audit" onclick="showTab('audit')">
+        <div class="tab-icon">📋</div>
+        <div class="tab-title">Audit Logs</div>
+        <div class="tab-desc">Security audit &amp; access logs</div>
+    </div>
+    <div class="main-tab" id="tab-btn-browser" onclick="showTab('browser')">
+        <div class="tab-icon">🗄️</div>
+        <div class="tab-title">Data Browser</div>
+        <div class="tab-desc">Browse SAP master data</div>
+    </div>
+    <div class="main-tab" id="tab-btn-authfix" onclick="showTab('authfix')">
+        <div class="tab-icon">🔧</div>
+        <div class="tab-title">Auth Fix</div>
+        <div class="tab-desc">Authorization remediation</div>
+    </div>
+</div>
+
+<!-- Audit Logs Tab -->
+<div class="tab-content active" id="tab-audit">
+    <div class="services-grid">
+        <div class="service-card" id="svc-audit-sdevelop" onclick="loadService('audit','sdevelop')">
+            <h4>🔍 S_DEVELOP Access Check</h4>
+            <p>Users with S_DEVELOP authorization Activity 01</p>
+        </div>
+        <div class="service-card" id="svc-audit-failedlogin" onclick="loadService('audit','failedlogin')">
+            <h4>🚫 Failed Login Attempts</h4>
+            <p>Users with multiple failed login attempts</p>
+        </div>
+    </div>
+    <div class="result-area" id="result-audit">
+        <div class="placeholder">👆 Select a service above to view results</div>
+    </div>
+</div>
+
+<!-- Data Browser Tab -->
+<div class="tab-content" id="tab-browser">
+    <div class="services-grid">
+        <div class="service-card" id="svc-browser-useremails" onclick="loadService('browser','useremails')">
+            <h4>📧 Users with Email ID</h4>
+            <p>User master data with email addresses</p>
+        </div>
+        <div class="service-card" id="svc-browser-roleassign" onclick="loadService('browser','roleassign')">
+            <h4>👥 Role Assignments</h4>
+            <p>Users and their assigned roles</p>
+        </div>
+    </div>
+    <div class="result-area" id="result-browser">
+        <div class="placeholder">👆 Select a service above to view results</div>
+    </div>
+</div>
+
+<!-- Auth Fix Tab -->
+<div class="tab-content" id="tab-authfix">
+    <div class="services-grid">
+        <div class="service-card" id="svc-authfix-su53" onclick="loadService('authfix','su53')">
+            <h4>🔧 SU53 Role Suggestion</h4>
+            <p>Missing authorization fix suggestions</p>
+        </div>
+        <div class="service-card" id="svc-authfix-missingauth" onclick="loadService('authfix','missingauth')">
+            <h4>⚡ Missing Auth Objects</h4>
+            <p>Critical missing authorization objects</p>
+        </div>
+    </div>
+    <div class="result-area" id="result-authfix">
+        <div class="placeholder">👆 Select a service above to view results</div>
+    </div>
+</div>
+
+<!-- AI Chat -->
+<div class="chat-section">
+    <h3>🤖 Ask AI Security Assistant</h3>
+    <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+            <span>Hello! I am your SAP Security AI Assistant. Ask me anything!</span>
+        </div>
+    </div>
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Ask about security data..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    var mockData = {
+        audit: {
+            sdevelop: {
+                title: '🔍 Users with S_DEVELOP Activity 01',
+                headers: ['User', 'Auth Object', 'Activity', 'Risk'],
+                rows: [
+                    ['DEV_USER1', 'S_DEVELOP', '01 (Create)', '<span class="badge critical">CRITICAL</span>'],
+                    ['DEV_USER2', 'S_DEVELOP', '01 (Create)', '<span class="badge critical">CRITICAL</span>'],
+                    ['BASIS001',  'S_DEVELOP', '01 (Create)', '<span class="badge high">HIGH</span>'],
+                    ['ADMIN001',  'S_DEVELOP', '01 (Create)', '<span class="badge high">HIGH</span>']
+                ]
+            },
+            failedlogin: {
+                title: '🚫 Failed Login Attempts',
+                headers: ['User', 'Failed Attempts', 'Last Attempt', 'Status'],
+                rows: [
+                    ['JOHN001',   '5', '2026-05-21 08:30', '<span class="badge critical">LOCKED</span>'],
+                    ['EXT_USER1', '3', '2026-05-21 09:15', '<span class="badge high">WARNING</span>'],
+                    ['TEST_USER', '7', '2026-05-20 23:45', '<span class="badge critical">LOCKED</span>']
+                ]
+            }
+        },
+        browser: {
+            useremails: {
+                title: '📧 Users with Email ID',
+                headers: ['User ID', 'Full Name', 'Email', 'Department'],
+                rows: [
+                    ['ADMIN001', 'Admin User',  'admin@company.com',      'BASIS'],
+                    ['BASIS001', 'Basis Team',  'basis@company.com',      'IT'],
+                    ['JOHN001',  'John Smith',  'john.smith@company.com', 'Finance'],
+                    ['SAP_TEST', 'Test User',   'test@company.com',       'QA']
+                ]
+            },
+            roleassign: {
+                title: '👥 Role Assignments',
+                headers: ['User', 'Role', 'Valid From', 'Valid To'],
+                rows: [
+                    ['JOHN001',   'Z_FI_ACCOUNTS_PAYABLE', '2025-01-01', '9999-12-31'],
+                    ['BASIS001',  'SAP_ALL',                '2025-03-20', '9999-12-31'],
+                    ['DEV_USER1', 'Z_DEVELOPER_FULL',       '2025-06-01', '2026-12-31'],
+                    ['ADMIN001',  'SAP_ALL',                '2025-01-15', '9999-12-31']
+                ]
+            }
+        },
+        authfix: {
+            su53: {
+                title: '🔧 SU53 Role Suggestions',
+                headers: ['User', 'Missing Auth', 'Activity', 'Suggested Role'],
+                rows: [
+                    ['JOHN001',   'F_BKPF_BUK', '01',  'Z_FI_POSTING_ROLE'],
+                    ['EXT_USER1', 'M_MSEG_BWA',  '101', 'Z_MM_GOODS_RECEIPT'],
+                    ['TEST_USER', 'S_TCODE',     'VA01','Z_SD_SALES_ORDER']
+                ]
+            },
+            missingauth: {
+                title: '⚡ Missing Authorization Objects',
+                headers: ['User', 'T-Code', 'Missing Object', 'Risk'],
+                rows: [
+                    ['JOHN001',   'FB60', 'F_BKPF_BUK', '<span class="badge high">HIGH</span>'],
+                    ['EXT_USER1', 'MIGO', 'M_MSEG_BWA',  '<span class="badge medium">MEDIUM</span>'],
+                    ['TEST_USER', 'VA01', 'V_VBAK_AAT',  '<span class="badge medium">MEDIUM</span>']
+                ]
+            }
+        }
+    };
+
+    function showTab(tab) {
+        document.querySelectorAll('.main-tab').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        document.getElementById('tab-btn-' + tab).classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    function loadService(tab, service) {
+        var data = mockData[tab][service];
+        document.querySelectorAll('#tab-' + tab + ' .service-card').forEach(function(c) {
+            c.classList.remove('selected');
+        });
+        document.getElementById('svc-' + tab + '-' + service).classList.add('selected');
+
+        var html = '<h3>' + data.title + '</h3>';
+        html += '<table class="table"><thead><tr>';
+        data.headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
+        html += '</tr></thead><tbody>';
+        data.rows.forEach(function(row) {
+            html += '<tr>';
+            row.forEach(function(cell) { html += '<td>' + cell + '</td>'; });
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('result-' + tab).innerHTML = html;
+    }
+
+    async function sendMessage() {
+        var input = document.getElementById('userInput');
+        var question = input.value.trim();
+        if (!question) return;
+
+        var messages = document.getElementById('chatMessages');
+        messages.innerHTML += '<div class="message user"><span>' + question + '</span></div>';
+        messages.innerHTML += '<div class="message ai" id="thinking"><span>Thinking...</span></div>';
+        input.value = '';
+        messages.scrollTop = messages.scrollHeight;
+
+        try {
+            var res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: question })
+            });
+            var data = await res.json();
+            var el = document.getElementById('thinking');
+            if (el) {
+                el.innerHTML = '<span>' + (data.answer || 'No response') + '</span>';
+                el.removeAttribute('id');
+            }
+        } catch (e) {
+            var el = document.getElementById('thinking');
+            if (el) {
+                el.innerHTML = '<span>Error: Could not reach server</span>';
+                el.removeAttribute('id');
+            }
+        }
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    document.getElementById('userInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+</script>
+
+</body>
+</html>
