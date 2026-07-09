@@ -45,9 +45,9 @@ function getLockedUsersFromSAP() {
             .map(u => ({
               user: u.Username,
               reason: 'Locked in SAP (UFLAG)',
-              userType: u.UserType
+              type: u.UserType
             }));
-          resolve(lockedUsers);
+          resolve({ lockedUsers: lockedUsers, totalUsers: users.length });
         } catch (e) {
           reject(e);
         }
@@ -92,7 +92,8 @@ function getDevAccessUsersFromSAP() {
             user: u.Username,
             role: u.RoleName,
             authObject: u.AuthObject,
-            activity: u.Activity === '01' ? 'Create (01)' : 'Change (02)'
+            activity: u.Activity === '01' ? 'Create (01)' : 'Change (02)',
+            risk: u.Activity === '01' ? 'high' : 'medium'
           }));
           resolve(devAccessUsers);
         } catch (e) {
@@ -107,10 +108,11 @@ function getDevAccessUsersFromSAP() {
 
 app.get('/api/sap-data', async (req, res) => {
   try {
-    const lockedUsers = await getLockedUsersFromSAP();
+    const lockedResult = await getLockedUsersFromSAP();
     const devAccessUsers = await getDevAccessUsersFromSAP();
     res.json({
-      lockedUsers: lockedUsers,
+      lockedUsers: lockedResult.lockedUsers,
+      totalUsers: lockedResult.totalUsers,
       devAccessUsers: devAccessUsers
     });
   } catch (error) {
@@ -123,7 +125,7 @@ app.post('/api/chat', async (req, res) => {
   const { question } = req.body;
 
   try {
-    const lockedUsers = await getLockedUsersFromSAP();
+    const lockedResult = await getLockedUsersFromSAP();
     const devAccessUsers = await getDevAccessUsersFromSAP();
 
     const response = await axios.post(
@@ -132,7 +134,8 @@ app.post('/api/chat', async (req, res) => {
         contents: [{
           parts: [{
             text: `You are an SAP Security expert. Answer based on this data:
-Locked Users: ${JSON.stringify(lockedUsers)}
+Total Users: ${lockedResult.totalUsers}
+Locked Users: ${JSON.stringify(lockedResult.lockedUsers)}
 Dev Access Users (S_DEVELOP with Create/Change activity): ${JSON.stringify(devAccessUsers)}
 Question: ${question}`
           }]
@@ -233,6 +236,55 @@ app.post('/api/create-user', async (req, res) => {
     console.log('Create user error:', error.message);
     res.status(500).json({ message: 'Error: ' + error.message });
   }
+});
+
+// Same failure-detection rule used by the single-create frontend flow,
+// applied here so each row in a bulk batch gets an honest success/failed status.
+function looksLikeFailureMessage(msg) {
+  const lower = (msg || '').toLowerCase();
+  return /must|invalid|error|fail|already exist|not allowed/.test(lower);
+}
+
+// Bulk create: reuses createSapUser() one row at a time (sequential, not parallel)
+// because SAP's CSRF token/session handling breaks under concurrent requests.
+app.post('/api/create-users-bulk', async (req, res) => {
+  const { users } = req.body;
+
+  if (!Array.isArray(users) || !users.length) {
+    return res.status(400).json({ error: 'No users provided.' });
+  }
+
+  const results = [];
+
+  for (const u of users) {
+    const username = (u.username || '').trim();
+    const lastName = (u.lastName || '').trim();
+    const password = u.password || '';
+
+    if (!username || !lastName || !password) {
+      results.push({
+        username: username || '(blank)',
+        status: 'failed',
+        message: 'Missing username, lastName, or password.'
+      });
+      continue;
+    }
+
+    try {
+      const result = await createSapUser(username, lastName, password);
+      const msg = (result && (result.Message || result.message)) || '';
+
+      if (looksLikeFailureMessage(msg)) {
+        results.push({ username, status: 'failed', message: msg || 'User creation failed.' });
+      } else {
+        results.push({ username, status: 'success', message: msg || 'User created successfully.' });
+      }
+    } catch (error) {
+      results.push({ username, status: 'failed', message: 'Error: ' + error.message });
+    }
+  }
+
+  res.json({ results });
 });
 
 app.listen(3000, () => console.log('Running on http://localhost:3000'));

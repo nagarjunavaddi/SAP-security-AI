@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CerberuS — Create SAP User</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --tint:#F5F6F3;
+    --tint-2:#EFF1EC;
+    --ink:#12181F;
+    --ink-soft:#5B6472;
+    --ink-faint:#8A93A0;
+    --line:#E3E5E0;
+    --navy:#122A4E;
+    --navy-2:#1B3D6E;
+    --blue:#2458D6;
+    --red:#C23B3B;
+    --amber:#C1811E;
+    --green:#1E8E5A;
+    --font-display:'Sora',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--navy); color:#fff; }
+
+  section{ padding:52px 28px; }
+  .section-inner{ max-width:1180px; margin:0 auto; }
+
+  .go-btn{
+    font-family:var(--font-display); font-weight:700; font-size:14px;
+    background:var(--blue); color:#fff; border:none; border-radius:7px;
+    padding:0 24px; height:44px; cursor:pointer; transition:background .15s ease, transform .1s ease;
+  }
+  .go-btn:hover{ background:#1B47B8; }
+  .go-btn:active{ transform:scale(0.97); }
+  .go-btn:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
+  .go-btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+  .go-btn.secondary{
+    background:var(--tint-2); color:var(--ink); border:1px solid var(--line);
+  }
+  .go-btn.secondary:hover{ background:var(--line); }
+
+  .page-head{ background:var(--navy); color:#EEF1F6; padding:28px 28px; }
+  .page-head-inner{ max-width:1180px; margin:0 auto; }
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--font-mono); font-size:12px; color:#B9C2D6;
+    text-decoration:none; margin-bottom:14px; cursor:pointer; background:none; border:none; padding:0;
+  }
+  .back-link:hover{ color:#fff; }
+  .page-head h2{
+    font-family:var(--font-display); font-weight:700; font-size:26px; margin:0 0 6px;
+  }
+  .page-head p{ font-size:13.5px; color:#B9C2D6; margin:0; max-width:520px; line-height:1.5; }
+
+  .form-card{
+    background:var(--bg); border:1px solid var(--line); border-radius:10px;
+    padding:26px; max-width:560px;
+  }
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1 / -1; }
+  .field label{
+    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px;
+    color:var(--ink-soft);
+  }
+  .field .hint{ font-size:11.5px; color:var(--ink-faint); font-family:var(--font-body); }
+  .field input, .field select{
+    font-family:var(--font-body); font-size:13.5px;
+    background:var(--tint); border:1px solid var(--line); border-radius:7px;
+    padding:10px 12px; color:var(--ink); outline:none;
+  }
+  .field input:focus-visible, .field select:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  .form-actions{ margin-top:20px; display:flex; align-items:center; gap:14px; }
+  .form-note{
+    margin-top:16px; font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);
+    border-top:1px dashed var(--line); padding-top:14px; display:none; line-height:1.6; white-space:pre-wrap;
+  }
+  .form-note.show{ display:block; }
+  .form-note.error{ color:var(--red); }
+  .form-note.success{ color:var(--green); }
+
+  /* ---- divider ---- */
+  .or-divider{
+    max-width:560px; display:flex; align-items:center; gap:14px;
+    margin:36px 0 28px; color:var(--ink-faint);
+    font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase;
+  }
+  .or-divider::before, .or-divider::after{
+    content:''; flex:1; height:1px; background:var(--line);
+  }
+
+  /* ---- bulk card ---- */
+  .bulk-card{
+    background:var(--bg); border:1px solid var(--line); border-radius:10px;
+    padding:26px; max-width:560px;
+  }
+  .bulk-card h3{
+    font-family:var(--font-display); font-weight:700; font-size:19px; margin:0 0 8px;
+  }
+  .bulk-card > p{
+    font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0 0 18px;
+  }
+  .bulk-card > p b{ color:var(--ink); }
+
+  .dropzone{
+    position:relative;
+    border:1.5px dashed var(--line); border-radius:9px; background:var(--tint);
+    padding:30px 20px; text-align:center; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .dropzone:hover, .dropzone.drag{
+    border-color:var(--blue); background:#EEF2FC;
+  }
+  .dropzone svg{ display:block; margin:0 auto 10px; }
+  .dropzone .dz-title{
+    font-family:var(--font-display); font-weight:700; font-size:14.5px; color:var(--ink);
+    margin:0 0 4px;
+  }
+  .dropzone .dz-sub{
+    font-size:12px; color:var(--ink-faint); font-family:var(--font-body);
+  }
+  .dropzone input[type=file]{ display:none; }
+
+  .file-chip{
+    display:none; align-items:center; gap:10px; margin-top:14px;
+    background:var(--tint); border:1px solid var(--line); border-radius:7px;
+    padding:9px 12px; font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);
+  }
+  .file-chip.show{ display:flex; }
+  .file-chip .fname{ color:var(--ink); font-weight:600; word-break:break-all; }
+  .file-chip .fclear{
+    margin-left:auto; background:none; border:none; cursor:pointer;
+    color:var(--ink-faint); font-family:var(--font-mono); font-size:15px; line-height:1; padding:2px 4px;
+  }
+  .file-chip .fclear:hover{ color:var(--red); }
+
+  .preview-wrap{ margin-top:18px; display:none; }
+  .preview-wrap.show{ display:block; }
+  .preview-wrap .pw-title{
+    font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.8px;
+    color:var(--ink-soft); margin-bottom:8px;
+  }
+  .preview-table-scroll{
+    max-height:220px; overflow-y:auto; border:1px solid var(--line); border-radius:8px;
+  }
+  table.preview-table{
+    width:100%; border-collapse:collapse; font-size:12.5px; font-family:var(--font-body);
+  }
+  table.preview-table th{
+    position:sticky; top:0; background:var(--tint-2); text-align:left;
+    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px;
+    color:var(--ink-soft); padding:8px 10px; border-bottom:1px solid var(--line);
+  }
+  table.preview-table td{
+    padding:8px 10px; border-bottom:1px solid var(--line); color:var(--ink);
+  }
+  table.preview-table tr:last-child td{ border-bottom:none; }
+  table.preview-table td.dim{ color:var(--ink-faint); font-family:var(--font-mono); }
+
+  .badge{
+    display:inline-block; font-family:var(--font-mono); font-size:10.5px; font-weight:600;
+    padding:3px 9px; border-radius:20px; letter-spacing:0.3px;
+  }
+  .badge.ok{ background:#E5F5EC; color:var(--green); }
+  .badge.fail{ background:#FBEAEA; color:var(--red); }
+
+  .bulk-actions{ margin-top:16px; display:flex; align-items:center; gap:12px; }
+  .bulk-progress{
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);
+  }
+
+  .results-wrap{ margin-top:20px; display:none; }
+  .results-wrap.show{ display:block; }
+  .results-summary{
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); margin-bottom:10px;
+  }
+  .results-summary b{ color:var(--ink); }
+
+  footer{
+    background:var(--navy); color:#8FA3C4;
+    padding:22px 28px; font-family:var(--font-mono); font-size:11px;
+  }
+  .footer-inner{
+    max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width:640px){
+    section{ padding:36px 18px; }
+    .form-grid{ grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="page-head-inner">
+    <a class="back-link" href="index.html">← Back to dashboard</a>
+    <h2>User Creation</h2>
+    <p>Create a new SAP user account, one at a time or in bulk.</p>
+  </div>
+</div>
+
+<section>
+  <div class="section-inner">
+
+    <!-- ===== Single user form ===== -->
+    <div class="form-card">
+      <form id="createUserForm">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="fUsername">Username</label>
+            <input type="text" id="fUsername" required placeholder="e.g. JSMITH">
+          </div>
+          <div class="field full">
+            <label for="fLastName">Last Name</label>
+            <input type="text" id="fLastName" required placeholder="e.g. Smith">
+          </div>
+          <div class="field full">
+            <label for="fPassword">Initial Password</label>
+            <input type="password" id="fPassword" required placeholder="Initial password for the account">
+            <span class="hint">User will be prompted to change this on first logon.</span>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="go-btn" id="submitBtn">Create User</button>
+        </div>
+        <div class="form-note" id="createNote"></div>
+      </form>
+    </div>
+
+    <!-- ===== Divider ===== -->
+    <div class="or-divider">or bulk create</div>
+
+    <!-- ===== Bulk upload card ===== -->
+    <div class="bulk-card">
+      <h3>Bulk Upload (CSV / Excel)</h3>
+      <p>Upload a file with columns <b>username</b>, <b>lastName</b>, <b>password</b> (first row must be the header) to create many users at once.</p>
+
+      <div class="dropzone" id="dropzone">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8A93A0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v12"></path>
+          <path d="M7 8l5-5 5 5"></path>
+          <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path>
+        </svg>
+        <p class="dz-title">Click to choose a file, or drop it here</p>
+        <p class="dz-sub">.csv or .xlsx — username, lastName, password columns</p>
+        <input type="file" id="bulkFileInput" accept=".csv,.xlsx,.xls">
+      </div>
+
+      <div class="file-chip" id="fileChip">
+        <span class="fname" id="fileChipName"></span>
+        <button type="button" class="fclear" id="fileChipClear" title="Remove file">✕</button>
+      </div>
+
+      <div class="preview-wrap" id="previewWrap">
+        <div class="pw-title" id="previewTitle">Preview</div>
+        <div class="preview-table-scroll">
+          <table class="preview-table" id="previewTable">
+            <thead><tr><th>Username</th><th>Last Name</th><th>Password</th></tr></thead>
+            <tbody id="previewTbody"></tbody>
+          </table>
+        </div>
+        <div class="bulk-actions">
+          <button type="button" class="go-btn" id="bulkSubmitBtn">Create All Users</button>
+          <button type="button" class="go-btn secondary" id="bulkCancelBtn">Cancel</button>
+          <span class="bulk-progress" id="bulkProgress"></span>
+        </div>
+      </div>
+
+      <div class="results-wrap" id="resultsWrap">
+        <div class="results-summary" id="resultsSummary"></div>
+        <div class="preview-table-scroll">
+          <table class="preview-table" id="resultsTable">
+            <thead><tr><th>Username</th><th>Status</th><th>Message</th></tr></thead>
+            <tbody id="resultsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>Cerberu<span style="opacity:0.7">S</span></span>
+    <span>Data source: live SAP feed</span>
+  </div>
+</footer>
+
+<script>
+/* ===== Single user create ===== */
+(function(){
+  const form = document.getElementById('createUserForm');
+  const note = document.getElementById('createNote');
+  const btn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    const payload = {
+      username: document.getElementById('fUsername').value.trim(),
+      lastName: document.getElementById('fLastName').value.trim(),
+      password: document.getElementById('fPassword').value
+    };
+
+    note.classList.remove('error','success');
+    note.classList.add('show');
+    note.textContent = 'Submitting to /api/create-user…';
+    btn.disabled = true;
+
+    fetch('/api/create-user', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json().then(data => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        btn.disabled = false;
+        const msg = (data && data.Message) ? data.Message : (data && (data.error || data.message)) || '';
+        const lower = msg.toLowerCase();
+        const looksLikeFailure = !ok || /must|invalid|error|fail|already exist|not allowed/.test(lower);
+
+        if(looksLikeFailure){
+          note.classList.add('error');
+          note.textContent = msg || 'User creation failed.';
+          return;
+        }
+
+        note.classList.add('success');
+        note.textContent = msg || ('User ' + payload.username + ' created successfully.');
+        form.reset();
+      })
+      .catch(err => {
+        btn.disabled = false;
+        note.classList.add('error');
+        note.textContent = 'Not connected — /api/create-user unreachable. ' + err.message;
+      });
+  });
+})();
+
+/* ===== Bulk upload ===== */
+(function(){
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('bulkFileInput');
+  const fileChip = document.getElementById('fileChip');
+  const fileChipName = document.getElementById('fileChipName');
+  const fileChipClear = document.getElementById('fileChipClear');
+
+  const previewWrap = document.getElementById('previewWrap');
+  const previewTitle = document.getElementById('previewTitle');
+  const previewTbody = document.getElementById('previewTbody');
+
+  const bulkSubmitBtn = document.getElementById('bulkSubmitBtn');
+  const bulkCancelBtn = document.getElementById('bulkCancelBtn');
+  const bulkProgress = document.getElementById('bulkProgress');
+
+  const resultsWrap = document.getElementById('resultsWrap');
+  const resultsSummary = document.getElementById('resultsSummary');
+  const resultsTbody = document.getElementById('resultsTbody');
+
+  let parsedUsers = [];
+
+  // ---- header matching helpers ----
+  function normalizeHeader(h){
+    return String(h || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+  }
+  const USERNAME_KEYS = ['username','user','userid','sapuser','login'];
+  const LASTNAME_KEYS = ['lastname','surname','last'];
+  const PASSWORD_KEYS = ['password','pwd','initialpassword','pass'];
+
+  function findKey(headerMap, keys){
+    for(const k of keys){
+      if(headerMap[k] !== undefined) return headerMap[k];
+    }
+    return null;
+  }
+
+  function resetBulkUI(){
+    parsedUsers = [];
+    fileChip.classList.remove('show');
+    previewWrap.classList.remove('show');
+    resultsWrap.classList.remove('show');
+    bulkProgress.textContent = '';
+    fileInput.value = '';
+  }
+
+  function showError(msg){
+    resetBulkUI();
+    fileChip.classList.add('show');
+    fileChipName.textContent = msg;
+    fileChipName.style.color = 'var(--red)';
+  }
+
+  function handleWorkbookRows(rows){
+    if(!rows || rows.length < 2){
+      showError('File has no data rows.');
+      return;
+    }
+    const headerRow = rows[0].map(normalizeHeader);
+    const headerMap = {};
+    headerRow.forEach((h, i) => { if(h) headerMap[h] = i; });
+
+    const uIdx = findKey(headerMap, USERNAME_KEYS);
+    const lIdx = findKey(headerMap, LASTNAME_KEYS);
+    const pIdx = findKey(headerMap, PASSWORD_KEYS);
+
+    if(uIdx === null || lIdx === null || pIdx === null){
+      showError('Could not find username / lastName / password columns in the header row.');
+      return;
+    }
+
+    parsedUsers = rows.slice(1)
+      .filter(r => r && r.length && String(r[uIdx] || '').trim())
+      .map(r => ({
+        username: String(r[uIdx] || '').trim(),
+        lastName: String(r[lIdx] || '').trim(),
+        password: String(r[pIdx] || '').trim()
+      }));
+
+    if(!parsedUsers.length){
+      showError('No valid rows found under the header.');
+      return;
+    }
+
+    renderPreview();
+  }
+
+  function renderPreview(){
+    previewTitle.textContent = 'Preview (' + parsedUsers.length + ' user' + (parsedUsers.length === 1 ? '' : 's') + ')';
+    previewTbody.innerHTML = parsedUsers.map(u =>
+      '<tr><td>' + escapeHtml(u.username) + '</td><td>' + escapeHtml(u.lastName) + '</td><td class="dim">' + '•'.repeat(Math.min(u.password.length, 10) || 1) + '</td></tr>'
+    ).join('');
+    previewWrap.classList.add('show');
+    resultsWrap.classList.remove('show');
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function parseFile(file){
+    resetBulkUI();
+    fileChip.classList.add('show');
+    fileChipName.style.color = '';
+    fileChipName.textContent = file.name;
+
+    const isCsv = /\.csv$/i.test(file.name);
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+      try{
+        let rows;
+        if(isCsv){
+          const wb = XLSX.read(e.target.result, { type:'string' });
+          rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:false });
+        } else {
+          const wb = XLSX.read(e.target.result, { type:'array' });
+          rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:false });
+        }
+        handleWorkbookRows(rows);
+      } catch(err){
+        showError('Could not read file: ' + err.message);
+      }
+    };
+    reader.onerror = function(){ showError('Could not read file.'); };
+
+    if(isCsv){ reader.readAsText(file); }
+    else { reader.readAsArrayBuffer(file); }
+  }
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('drag');
+    if(e.dataTransfer.files && e.dataTransfer.files[0]) parseFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', () => {
+    if(fileInput.files && fileInput.files[0]) parseFile(fileInput.files[0]);
+  });
+  fileChipClear.addEventListener('click', resetBulkUI);
+  bulkCancelBtn.addEventListener('click', resetBulkUI);
+
+  bulkSubmitBtn.addEventListener('click', function(){
+    if(!parsedUsers.length) return;
+    bulkSubmitBtn.disabled = true;
+    bulkCancelBtn.disabled = true;
+    bulkProgress.textContent = 'Creating ' + parsedUsers.length + ' users… this may take a moment.';
+
+    fetch('/api/create-users-bulk', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ users: parsedUsers })
+    })
+      .then(res => res.json().then(data => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        bulkSubmitBtn.disabled = false;
+        bulkCancelBtn.disabled = false;
+        bulkProgress.textContent = '';
+
+        const results = (data && data.results) ? data.results : [];
+        const okCount = results.filter(r => String(r.status).toLowerCase() === 'success' || String(r.status).toLowerCase() === 'ok').length;
+        const failCount = results.length - okCount;
+
+        resultsSummary.innerHTML = '<b>' + okCount + '</b> succeeded, <b>' + failCount + '</b> failed out of <b>' + results.length + '</b> total.';
+        resultsTbody.innerHTML = results.map(r => {
+          const isOk = String(r.status).toLowerCase() === 'success' || String(r.status).toLowerCase() === 'ok';
+          return '<tr><td>' + escapeHtml(r.username || '') + '</td><td><span class="badge ' + (isOk ? 'ok">Success' : 'fail">Failed') + '</span></td><td>' + escapeHtml(r.message || '') + '</td></tr>';
+        }).join('');
+
+        resultsWrap.classList.add('show');
+        previewWrap.classList.remove('show');
+
+        if(!ok && !results.length){
+          resultsSummary.textContent = (data && (data.error || data.message)) || 'Bulk creation request failed.';
+        }
+      })
+      .catch(err => {
+        bulkSubmitBtn.disabled = false;
+        bulkCancelBtn.disabled = false;
+        bulkProgress.textContent = '';
+        resultsSummary.textContent = 'Not connected — /api/create-users-bulk unreachable. ' + err.message;
+        resultsTbody.innerHTML = '';
+        resultsWrap.classList.add('show');
+        previewWrap.classList.remove('show');
+      });
+  });
+})();
+</script>
+
+</body>
+</html>
