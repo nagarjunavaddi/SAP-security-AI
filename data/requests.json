@@ -1,0 +1,28 @@
+[
+  {
+    "id": "1783582804935",
+    "sapUsername": "TEST22",
+    "roleName": "SAP_ACM_APPLWCS1_APP",
+    "reason": "User need access to this role",
+    "requestedBy": "requester",
+    "requestedAt": "2026-07-09T07:40:04.935Z",
+    "status": "approved",
+    "approvedBy": "approver",
+    "approvedAt": "2026-07-09T07:40:36.472Z",
+    "sapSyncStatus": "pending",
+    "sapSyncMessage": "SAP sync not completed: RoleAssignSet returned 404 — entity likely not built yet in SEGW."
+  },
+  {
+    "id": "1783611314983",
+    "sapUsername": "TEST22",
+    "roleName": "SAP_AUDITOR_BA_FI_APMD",
+    "reason": "user need this access",
+    "requestedBy": "requester",
+    "requestedAt": "2026-07-09T15:35:14.983Z",
+    "status": "approved",
+    "approvedBy": "approver",
+    "approvedAt": "2026-07-09T15:35:37.434Z",
+    "sapSyncStatus": "success",
+    "sapSyncMessage": "Role SAP_AUDITOR_BA_FI_APMD assigned to TEST22 successfully."
+  }
+]

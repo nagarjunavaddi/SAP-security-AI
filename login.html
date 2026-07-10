@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CerberuS — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --tint:#F5F6F3; --ink:#12181F; --ink-soft:#5B6472; --ink-faint:#8A93A0;
+    --line:#E3E5E0; --navy:#122A4E; --blue:#2458D6; --red:#C23B3B;
+    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--navy); color:var(--ink); font-family:var(--font-body);
+    display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .logo{
+    font-family:'Righteous',cursive; font-size:36px; text-align:center; margin-bottom:28px; color:#EEF1F6;
+  }
+  .logo .c-o{ color:#E88A3C; }
+  .logo .c-s{ color:#C23B3B; }
+  .card{
+    background:var(--bg); border-radius:12px; padding:32px; width:100%; max-width:380px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
+  h1{ font-family:var(--font-display); font-weight:700; font-size:19px; margin:0 0 6px; }
+  .sub{ font-size:13px; color:var(--ink-soft); margin:0 0 24px; }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .field label{
+    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px; color:var(--ink-soft);
+  }
+  .field input{
+    font-family:var(--font-body); font-size:14px; background:var(--tint);
+    border:1px solid var(--line); border-radius:7px; padding:11px 13px; color:var(--ink); outline:none;
+  }
+  .field input:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  .go-btn{
+    width:100%; font-family:var(--font-display); font-weight:700; font-size:14px;
+    background:var(--blue); color:#fff; border:none; border-radius:7px;
+    padding:12px; cursor:pointer; margin-top:6px; transition:background .15s ease;
+  }
+  .go-btn:hover{ background:#1B47B8; }
+  .go-btn:disabled{ opacity:0.6; cursor:not-allowed; }
+  .error{
+    margin-top:14px; font-family:var(--font-mono); font-size:12px; color:var(--red);
+    display:none; line-height:1.5;
+  }
+  .error.show{ display:block; }
+  .hint{
+    margin-top:20px; padding-top:16px; border-top:1px dashed var(--line);
+    font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); line-height:1.8;
+  }
+</style>
+</head>
+<body>
+
+<div>
+  <div class="logo"><span class="c-o">Cerberu</span><span class="c-s">S</span></div>
+  <div class="card">
+    <h1>Sign in</h1>
+    <p class="sub">SAP Access Governance console</p>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="go-btn" id="loginBtn">Sign in</button>
+      <div class="error" id="loginError"></div>
+    </form>
+
+    <div class="hint">
+      Demo accounts — change these in server.js before sharing this tool:<br>
+      requester / Req@12345<br>
+      approver / App@12345
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: document.getElementById('username').value.trim(),
+      password: document.getElementById('password').value
+    })
+  })
+    .then(res => res.json().then(data => ({ ok: res.ok, data })))
+    .then(({ ok, data }) => {
+      if (!ok) {
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+        err.textContent = data.error || 'Login failed.';
+        err.classList.add('show');
+        return;
+      }
+      window.location.href = (data.role === 'approver') ? 'approvals.html' : 'new-request.html';
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+      err.textContent = 'Not connected — /api/login unreachable.';
+      err.classList.add('show');
+    });
+});
+</script>
+
+</body>
+</html>
