@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CerberuS — New Access Request</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --tint:#F5F6F3; --tint-2:#EFF1EC; --ink:#12181F; --ink-soft:#5B6472; --ink-faint:#8A93A0;
+    --line:#E3E5E0; --navy:#122A4E; --blue:#2458D6; --red:#C23B3B; --amber:#C1811E; --green:#1E8E5A;
+    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+
+  .page-head{ background:var(--navy); color:#EEF1F6; padding:28px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; }
+  .page-head h2{ font-family:var(--font-display); font-weight:700; font-size:24px; margin:0 0 6px; }
+  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; }
+  .who{ font-family:var(--font-mono); font-size:12px; color:#B9C2D6; text-align:right; }
+  .who button{
+    display:block; margin-top:8px; background:none; border:1px solid rgba(255,255,255,0.25);
+    color:#EEF1F6; font-family:var(--font-mono); font-size:11px; padding:6px 12px; border-radius:6px; cursor:pointer;
+  }
+  .who button:hover{ border-color:#fff; }
+
+  section{ padding:36px 28px; max-width:900px; margin:0 auto; }
+
+  .form-card{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:26px; margin-bottom:36px; }
+  .form-card h3{ font-family:var(--font-display); font-weight:700; font-size:17px; margin:0 0 18px; }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field label{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px; color:var(--ink-soft); }
+  .field input, .field textarea{
+    font-family:var(--font-body); font-size:13.5px; background:var(--tint);
+    border:1px solid var(--line); border-radius:7px; padding:10px 12px; color:var(--ink); outline:none; resize:vertical;
+  }
+  .field input:focus-visible, .field textarea:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  .go-btn{
+    font-family:var(--font-display); font-weight:700; font-size:14px; background:var(--blue); color:#fff;
+    border:none; border-radius:7px; padding:11px 22px; cursor:pointer;
+  }
+  .go-btn:hover{ background:#1B47B8; }
+  .go-btn:disabled{ opacity:0.6; cursor:not-allowed; }
+  .note{ margin-top:14px; font-family:var(--font-mono); font-size:12px; display:none; line-height:1.6; }
+  .note.show{ display:block; }
+  .note.error{ color:var(--red); }
+  .note.success{ color:var(--green); }
+
+  h3.list-title{ font-family:var(--font-display); font-weight:700; font-size:17px; margin:0 0 14px; }
+  .coverage{ background:var(--bg); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  table{ width:100%; border-collapse:collapse; }
+  th{
+    text-align:left; padding:12px 16px; background:var(--tint-2); font-family:var(--font-mono);
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:var(--ink-soft); border-bottom:1px solid var(--line);
+  }
+  td{ padding:12px 16px; border-bottom:1px solid var(--line); font-size:13px; }
+  tr:last-child td{ border-bottom:none; }
+  .empty{ padding:24px 16px; color:var(--ink-faint); font-size:13px; font-family:var(--font-mono); }
+  .badge{ display:inline-block; font-family:var(--font-mono); font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; }
+  .badge.pending{ background:#FBF1E2; color:var(--amber); }
+  .badge.approved{ background:#E5F5EC; color:var(--green); }
+  .badge.rejected{ background:#FBEAEA; color:var(--red); }
+  .sap-note{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); margin-top:2px; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div>
+    <a href="index.html" style="display:inline-block; font-family:var(--font-mono); font-size:12px; color:#B9C2D6; text-decoration:none; margin-bottom:14px;">← Back to dashboard</a>
+    <h2>New Access Request</h2>
+    <p>Submit a role-assignment request for approval before it reaches SAP.</p>
+  </div>
+  <div class="who">
+    <span id="whoName">—</span>
+    <button onclick="logout()">Sign out</button>
+  </div>
+</div>
+
+<section>
+  <div class="form-card">
+    <h3>Request a role</h3>
+    <form id="reqForm">
+      <div class="field">
+        <label for="sapUsername">SAP username</label>
+        <input type="text" id="sapUsername" required placeholder="e.g. JSMITH">
+      </div>
+      <div class="field">
+        <label for="roleName">Role / AGR name</label>
+        <input type="text" id="roleName" required placeholder="e.g. Z_FI_ANALYST">
+      </div>
+      <div class="field">
+        <label for="reason">Business reason</label>
+        <textarea id="reason" rows="3" placeholder="Why does this user need this role?"></textarea>
+      </div>
+      <button type="submit" class="go-btn" id="submitBtn">Submit request</button>
+      <div class="note" id="reqNote"></div>
+    </form>
+  </div>
+
+  <h3 class="list-title">My requests</h3>
+  <div class="coverage">
+    <table>
+      <thead><tr><th>SAP user</th><th>Role</th><th>Status</th><th>Submitted</th></tr></thead>
+      <tbody id="reqBody"></tbody>
+    </table>
+    <div class="empty" id="emptyMsg" style="display:none;">No requests yet.</div>
+  </div>
+</section>
+
+<script src="auth-guard.js"></script>
+<script>
+window.REQUIRED_ROLE = 'requester';
+
+document.addEventListener('auth-ready', function(e){
+  document.getElementById('whoName').textContent = e.detail.displayName + ' (' + e.detail.username + ')';
+  loadRequests();
+});
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmtDate(iso){
+  try { return new Date(iso).toLocaleString(); } catch(e){ return iso; }
+}
+
+function loadRequests(){
+  fetch('/api/requests')
+    .then(res => res.json())
+    .then(list => {
+      const body = document.getElementById('reqBody');
+      const empty = document.getElementById('emptyMsg');
+      if(!list.length){
+        body.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      body.innerHTML = list.map(r => {
+        let sapNote = '';
+        if(r.status === 'approved' && r.sapSyncStatus){
+          sapNote = '<div class="sap-note">SAP sync: ' + escapeHtml(r.sapSyncStatus) + ' — ' + escapeHtml(r.sapSyncMessage || '') + '</div>';
+        }
+        return '<tr>' +
+          '<td>' + escapeHtml(r.sapUsername) + '</td>' +
+          '<td>' + escapeHtml(r.roleName) + '</td>' +
+          '<td><span class="badge ' + r.status + '">' + r.status + '</span>' + sapNote + '</td>' +
+          '<td>' + fmtDate(r.requestedAt) + '</td>' +
+        '</tr>';
+      }).join('');
+    })
+    .catch(() => {});
+}
+
+document.getElementById('reqForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const note = document.getElementById('reqNote');
+  note.classList.remove('show','error','success');
+  btn.disabled = true;
+
+  const payload = {
+    sapUsername: document.getElementById('sapUsername').value.trim(),
+    roleName: document.getElementById('roleName').value.trim(),
+    reason: document.getElementById('reason').value.trim()
+  };
+
+  fetch('/api/requests', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+  })
+    .then(res => res.json().then(data => ({ ok: res.ok, data })))
+    .then(({ ok, data }) => {
+      btn.disabled = false;
+      note.classList.add('show');
+      if(!ok){
+        note.classList.add('error');
+        note.textContent = data.error || 'Request failed.';
+        return;
+      }
+      note.classList.add('success');
+      note.textContent = 'Request submitted — awaiting approval.';
+      document.getElementById('reqForm').reset();
+      loadRequests();
+    })
+    .catch(err => {
+      btn.disabled = false;
+      note.classList.add('show','error');
+      note.textContent = 'Not connected — /api/requests unreachable. ' + err.message;
+    });
+});
+</script>
+
+</body>
+</html>

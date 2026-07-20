@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Role SoD Risk Analysis - SAP Security AI Tool</title>
+<style>
+  body {
+    background: #0a0e1a;
+    color: #d8e2f0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: #0d1220;
+    border-bottom: 1px solid #1e3a5f;
+    padding: 20px 40px;
+  }
+  header h1 {
+    color: #4fc3f7;
+    margin: 0;
+    font-size: 24px;
+  }
+  header p {
+    color: #7d90aa;
+    margin: 4px 0 0;
+    font-size: 13px;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+  .search-box {
+    background: #101827;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .search-box input {
+    flex: 1;
+    background: #0a0e1a;
+    border: 1px solid #29456b;
+    border-radius: 6px;
+    padding: 12px 14px;
+    color: #d8e2f0;
+    font-size: 14px;
+  }
+  .search-box input::placeholder { color: #5a6b85; }
+  .search-box button {
+    background: #4fc3f7;
+    color: #06101d;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .search-box button:hover { background: #7dd3fc; }
+  .search-box button:disabled { background: #2a3a4d; color: #6b7a8f; cursor: not-allowed; }
+
+  .summary {
+    margin-top: 24px;
+    display: flex;
+    gap: 16px;
+  }
+  .summary-card {
+    flex: 1;
+    background: #101827;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+  }
+  .summary-card .num { font-size: 28px; font-weight: bold; color: #4fc3f7; }
+  .summary-card .label { font-size: 12px; color: #7d90aa; margin-top: 4px; }
+  .summary-card.critical .num { color: #ff6b6b; }
+
+  .violations { margin-top: 24px; }
+  .violation-card {
+    background: #101827;
+    border: 1px solid #1e3a5f;
+    border-left: 4px solid #ff6b6b;
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .violation-card.medium { border-left-color: #ffb74d; }
+  .violation-card.low { border-left-color: #4fc3f7; }
+  .violation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .violation-header .risk-id { color: #4fc3f7; font-weight: bold; font-size: 13px; }
+  .violation-header .risk-name { color: #e8f0fa; font-size: 15px; margin-top: 2px; }
+  .badge {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+  }
+  .badge.critical { background: #4a1d1d; color: #ff6b6b; }
+  .badge.high { background: #4a1d1d; color: #ff8787; }
+  .badge.medium { background: #4a3a1d; color: #ffb74d; }
+  .badge.low { background: #1d3a4a; color: #4fc3f7; }
+
+  .function-row {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #1e3a5f;
+    font-size: 13px;
+    color: #a8b8cc;
+  }
+  .function-row b { color: #d8e2f0; }
+  .tcode-chip {
+    display: inline-block;
+    background: #1a2536;
+    border: 1px solid #2a3a4d;
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 3px 4px 0 0;
+    font-family: monospace;
+    font-size: 12px;
+    color: #7dd3fc;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: #5a6b85;
+    padding: 60px 20px;
+    font-size: 14px;
+  }
+  .loading { text-align: center; color: #4fc3f7; padding: 40px; }
+  .error-box {
+    background: #2a1414;
+    border: 1px solid #5c2626;
+    color: #ff8787;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-top: 20px;
+  }
+  .clean-box {
+    background: #14251a;
+    border: 1px solid #2a5c3a;
+    color: #6fdb8f;
+    border-radius: 6px;
+    padding: 18px;
+    margin-top: 24px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛡️ Role SoD Risk Analysis</h1>
+  <p>Segregation of Duties check — role-level, T-code based</p>
+</header>
+
+<div class="container">
+
+  <div class="search-box">
+    <input type="text" id="roleNameInput" placeholder="Enter SAP Role Name (e.g. Z_AP_ACCOUNTANT)" />
+    <button id="analyzeBtn" onclick="runAnalysis()">Analyze</button>
+  </div>
+
+  <div id="resultArea"></div>
+
+</div>
+
+<script>
+async function runAnalysis() {
+  const roleName = document.getElementById('roleNameInput').value.trim();
+  const resultArea = document.getElementById('resultArea');
+  const btn = document.getElementById('analyzeBtn');
+
+  if (!roleName) {
+    resultArea.innerHTML = '<div class="error-box">Please enter a role name.</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Analyzing...';
+  resultArea.innerHTML = '<div class="loading">Fetching role T-codes from SAP and checking against ruleset...</div>';
+
+  try {
+    const res = await fetch(`/api/risk-analysis/role/${encodeURIComponent(roleName)}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      resultArea.innerHTML = `<div class="error-box">${data.error || 'Analysis failed.'}</div>`;
+      return;
+    }
+
+    if (data.tcodeCount === 0) {
+      resultArea.innerHTML = `<div class="error-box">No T-codes found for role "${roleName}". Check the role name and try again.</div>`;
+      return;
+    }
+
+    let html = `
+      <div class="summary">
+        <div class="summary-card">
+          <div class="num">${data.tcodeCount}</div>
+          <div class="label">T-CODES IN ROLE</div>
+        </div>
+        <div class="summary-card ${data.violationCount > 0 ? 'critical' : ''}">
+          <div class="num">${data.violationCount}</div>
+          <div class="label">SoD VIOLATIONS FOUND</div>
+        </div>
+      </div>
+    `;
+
+    if (data.violationCount === 0) {
+      html += `<div class="clean-box">✅ No Segregation of Duties conflicts found for role "${roleName}".</div>`;
+    } else {
+      html += '<div class="violations">';
+      for (const v of data.violations) {
+        const levelClass = (v.riskLevel || '').toLowerCase();
+        html += `
+          <div class="violation-card ${levelClass}">
+            <div class="violation-header">
+              <div>
+                <div class="risk-id">${v.riskId} &middot; ${v.businessProcess || ''}</div>
+                <div class="risk-name">${v.riskName}</div>
+              </div>
+              <span class="badge ${levelClass}">${v.riskLevel || 'N/A'}</span>
+            </div>
+        `;
+        for (const f of v.matchedFunctions) {
+          html += `
+            <div class="function-row">
+              <b>${f.functionId}</b> — ${f.functionDescription}<br/>
+              ${f.matchedTcodes.map(tc => `<span class="tcode-chip">${tc}</span>`).join('')}
+            </div>
+          `;
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    resultArea.innerHTML = html;
+
+  } catch (e) {
+    resultArea.innerHTML = `<div class="error-box">Error: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Analyze';
+  }
+}
+
+document.getElementById('roleNameInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') runAnalysis();
+});
+</script>
+
+</body>
+</html>

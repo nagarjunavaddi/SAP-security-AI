@@ -1,59 +1,744 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+const session = require('express-session');
 
 const app = express();
 app.use(express.json());
-app.use(express.static('.'));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'change-this-secret-in-env-file',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 8 * 60 * 60 * 1000 } // 8 hour login
+}));
 
-const mockSAPData = {
-  sodViolations: [
-    { user: 'USER001', conflict: 'FB60 + F110', risk: 'CRITICAL', description: 'Invoice to Payment' },
-    { user: 'USER002', conflict: 'ME21N + MIRO', risk: 'HIGH', description: 'Procure to Pay' },
-    { user: 'USER003', conflict: 'SU01 + PFCG', risk: 'CRITICAL', description: 'User and Role Admin' }
-  ],
-  lockedUsers: [
-    { user: 'JOHN001', reason: 'Wrong password', lockedDate: '2026-05-20' },
-    { user: 'SAP_TEST', reason: 'Admin locked', lockedDate: '2026-05-19' }
-  ],
-  sapAllUsers: [
-    { user: 'ADMIN001', profile: 'SAP_ALL', assignedDate: '2025-01-15' },
-    { user: 'BASIS001', profile: 'SAP_ALL', assignedDate: '2025-03-20' }
-  ]
+// ===================== AUTH (Phase 1) =====================
+// Hardcoded demo users -- swap for a real user store / SAP-backed auth later.
+const USERS = {
+  requester: { password: 'Req@12345', role: 'requester', displayName: 'Access Requester' },
+  approver:  { password: 'App@12345', role: 'approver',  displayName: 'Security Approver' }
 };
 
-app.get('/api/sap-data', (req, res) => {
-  res.json(mockSAPData);
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body || {};
+  const u = USERS[username];
+  if (!u || u.password !== password) {
+    return res.status(401).json({ error: 'Invalid username or password.' });
+  }
+  req.session.user = { username, role: u.role, displayName: u.displayName };
+  res.json({ success: true, username, role: u.role, displayName: u.displayName });
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => res.json({ success: true }));
+});
+
+app.get('/api/session', (req, res) => {
+  if (req.session.user) res.json({ loggedIn: true, ...req.session.user });
+  else res.json({ loggedIn: false });
+});
+
+function requireLogin(req, res, next) {
+  if (!req.session.user) return res.status(401).json({ error: 'Not logged in.' });
+  next();
+}
+function requireRole(role) {
+  return (req, res, next) => {
+    if (!req.session.user) return res.status(401).json({ error: 'Not logged in.' });
+    if (req.session.user.role !== role) {
+      return res.status(403).json({ error: `Forbidden -- requires ${role} role.` });
+    }
+    next();
+  };
+}
+
+// Serve static files AFTER session is set up. Public pages (login.html, the
+// auth-guard script) must stay reachable without a session; protected pages
+// self-check via /api/session client-side (see auth-guard.js).
+app.use(express.static('.'));
+
+// ===================== REQUEST + APPROVAL WORKFLOW (Phase 2) =====================
+// Local JSON file store -- no DB needed for this scale.
+const REQUESTS_FILE = path.join(__dirname, 'data', 'requests.json');
+
+function ensureRequestsFile() {
+  const dir = path.dirname(REQUESTS_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(REQUESTS_FILE)) fs.writeFileSync(REQUESTS_FILE, '[]');
+}
+function readRequests() {
+  ensureRequestsFile();
+  try { return JSON.parse(fs.readFileSync(REQUESTS_FILE, 'utf8')); }
+  catch (e) { return []; }
+}
+function writeRequests(list) {
+  ensureRequestsFile();
+  fs.writeFileSync(REQUESTS_FILE, JSON.stringify(list, null, 2));
+}
+
+// Requester creates a role-assignment request
+app.post('/api/requests', requireRole('requester'), (req, res) => {
+  const { sapUsername, roleName, reason } = req.body || {};
+  if (!sapUsername || !roleName) {
+    return res.status(400).json({ error: 'sapUsername and roleName are required.' });
+  }
+  const list = readRequests();
+  const newReq = {
+    id: Date.now().toString(),
+    sapUsername: sapUsername.trim(),
+    roleName: roleName.trim(),
+    reason: (reason || '').trim(),
+    requestedBy: req.session.user.username,
+    requestedAt: new Date().toISOString(),
+    status: 'pending' // pending | approved | rejected
+  };
+  list.push(newReq);
+  writeRequests(list);
+  res.json({ success: true, request: newReq });
+});
+
+// List requests -- requester sees only their own, approver sees everything
+app.get('/api/requests', requireLogin, (req, res) => {
+  const list = readRequests();
+  if (req.session.user.role === 'approver') return res.json(list.reverse());
+  res.json(list.filter(r => r.requestedBy === req.session.user.username).reverse());
+});
+
+// Approve -- triggers SAP role assignment (see assignSapRoleInSAP below)
+app.post('/api/requests/:id/approve', requireRole('approver'), async (req, res) => {
+  const list = readRequests();
+  const item = list.find(r => r.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Request not found.' });
+  if (item.status !== 'pending') return res.status(400).json({ error: 'Request already processed.' });
+
+  item.status = 'approved';
+  item.approvedBy = req.session.user.username;
+  item.approvedAt = new Date().toISOString();
+
+  try {
+    const sapResult = await assignSapRoleInSAP(item.sapUsername, item.roleName);
+    item.sapSyncStatus = 'success';
+    item.sapSyncMessage = (sapResult && (sapResult.Message || sapResult.message)) || 'Role assigned in SAP.';
+  } catch (e) {
+    // Phase 3 (SEGW RoleAssign entity) may not be built yet -- approval still
+    // records, but flags that SAP sync did not go through.
+    item.sapSyncStatus = 'pending';
+    item.sapSyncMessage = 'SAP sync not completed: ' + e.message;
+  }
+
+  writeRequests(list);
+  res.json({ success: true, request: item });
+});
+
+// Reject
+app.post('/api/requests/:id/reject', requireRole('approver'), (req, res) => {
+  const { reason } = req.body || {};
+  const list = readRequests();
+  const item = list.find(r => r.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Request not found.' });
+  if (item.status !== 'pending') return res.status(400).json({ error: 'Request already processed.' });
+
+  item.status = 'rejected';
+  item.rejectedBy = req.session.user.username;
+  item.rejectedAt = new Date().toISOString();
+  item.rejectReason = (reason || '').trim();
+
+  writeRequests(list);
+  res.json({ success: true, request: item });
+});
+
+// SAP Connection Config
+const SAP_CONFIG = {
+  hostname: 's4hana2020.support.com',
+  port: 8009,
+  client: '800',
+  username: 'best',
+  password: 'Welcome123'
+};
+
+// ===================== SoD RISK ANALYSIS (Role-Level) =====================
+const SOD_RULESET_FILE = path.join(__dirname, 'data', 'sod-ruleset.json');
+let SOD_RULESET = [];
+try {
+  SOD_RULESET = JSON.parse(fs.readFileSync(SOD_RULESET_FILE, 'utf8'));
+  console.log(`Loaded SoD ruleset: ${SOD_RULESET.length} risks`);
+} catch (e) {
+  console.log('Could not load SoD ruleset:', e.message);
+}
+
+function getRoleTcodesFromSAP(roleName) {
+  return new Promise((resolve, reject) => {
+    const filter = encodeURIComponent(`RoleName eq '${roleName}'`);
+    const options = {
+      hostname: SAP_CONFIG.hostname,
+      port: SAP_CONFIG.port,
+      path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/RoleTcodeSet?sap-client=${SAP_CONFIG.client}&$filter=${filter}&$format=json`,
+      method: 'GET',
+      auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+      rejectUnauthorized: false,
+      headers: { 'Accept': 'application/json' }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          console.log('===ROLE TCODE RAW RESPONSE===');
+          console.log(data.substring(0, 500));
+          console.log('===END RAW===');
+          const parsed = JSON.parse(data);
+          const results = parsed.d.results;
+          const tcodes = results.map(r => r.Tcode);
+          resolve(tcodes);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', (e) => reject(e));
+    req.end();
+  });
+}
+
+function getUserRolesFromSAP(username) {
+  return new Promise((resolve, reject) => {
+    const filter = encodeURIComponent(`Username eq '${username}'`);
+    const options = {
+      hostname: SAP_CONFIG.hostname,
+      port: SAP_CONFIG.port,
+      path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/UserRole?sap-client=${SAP_CONFIG.client}&$filter=${filter}&$format=json`,
+      method: 'GET',
+      auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+      rejectUnauthorized: false,
+      headers: { 'Accept': 'application/json' }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          const results = parsed.d.results;
+          const roles = results.map(r => r.RoleName);
+          resolve(roles);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', (e) => reject(e));
+    req.end();
+  });
+}
+
+app.get('/api/risk-analysis/user/:username', async (req, res) => {
+  const username = req.params.username.trim().toUpperCase();
+  try {
+    const roles = await getUserRolesFromSAP(username);
+    if (!roles.length) {
+      return res.json({ username, roleCount: 0, roles: [], violations: [], message: 'No roles found for this user.' });
+    }
+
+    let allTcodes = [];
+    for (const role of roles) {
+      const roleTcodes = await getRoleTcodesFromSAP(role);
+      allTcodes = allTcodes.concat(roleTcodes);
+    }
+
+    const violations = analyzeRoleLevelSoD(allTcodes);
+    res.json({
+      username,
+      roleCount: roles.length,
+      roles,
+      tcodeCount: allTcodes.length,
+      violationCount: violations.length,
+      violations
+    });
+  } catch (error) {
+    console.log('User-level risk analysis error:', error.message);
+    res.status(500).json({ error: 'User-level risk analysis failed: ' + error.message });
+  }
+});
+
+app.post('/api/risk-analysis/users-bulk', async (req, res) => {
+  const { usernames } = req.body;
+  if (!Array.isArray(usernames) || !usernames.length) {
+    return res.status(400).json({ error: 'No usernames provided.' });
+  }
+
+  const results = [];
+  for (const raw of usernames) {
+    const username = (raw || '').trim().toUpperCase();
+    if (!username) continue;
+    try {
+      const roles = await getUserRolesFromSAP(username);
+      if (!roles.length) {
+        results.push({ username, roleCount: 0, roles: [], tcodeCount: 0, violationCount: 0, violations: [], message: 'No roles found.' });
+        continue;
+      }
+      let allTcodes = [];
+      for (const role of roles) {
+        const roleTcodes = await getRoleTcodesFromSAP(role);
+        allTcodes = allTcodes.concat(roleTcodes);
+      }
+      const violations = analyzeRoleLevelSoD(allTcodes);
+      results.push({ username, roleCount: roles.length, roles, tcodeCount: allTcodes.length, violationCount: violations.length, violations });
+    } catch (error) {
+      results.push({ username, error: error.message });
+    }
+  }
+
+  res.json({ results });
+});
+function analyzeRoleLevelSoD(roleTcodes) {
+  const tcodeSet = new Set(roleTcodes.map(t => (t || '').toUpperCase()));
+  const violations = [];
+
+  for (const risk of SOD_RULESET) {
+    const matchedFunctions = [];
+    for (const func of risk.functions) {
+      const matchedTcodes = (func.tcodes || []).filter(tc => tcodeSet.has(tc.toUpperCase()));
+      if (matchedTcodes.length > 0) {
+        matchedFunctions.push({
+          functionId: func.functionId,
+          functionDescription: func.functionDescription,
+          matchedTcodes
+        });
+      }
+    }
+    // conflict exists only if 2+ functions of the SAME risk both matched
+    if (matchedFunctions.length >= 2) {
+      violations.push({
+        riskId: risk.riskId,
+        riskName: risk.riskName,
+        riskLevel: risk.riskLevel,
+        businessProcess: risk.businessProcess,
+        matchedFunctions
+      });
+    }
+  }
+  return violations;
+}
+
+app.get('/api/risk-analysis/role/:roleName', async (req, res) => {
+  const roleName = req.params.roleName.trim();
+  try {
+    const roleTcodes = await getRoleTcodesFromSAP(roleName);
+    if (!roleTcodes.length) {
+      return res.json({ role: roleName, tcodeCount: 0, violations: [], message: 'No T-codes found for this role.' });
+    }
+    const violations = analyzeRoleLevelSoD(roleTcodes);
+    res.json({
+      role: roleName,
+      tcodeCount: roleTcodes.length,
+      tcodes: roleTcodes,
+      violationCount: violations.length,
+      violations
+    });
+  } catch (error) {
+    console.log('Risk analysis error:', error.message);
+    res.status(500).json({ error: 'Risk analysis failed: ' + error.message });
+  }
+});
+
+app.post('/api/risk-analysis/roles-bulk', async (req, res) => {
+  const { roles } = req.body;
+  if (!Array.isArray(roles) || !roles.length) {
+    return res.status(400).json({ error: 'No roles provided.' });
+  }
+
+  const results = [];
+  for (const raw of roles) {
+    const roleName = (raw || '').trim();
+    if (!roleName) continue;
+    try {
+      const roleTcodes = await getRoleTcodesFromSAP(roleName);
+      if (!roleTcodes.length) {
+        results.push({ role: roleName, tcodeCount: 0, violationCount: 0, violations: [], message: 'No T-codes found.' });
+        continue;
+      }
+      const violations = analyzeRoleLevelSoD(roleTcodes);
+      results.push({ role: roleName, tcodeCount: roleTcodes.length, violationCount: violations.length, violations });
+    } catch (error) {
+      results.push({ role: roleName, error: error.message });
+    }
+  }
+
+  res.json({ results });
+});
+
+function getLockedUsersFromSAP() {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: SAP_CONFIG.hostname,
+      port: SAP_CONFIG.port,
+      path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/UserLockSet?sap-client=${SAP_CONFIG.client}&$format=json`,
+      method: 'GET',
+      auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+      rejectUnauthorized: false,
+      headers: { 'Accept': 'application/json' }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          console.log('===RAW SAP RESPONSE===');
+          console.log(data.substring(0, 800));
+          console.log('===END RAW===');
+          const parsed = JSON.parse(data);
+          const users = parsed.d.results;
+          const lockedUsers = users
+            .filter(u => u.LockStatus === 'Locked')
+            .map(u => ({
+              user: u.Username,
+              reason: 'Locked in SAP (UFLAG)',
+              type: u.UserType
+            }));
+          resolve({ lockedUsers: lockedUsers, totalUsers: users.length });
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', (e) => reject(e));
+    req.end();
+  });
+}
+
+function getCriticalProfileUsersFromSAP() {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: SAP_CONFIG.hostname,
+      port: SAP_CONFIG.port,
+      path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/CriticalProfileUserSet?sap-client=${SAP_CONFIG.client}&$format=json`,
+      method: 'GET',
+      auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+      rejectUnauthorized: false,
+      headers: { 'Accept': 'application/json' }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          console.log('===RAW SAP_ALL RESPONSE===');
+          console.log(data.substring(0, 800));
+          console.log('===END RAW===');
+          const parsed = JSON.parse(data);
+          const users = parsed.d.results;
+          const criticalProfileUsers = users.map(u => ({
+            user: u.Username,
+            fullName: u.Fullname,
+            profile: u.Profilename,
+            profileType: u.Profiletype
+          }));
+          resolve({ criticalProfileUsers: criticalProfileUsers, totalCriticalUsers: criticalProfileUsers.length });
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+    req.on('error', (e) => reject(e));
+    req.end();
+  });
+}
+
+function getDevAccessUsersFromSAP() {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: SAP_CONFIG.hostname,
+      port: SAP_CONFIG.port,
+      path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/DevAccessUserSet?sap-client=${SAP_CONFIG.client}&$format=json`,
+      method: 'GET',
+      auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+      rejectUnauthorized: false,
+      headers: { 'Accept': 'application/json' }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          console.log('===DEVACCESS RAW RESPONSE===');
+          console.log('LENGTH:', data.length);
+          console.log(data.substring(0, 500));
+          console.log('...LAST 300 CHARS...');
+          console.log(data.substring(data.length - 300));
+          console.log('===END DEVACCESS RAW===');
+          const parsed = JSON.parse(data);
+          const users = parsed.d.results;
+          const devAccessUsers = users.map(u => ({
+            user: u.Username,
+            role: u.RoleName,
+            authObject: u.AuthObject,
+            activity: u.Activity === '01' ? 'Create (01)' : 'Change (02)',
+            risk: u.Activity === '01' ? 'high' : 'medium'
+          }));
+          resolve(devAccessUsers);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+    req.on('error', (e) => reject(e));
+    req.end();
+  });
+}
+
+app.get('/api/sap-data', async (req, res) => {
+  try {
+    const lockedResult = await getLockedUsersFromSAP();
+    const devAccessUsers = await getDevAccessUsersFromSAP();
+    const criticalProfileResult = await getCriticalProfileUsersFromSAP();
+    res.json({
+      lockedUsers: lockedResult.lockedUsers,
+      totalUsers: lockedResult.totalUsers,
+      devAccessUsers: devAccessUsers,
+      criticalProfileUsers: criticalProfileResult.criticalProfileUsers,
+      totalCriticalUsers: criticalProfileResult.totalCriticalUsers
+    });
+  } catch (error) {
+    console.log('SAP fetch error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch SAP data: ' + error.message });
+  }
 });
 
 app.post('/api/chat', async (req, res) => {
   const { question } = req.body;
-
   try {
+    const lockedResult = await getLockedUsersFromSAP();
+    const devAccessUsers = await getDevAccessUsersFromSAP();
+    const criticalProfileResult = await getCriticalProfileUsersFromSAP();
     const response = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         contents: [{
           parts: [{
             text: `You are an SAP Security expert. Answer based on this data:
-SoD Violations: ${JSON.stringify(mockSAPData.sodViolations)}
-Locked Users: ${JSON.stringify(mockSAPData.lockedUsers)}
-SAP_ALL Users: ${JSON.stringify(mockSAPData.sapAllUsers)}
+Total Users: ${lockedResult.totalUsers}
+Locked Users: ${JSON.stringify(lockedResult.lockedUsers)}
+Dev Access Users (S_DEVELOP with Create/Change activity): ${JSON.stringify(devAccessUsers)}
+Critical Profile Users (SAP_ALL assigned): ${JSON.stringify(criticalProfileResult.criticalProfileUsers)}
 Question: ${question}`
           }]
         }]
       },
       { timeout: 30000 }
     );
-
     console.log('Gemini response:', JSON.stringify(response.data));
     const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     res.json({ answer: text || 'No answer received' });
-
   } catch (error) {
     console.log('Error:', error.response?.data || error.message);
     res.status(500).json({ answer: 'Error: ' + (error.response?.data?.error?.message || error.message) });
   }
+});
+
+function getCsrfTokenAndCookie() {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: SAP_CONFIG.hostname,
+      port: SAP_CONFIG.port,
+      path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/?sap-client=${SAP_CONFIG.client}`,
+      method: 'GET',
+      auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+      rejectUnauthorized: false,
+      headers: { 'X-CSRF-Token': 'Fetch' }
+    };
+
+    const req = https.request(options, (res) => {
+      const token = res.headers['x-csrf-token'];
+      const cookies = res.headers['set-cookie'] ? res.headers['set-cookie'].join('; ') : '';
+      res.on('data', () => {});
+      res.on('end', () => resolve({ token, cookies }));
+    });
+
+    req.on('error', (e) => reject(e));
+    req.end();
+  });
+}
+
+function createSapUser(username, lastName, password) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { token, cookies } = await getCsrfTokenAndCookie();
+
+      const body = JSON.stringify({
+        Username: username,
+        LastName: lastName,
+        Password: password
+      });
+
+      const options = {
+        hostname: SAP_CONFIG.hostname,
+        port: SAP_CONFIG.port,
+        path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/SapUserCreateSet?sap-client=${SAP_CONFIG.client}`,
+        method: 'POST',
+        auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+        rejectUnauthorized: false,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-Token': token,
+          'Cookie': cookies,
+          'Content-Length': Buffer.byteLength(body)
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try {
+            console.log('RAW SAP RESPONSE:', data.substring(0, 500));
+            const parsed = JSON.parse(data);
+            resolve(parsed.d || parsed);
+          } catch (e) {
+            resolve({ message: 'Raw response: ' + data });
+          }
+        });
+      });
+
+      req.on('error', (e) => reject(e));
+      req.write(body);
+      req.end();
+
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+// ===================== ROLE ASSIGNMENT (Phase 3 wiring) =====================
+// Calls the RoleAssign OData entity (SEGW EntitySet name is "RoleAssign",
+// NOT "RoleAssignSet" -- confirmed via /IWFND/GW_CLIENT metadata check),
+// backed by BAPI_USER_ACTGROUPS_ASSIGN.
+// IMPORTANT (from earlier scoping): BAPI_USER_ACTGROUPS_ASSIGN REPLACES a
+// user's whole role list, it doesn't add to it. The ABAP method behind this
+// entity must first call BAPI_USER_ACTGROUPS_READ, append the new role to the
+// existing list, then call BAPI_USER_ACTGROUPS_ASSIGN with the full list --
+// otherwise every other role the user has gets wiped.
+function assignSapRoleInSAP(username, roleName) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { token, cookies } = await getCsrfTokenAndCookie();
+
+      const body = JSON.stringify({
+        Username: username,
+        RoleName: roleName,
+        Message: ""
+      });
+
+      const options = {
+        hostname: SAP_CONFIG.hostname,
+        port: SAP_CONFIG.port,
+        path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/RoleAssign?sap-client=${SAP_CONFIG.client}`,
+        method: 'POST',
+        auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+        rejectUnauthorized: false,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-Token': token,
+          'Cookie': cookies,
+          'Content-Length': Buffer.byteLength(body)
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          if (res.statusCode >= 400) {
+            return reject(new Error(`RoleAssign returned ${res.statusCode} -- check SEGW entity / SU01.`));
+          }
+          try {
+            const parsed = JSON.parse(data);
+            resolve(parsed.d || parsed);
+          } catch (e) {
+            resolve({ message: 'Raw response: ' + data });
+          }
+        });
+      });
+
+      req.on('error', (e) => reject(e));
+      req.write(body);
+      req.end();
+
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+app.post('/api/create-user', async (req, res) => {
+  const { username, lastName, password } = req.body;
+  try {
+    const result = await createSapUser(username, lastName, password);
+    res.json(result);
+  } catch (error) {
+    console.log('Create user error:', error.message);
+    res.status(500).json({ message: 'Error: ' + error.message });
+  }
+});
+
+// Same failure-detection rule used by the single-create frontend flow,
+// applied here so each row in a bulk batch gets an honest success/failed status.
+function looksLikeFailureMessage(msg) {
+  const lower = (msg || '').toLowerCase();
+  return /must|invalid|error|fail|already exist|not allowed/.test(lower);
+}
+
+// Bulk create: reuses createSapUser() one row at a time (sequential, not parallel)
+// because SAP's CSRF token/session handling breaks under concurrent requests.
+app.post('/api/create-users-bulk', async (req, res) => {
+  const { users } = req.body;
+
+  if (!Array.isArray(users) || !users.length) {
+    return res.status(400).json({ error: 'No users provided.' });
+  }
+
+  const results = [];
+
+  for (const u of users) {
+    const username = (u.username || '').trim();
+    const lastName = (u.lastName || '').trim();
+    const password = u.password || '';
+
+    if (!username || !lastName || !password) {
+      results.push({
+        username: username || '(blank)',
+        status: 'failed',
+        message: 'Missing username, lastName, or password.'
+      });
+      continue;
+    }
+
+    try {
+      const result = await createSapUser(username, lastName, password);
+      const msg = (result && (result.Message || result.message)) || '';
+
+      if (looksLikeFailureMessage(msg)) {
+        results.push({ username, status: 'failed', message: msg || 'User creation failed.' });
+      } else {
+        results.push({ username, status: 'success', message: msg || 'User created successfully.' });
+      }
+    } catch (error) {
+      results.push({ username, status: 'failed', message: 'Error: ' + error.message });
+    }
+  }
+
+  res.json({ results });
 });
 
 app.listen(3000, () => console.log('Running on http://localhost:3000'));

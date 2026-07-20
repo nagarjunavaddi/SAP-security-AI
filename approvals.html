@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CerberuS — Approvals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --tint:#F5F6F3; --tint-2:#EFF1EC; --ink:#12181F; --ink-soft:#5B6472; --ink-faint:#8A93A0;
+    --line:#E3E5E0; --navy:#122A4E; --blue:#2458D6; --red:#C23B3B; --amber:#C1811E; --green:#1E8E5A;
+    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+
+  .page-head{ background:var(--navy); color:#EEF1F6; padding:28px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; }
+  .page-head h2{ font-family:var(--font-display); font-weight:700; font-size:24px; margin:0 0 6px; }
+  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; }
+  .who{ font-family:var(--font-mono); font-size:12px; color:#B9C2D6; text-align:right; }
+  .who button{
+    display:block; margin-top:8px; background:none; border:1px solid rgba(255,255,255,0.25);
+    color:#EEF1F6; font-family:var(--font-mono); font-size:11px; padding:6px 12px; border-radius:6px; cursor:pointer;
+  }
+  .who button:hover{ border-color:#fff; }
+
+  section{ padding:36px 28px; max-width:1000px; margin:0 auto; }
+  h3.list-title{ font-family:var(--font-display); font-weight:700; font-size:17px; margin:0 0 14px; }
+
+  .queue{ display:flex; flex-direction:column; gap:14px; margin-bottom:40px; }
+  .req-card{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:18px 20px; }
+  .req-top{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px; }
+  .req-title{ font-family:var(--font-display); font-weight:700; font-size:15px; }
+  .req-meta{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); }
+  .req-reason{ font-size:13px; color:var(--ink-soft); margin:8px 0 14px; line-height:1.5; }
+  .req-actions{ display:flex; gap:10px; }
+  .btn{
+    font-family:var(--font-display); font-weight:700; font-size:13px; border:none; border-radius:7px;
+    padding:9px 18px; cursor:pointer;
+  }
+  .btn.approve{ background:var(--green); color:#fff; }
+  .btn.approve:hover{ background:#166F46; }
+  .btn.reject{ background:var(--tint-2); color:var(--red); border:1px solid var(--line); }
+  .btn.reject:hover{ background:#FBEAEA; }
+  .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+  .empty{ padding:24px 16px; color:var(--ink-faint); font-size:13px; font-family:var(--font-mono); background:var(--bg); border:1px solid var(--line); border-radius:10px; }
+
+  .coverage{ background:var(--bg); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  table{ width:100%; border-collapse:collapse; }
+  th{
+    text-align:left; padding:12px 16px; background:var(--tint-2); font-family:var(--font-mono);
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:var(--ink-soft); border-bottom:1px solid var(--line);
+  }
+  td{ padding:12px 16px; border-bottom:1px solid var(--line); font-size:13px; }
+  tr:last-child td{ border-bottom:none; }
+  .badge{ display:inline-block; font-family:var(--font-mono); font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; }
+  .badge.approved{ background:#E5F5EC; color:var(--green); }
+  .badge.rejected{ background:#FBEAEA; color:var(--red); }
+  .sap-note{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); margin-top:2px; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div>
+    <a href="index.html" style="display:inline-block; font-family:var(--font-mono); font-size:12px; color:#B9C2D6; text-decoration:none; margin-bottom:14px;">← Back to dashboard</a>
+    <h2>Approval Queue</h2>
+    <p>Review pending role-assignment requests before they sync to SAP.</p>
+  </div>
+  <div class="who">
+    <span id="whoName">—</span>
+    <button onclick="logout()">Sign out</button>
+  </div>
+</div>
+
+<section>
+  <h3 class="list-title">Pending</h3>
+  <div class="queue" id="pendingQueue"></div>
+  <div class="empty" id="emptyPending" style="display:none;">Nothing waiting on approval.</div>
+
+  <h3 class="list-title">History</h3>
+  <div class="coverage">
+    <table>
+      <thead><tr><th>SAP user</th><th>Role</th><th>Requested by</th><th>Status</th></tr></thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+    <div class="empty" id="emptyHistory" style="display:none;">No processed requests yet.</div>
+  </div>
+</section>
+
+<script src="auth-guard.js"></script>
+<script>
+window.REQUIRED_ROLE = 'approver';
+
+document.addEventListener('auth-ready', function(e){
+  document.getElementById('whoName').textContent = e.detail.displayName + ' (' + e.detail.username + ')';
+  loadRequests();
+});
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtDate(iso){
+  try { return new Date(iso).toLocaleString(); } catch(e){ return iso; }
+}
+
+function loadRequests(){
+  fetch('/api/requests')
+    .then(res => res.json())
+    .then(list => {
+      const pending = list.filter(r => r.status === 'pending');
+      const done = list.filter(r => r.status !== 'pending');
+
+      const queueEl = document.getElementById('pendingQueue');
+      document.getElementById('emptyPending').style.display = pending.length ? 'none' : 'block';
+      queueEl.innerHTML = pending.map(r => `
+        <div class="req-card" data-id="${r.id}">
+          <div class="req-top">
+            <div class="req-title">${escapeHtml(r.sapUsername)} → ${escapeHtml(r.roleName)}</div>
+            <div class="req-meta">requested by ${escapeHtml(r.requestedBy)} · ${fmtDate(r.requestedAt)}</div>
+          </div>
+          <div class="req-reason">${escapeHtml(r.reason) || '<em>No reason provided.</em>'}</div>
+          <div class="req-actions">
+            <button class="btn approve" data-action="approve">Approve</button>
+            <button class="btn reject" data-action="reject">Reject</button>
+          </div>
+        </div>
+      `).join('');
+
+      const histBody = document.getElementById('historyBody');
+      document.getElementById('emptyHistory').style.display = done.length ? 'none' : 'block';
+      histBody.innerHTML = done.map(r => {
+        let sapNote = '';
+        if(r.status === 'approved' && r.sapSyncStatus){
+          sapNote = '<div class="sap-note">SAP sync: ' + escapeHtml(r.sapSyncStatus) + ' — ' + escapeHtml(r.sapSyncMessage || '') + '</div>';
+        }
+        if(r.status === 'rejected' && r.rejectReason){
+          sapNote = '<div class="sap-note">Reason: ' + escapeHtml(r.rejectReason) + '</div>';
+        }
+        return '<tr>' +
+          '<td>' + escapeHtml(r.sapUsername) + '</td>' +
+          '<td>' + escapeHtml(r.roleName) + '</td>' +
+          '<td>' + escapeHtml(r.requestedBy) + '</td>' +
+          '<td><span class="badge ' + r.status + '">' + r.status + '</span>' + sapNote + '</td>' +
+        '</tr>';
+      }).join('');
+
+      wireActions();
+    })
+    .catch(() => {});
+}
+
+function wireActions(){
+  document.querySelectorAll('.req-card').forEach(card => {
+    const id = card.dataset.id;
+    card.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        card.querySelectorAll('.btn').forEach(b => b.disabled = true);
+
+        let body = {};
+        let url = '/api/requests/' + id + '/' + action;
+        if(action === 'reject'){
+          const reason = prompt('Reason for rejection (optional):') || '';
+          body = { reason };
+        }
+
+        fetch(url, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        })
+          .then(res => res.json().then(data => ({ ok: res.ok, data })))
+          .then(({ ok, data }) => {
+            if(!ok){ alert(data.error || 'Action failed.'); }
+            loadRequests();
+          })
+          .catch(err => {
+            alert('Not connected: ' + err.message);
+            card.querySelectorAll('.btn').forEach(b => b.disabled = false);
+          });
+      });
+    });
+  });
+}
+</script>
+
+</body>
+</html>

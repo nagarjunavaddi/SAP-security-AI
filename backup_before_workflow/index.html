@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -303,10 +303,6 @@
     <span class="eyebrow-light">Identity &amp; Access Governance for SAP</span>
     <h1 class="mega-logo"><span class="c-o">Cerberu</span><span class="c-s">S</span></h1>
     <span class="hero-badge">🛡️ Guardian of SAP Access</span>
-    <div style="margin-top:18px; font-family:var(--font-mono); font-size:11.5px; color:#8FA3C4;">
-      Signed in as <span id="heroWho">—</span> ·
-      <button onclick="logout()" style="background:none; border:none; color:#F0B27A; font-family:var(--font-mono); font-size:11.5px; cursor:pointer; text-decoration:underline; padding:0;">sign out</button>
-    </div>
   </div>
 </div>
 
@@ -326,20 +322,10 @@
         <span class="title">S_DEVELOP Access Check</span>
         <span class="desc">Users with S_DEVELOP authorization, activity 01 / 02</span>
       </button>
-      <a class="option-card" href="SOD.html" target="_blank" rel="noopener">
-        <span class="icon">⚖️</span>
-        <span class="title">SoD Analytics</span>
-        <span class="desc">Segregation of Duties risk analysis across roles and users</span>
-      </a>
       <a class="option-card" href="create-user.html" target="_blank" rel="noopener">
         <span class="icon">👤</span>
         <span class="title">User Creation</span>
         <span class="desc">Create a new SAP user account — opens in a new page</span>
-      </a>
-      <a class="option-card" id="workflowCard" href="new-request.html">
-        <span class="icon">📝</span>
-        <span class="title" id="workflowCardTitle">Access Requests</span>
-        <span class="desc" id="workflowCardDesc">Request a role assignment for approval</span>
       </a>
     </div>
   </div>
@@ -545,24 +531,7 @@
   boot();
   showView(location.hash.replace('#','') || 'dashboard');
 })();
-
-document.addEventListener('auth-ready', function(e){
-  document.getElementById('heroWho').textContent = e.detail.displayName + ' (' + e.detail.username + ')';
-  const card = document.getElementById('workflowCard');
-  const title = document.getElementById('workflowCardTitle');
-  const desc = document.getElementById('workflowCardDesc');
-  if(e.detail.role === 'approver'){
-    card.setAttribute('href', 'approvals.html');
-    title.textContent = 'Approval Queue';
-    desc.textContent = 'Review and approve pending role requests';
-  } else {
-    card.setAttribute('href', 'new-request.html');
-    title.textContent = 'Access Requests';
-    desc.textContent = 'Request a role assignment for approval';
-  }
-});
 </script>
-<script src="auth-guard.js"></script>
 
 </body>
 </html>

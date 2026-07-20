@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoD Analysis — CerberuS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --tint:#F5F6F3;
+    --tint-2:#EFF1EC;
+    --ink:#12181F;
+    --ink-soft:#5B6472;
+    --ink-faint:#8A93A0;
+    --line:#E3E5E0;
+    --navy:#122A4E;
+    --navy-2:#1B3D6E;
+    --blue:#2458D6;
+    --red:#C23B3B;
+    --amber:#C1811E;
+    --green:#1E8E5A;
+    --font-display:'Sora',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--navy); color:#fff; }
+
+  .page-head{ background:var(--navy); color:#EEF1F6; padding:28px 28px; }
+  .page-head-inner{ max-width:1180px; margin:0 auto; }
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--font-mono); font-size:12px; color:#B9C2D6;
+    text-decoration:none; margin-bottom:14px; cursor:pointer; background:none; border:none; padding:0;
+  }
+  .back-link:hover{ color:#fff; }
+  .page-head h2{
+    font-family:var(--font-display); font-weight:700; font-size:26px; margin:0 0 6px;
+  }
+  .page-head p{ font-size:13.5px; color:#B9C2D6; margin:0; max-width:560px; line-height:1.5; }
+
+  section{ padding:36px 28px 60px; }
+  .section-inner{ max-width:1180px; margin:0 auto; }
+
+  /* ---------------- top-level tabs: Role / User ---------------- */
+  .tab-row{
+    display:flex; gap:8px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .tab-btn{
+    font-family:var(--font-display); font-weight:700; font-size:14.5px;
+    background:none; border:none; padding:12px 4px; margin-right:22px;
+    color:var(--ink-faint); cursor:pointer; position:relative; top:1px;
+    border-bottom:2px solid transparent;
+  }
+  .tab-btn.active{ color:var(--navy); border-bottom-color:var(--blue); }
+  .tab-btn:disabled{ cursor:default; }
+  .tab-btn .soon-pill{
+    font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.6px;
+    background:var(--tint-2); color:var(--ink-faint); border:1px solid var(--line);
+    border-radius:10px; padding:2px 7px; margin-left:8px; vertical-align:2px;
+  }
+
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  /* ---------------- sub-mode toggle (single / bulk) ---------------- */
+  .mode-row{
+    display:inline-flex; background:var(--tint); border:1px solid var(--line);
+    border-radius:8px; padding:3px; margin-bottom:22px;
+  }
+  .mode-btn{
+    font-family:var(--font-mono); font-size:12px; font-weight:600; letter-spacing:0.3px;
+    background:none; border:none; border-radius:6px; padding:8px 16px; cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .mode-btn.active{ background:var(--bg); color:var(--navy); box-shadow:0 1px 3px rgba(18,24,31,0.08); }
+
+  .mode-panel{ display:none; }
+  .mode-panel.active{ display:block; }
+
+  /* ---------------- search / input box ---------------- */
+  .inquiry-box{
+    background:var(--bg); border:1px solid var(--line); border-radius:10px;
+    padding:24px; box-shadow:0 1px 3px rgba(18,24,31,0.04); max-width:720px;
+  }
+  .inquiry-row{ display:flex; gap:10px; }
+  .inquiry-row input{
+    flex:1; font-family:var(--font-body); font-size:14.5px;
+    background:var(--tint); border:1px solid var(--line); border-radius:7px;
+    padding:13px 16px; color:var(--ink); outline:none;
+  }
+  .inquiry-row input:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  .inquiry-row input::placeholder{ color:var(--ink-faint); }
+  textarea.bulk-input{
+    width:100%; font-family:var(--font-mono); font-size:13px; line-height:1.6;
+    background:var(--tint); border:1px solid var(--line); border-radius:7px;
+    padding:14px 16px; color:var(--ink); outline:none; resize:vertical; min-height:110px;
+  }
+  textarea.bulk-input:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  .field-hint{ font-size:12px; color:var(--ink-faint); margin-top:8px; line-height:1.5; }
+
+  .go-btn{
+    font-family:var(--font-display); font-weight:700; font-size:14px;
+    background:var(--blue); color:#fff; border:none; border-radius:7px;
+    padding:0 24px; cursor:pointer; transition:background .15s ease, transform .1s ease;
+  }
+  .go-btn:hover{ background:#1B47B8; }
+  .go-btn:active{ transform:scale(0.97); }
+  .go-btn:disabled{ background:#A9B7D6; cursor:not-allowed; }
+  .go-btn.block{ width:100%; padding:13px 0; margin-top:14px; }
+
+  /* ---------------- results ---------------- */
+  .result-area{ margin-top:28px; max-width:900px; }
+
+  .summary-row{ display:flex; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
+  .summary-card{
+    flex:1; min-width:150px; background:var(--bg); border:1px solid var(--line); border-radius:10px;
+    padding:18px 20px; text-align:center;
+  }
+  .summary-card .num{ font-family:var(--font-display); font-weight:800; font-size:32px; line-height:1; color:var(--navy); }
+  .summary-card.critical .num{ color:var(--red); }
+  .summary-card .label{
+    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px;
+    color:var(--ink-soft); margin-top:8px;
+  }
+
+  .violation-card{
+    background:var(--bg); border:1px solid var(--line); border-left:4px solid var(--red);
+    border-radius:8px; padding:18px 20px; margin-bottom:14px;
+  }
+  .violation-card.medium{ border-left-color:var(--amber); }
+  .violation-card.low{ border-left-color:var(--blue); }
+  .violation-header{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .violation-header .risk-id{
+    font-family:var(--font-mono); font-size:11.5px; color:var(--blue); font-weight:600;
+  }
+  .violation-header .risk-name{
+    font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--ink); margin-top:3px;
+  }
+  .badge{
+    font-family:var(--font-mono); font-size:10.5px; font-weight:700; text-transform:uppercase;
+    padding:4px 10px; border-radius:12px; white-space:nowrap;
+  }
+  .badge.critical, .badge.high{ background:#FBEAEA; color:var(--red); }
+  .badge.medium{ background:#FBF1E2; color:var(--amber); }
+  .badge.low{ background:#EAF1FE; color:var(--blue); }
+
+  .function-row{
+    margin-top:12px; padding-top:12px; border-top:1px solid var(--line);
+    font-size:13px; color:var(--ink-soft);
+  }
+  .function-row b{ color:var(--ink); }
+  .tcode-chip{
+    display:inline-block; background:var(--tint); border:1px solid var(--line); border-radius:5px;
+    padding:2px 9px; margin:5px 5px 0 0; font-family:var(--font-mono); font-size:11.5px; color:var(--navy-2);
+  }
+  .role-chip{
+    display:inline-block; background:var(--tint); border:1px solid var(--line); border-radius:5px;
+    padding:2px 9px; margin:3px 4px 0 0; font-family:var(--font-mono); font-size:11px; color:var(--navy-2);
+  }
+
+  .clean-box{
+    background:#E8F7EF; border:1px solid #BEE6CE; color:var(--green);
+    border-radius:8px; padding:18px 20px; text-align:center; font-weight:600; font-size:13.5px;
+  }
+  .error-box{
+    background:#FBEAEA; border:1px solid #F0C7C7; color:var(--red);
+    border-radius:8px; padding:14px 18px; font-size:13.5px;
+  }
+  .loading-box{
+    text-align:center; color:var(--ink-soft); padding:34px 20px; font-family:var(--font-mono); font-size:13px;
+  }
+
+  /* bulk role result grouping */
+  .bulk-role-block{
+    border:1px solid var(--line); border-radius:10px; margin-bottom:16px; overflow:hidden;
+  }
+  .bulk-role-head{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    background:var(--tint-2); padding:12px 18px;
+  }
+  .bulk-role-head .rname{ font-family:var(--font-display); font-weight:700; font-size:14px; }
+  .bulk-role-head .rmeta{ font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); }
+  .bulk-role-body{ padding:16px 18px; }
+  .bulk-role-body .clean-box, .bulk-role-body .error-box{ margin:0; }
+  .bulk-role-body .violation-card{ margin-bottom:10px; }
+  .bulk-role-body .violation-card:last-child{ margin-bottom:0; }
+
+  /* ---------------- bulk user table (horizontal rows) ---------------- */
+  .user-table{ width:100%; border-collapse:collapse; margin-bottom:26px; max-width:900px; }
+  .user-table th{
+    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--ink-soft); text-align:left; padding:10px 14px; border-bottom:2px solid var(--line);
+    background:var(--tint-2);
+  }
+  .user-table td{
+    padding:12px 14px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:middle;
+  }
+  .user-table tr:last-child td{ border-bottom:none; }
+  .user-table tr:hover td{ background:var(--tint); }
+  .user-table .uname{ font-family:var(--font-mono); font-weight:600; color:var(--navy); }
+  .user-table .vcount{ font-family:var(--font-display); font-weight:700; }
+  .user-table .vcount.zero{ color:var(--green); }
+  .user-table .vcount.some{ color:var(--red); }
+  .user-table .vcount.err{ color:var(--ink-faint); font-family:var(--font-mono); font-weight:400; font-size:12px; }
+
+  /* ---------------- coming soon (kept for reuse elsewhere if needed) ---------------- */
+  .coming-soon{
+    background:var(--tint); border:1px dashed var(--line); border-radius:10px;
+    padding:56px 24px; text-align:center; max-width:640px;
+  }
+  .coming-soon .icon{ font-size:28px; display:block; margin-bottom:14px; }
+  .coming-soon h3{ font-family:var(--font-display); font-weight:700; font-size:18px; margin:0 0 8px; }
+  .coming-soon p{ font-size:13.5px; color:var(--ink-soft); line-height:1.6; margin:0; max-width:440px; margin:0 auto; }
+
+  @media (max-width:640px){
+    section{ padding:28px 18px 48px; }
+    .inquiry-row{ flex-direction:column; }
+    .go-btn{ padding:13px 0; }
+    .user-table{ font-size:12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="page-head-inner">
+    <a class="back-link" href="index.html">← Back to dashboard</a>
+    <h2>🛡️ SoD Analysis</h2>
+    <p>Segregation of Duties checks against your SAP T-code ruleset.</p>
+  </div>
+</div>
+
+<section>
+  <div class="section-inner">
+
+    <div class="tab-row">
+      <button class="tab-btn active" id="tabBtnRole" data-tab="role">Role Analysis</button>
+      <button class="tab-btn" id="tabBtnUser" data-tab="user">User Analysis</button>
+    </div>
+
+    <!-- ===================== ROLE ANALYSIS ===================== -->
+    <div class="tab-panel active" id="tabRole">
+
+      <div class="mode-row">
+        <button class="mode-btn active" id="modeBtnSingle" data-mode="single">Single Role</button>
+        <button class="mode-btn" id="modeBtnBulk" data-mode="bulk">Multiple Roles</button>
+      </div>
+
+      <!-- Single role -->
+      <div class="mode-panel active" id="modeSingle">
+        <div class="inquiry-box">
+          <div class="inquiry-row">
+            <input type="text" id="roleNameInput" placeholder="Enter SAP Role Name (e.g. Z_AP_ACCOUNTANT)">
+            <button class="go-btn" id="analyzeSingleBtn">Analyze</button>
+          </div>
+          <div class="field-hint">Fetches the role's T-codes from SAP and checks them against the SoD ruleset.</div>
+        </div>
+        <div class="result-area" id="singleResultArea"></div>
+      </div>
+
+      <!-- Bulk roles -->
+      <div class="mode-panel" id="modeBulk">
+        <div class="inquiry-box">
+          <textarea class="bulk-input" id="bulkRolesInput" placeholder="Enter multiple role names, one per line&#10;e.g.&#10;Z_AP_ACCOUNTANT&#10;Z_AR_CLERK&#10;Z_PROCUREMENT_MGR"></textarea>
+          <div class="field-hint">One role name per line (or comma-separated). Each role is checked independently.</div>
+          <button class="go-btn block" id="analyzeBulkBtn">Analyze All</button>
+        </div>
+        <div class="result-area" id="bulkResultArea"></div>
+      </div>
+
+    </div>
+
+    <!-- ===================== USER ANALYSIS ===================== -->
+    <div class="tab-panel" id="tabUser">
+
+      <div class="mode-row">
+        <button class="mode-btn active" id="userModeBtnSingle" data-mode="single">Single User</button>
+        <button class="mode-btn" id="userModeBtnBulk" data-mode="bulk">Multiple Users</button>
+      </div>
+
+      <!-- Single user -->
+      <div class="mode-panel active" id="userModeSingle">
+        <div class="inquiry-box">
+          <div class="inquiry-row">
+            <input type="text" id="userNameInput" placeholder="Enter SAP Username (e.g. S4GRC1)">
+            <button class="go-btn" id="analyzeSingleUserBtn">Analyze</button>
+          </div>
+          <div class="field-hint">Fetches all roles assigned to the user, combines their T-codes, and checks against the SoD ruleset.</div>
+        </div>
+        <div class="result-area" id="singleUserResultArea"></div>
+      </div>
+
+      <!-- Bulk users -->
+      <div class="mode-panel" id="userModeBulk">
+        <div class="inquiry-box">
+          <textarea class="bulk-input" id="bulkUsersInput" placeholder="Enter multiple usernames, one per line&#10;e.g.&#10;S4GRC1&#10;S4GRC2&#10;JDOE"></textarea>
+          <div class="field-hint">One username per line (or comma-separated). Each user's combined roles are checked independently.</div>
+          <button class="go-btn block" id="analyzeBulkUsersBtn">Analyze All</button>
+        </div>
+        <div class="result-area" id="bulkUserResultArea"></div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function(){
+
+  // ---------------- tab switching (Role / User) ----------------
+  const tabBtns = { role: document.getElementById('tabBtnRole'), user: document.getElementById('tabBtnUser') };
+  const tabPanels = { role: document.getElementById('tabRole'), user: document.getElementById('tabUser') };
+  Object.keys(tabBtns).forEach(key => {
+    tabBtns[key].addEventListener('click', () => {
+      Object.keys(tabBtns).forEach(k => {
+        tabBtns[k].classList.toggle('active', k === key);
+        tabPanels[k].classList.toggle('active', k === key);
+      });
+    });
+  });
+
+  // ---------------- mode switching: Role tab (single / bulk) ----------------
+  const modeBtns = { single: document.getElementById('modeBtnSingle'), bulk: document.getElementById('modeBtnBulk') };
+  const modePanels = { single: document.getElementById('modeSingle'), bulk: document.getElementById('modeBulk') };
+  Object.keys(modeBtns).forEach(key => {
+    modeBtns[key].addEventListener('click', () => {
+      Object.keys(modeBtns).forEach(k => {
+        modeBtns[k].classList.toggle('active', k === key);
+        modePanels[k].classList.toggle('active', k === key);
+      });
+    });
+  });
+
+  // ---------------- mode switching: User tab (single / bulk) ----------------
+  const userModeBtns = { single: document.getElementById('userModeBtnSingle'), bulk: document.getElementById('userModeBtnBulk') };
+  const userModePanels = { single: document.getElementById('userModeSingle'), bulk: document.getElementById('userModeBulk') };
+  Object.keys(userModeBtns).forEach(key => {
+    userModeBtns[key].addEventListener('click', () => {
+      Object.keys(userModeBtns).forEach(k => {
+        userModeBtns[k].classList.toggle('active', k === key);
+        userModePanels[k].classList.toggle('active', k === key);
+      });
+    });
+  });
+
+  function escapeHtml(str){
+    return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ---------------- shared renderer for one role's analysis result ----------------
+  function renderRoleResult(data, roleNameFallback){
+    if (data.error) {
+      return `<div class="error-box">${escapeHtml(data.error)}</div>`;
+    }
+    if (data.tcodeCount === 0) {
+      return `<div class="error-box">No T-codes found for role "${escapeHtml(data.role || roleNameFallback)}". Check the role name and try again.</div>`;
+    }
+
+    let html = `
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="num">${data.tcodeCount}</div>
+          <div class="label">T-codes in role</div>
+        </div>
+        <div class="summary-card ${data.violationCount > 0 ? 'critical' : ''}">
+          <div class="num">${data.violationCount}</div>
+          <div class="label">SoD violations found</div>
+        </div>
+      </div>
+    `;
+
+    if (data.violationCount === 0) {
+      html += `<div class="clean-box">✅ No Segregation of Duties conflicts found for role "${escapeHtml(data.role || roleNameFallback)}".</div>`;
+      return html;
+    }
+
+    for (const v of data.violations) {
+      const levelClass = (v.riskLevel || '').toLowerCase();
+      html += `
+        <div class="violation-card ${levelClass}">
+          <div class="violation-header">
+            <div>
+              <div class="risk-id">${escapeHtml(v.riskId)} &middot; ${escapeHtml(v.businessProcess || '')}</div>
+              <div class="risk-name">${escapeHtml(v.riskName)}</div>
+            </div>
+            <span class="badge ${levelClass}">${escapeHtml(v.riskLevel || 'N/A')}</span>
+          </div>
+      `;
+      for (const f of v.matchedFunctions) {
+        html += `
+          <div class="function-row">
+            <b>${escapeHtml(f.functionId)}</b> — ${escapeHtml(f.functionDescription)}<br/>
+            ${f.matchedTcodes.map(tc => `<span class="tcode-chip">${escapeHtml(tc)}</span>`).join('')}
+          </div>
+        `;
+      }
+      html += '</div>';
+    }
+    return html;
+  }
+
+  // ---------------- shared renderer for one user's analysis result ----------------
+  function renderUserResult(data, usernameFallback){
+    if (data.error) {
+      return `<div class="error-box">${escapeHtml(data.error)}</div>`;
+    }
+    if (!data.roleCount) {
+      return `<div class="error-box">No roles found for user "${escapeHtml(data.username || usernameFallback)}". Check the username and try again.</div>`;
+    }
+
+    let html = `
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="num">${data.roleCount}</div>
+          <div class="label">Roles assigned</div>
+        </div>
+        <div class="summary-card">
+          <div class="num">${data.tcodeCount}</div>
+          <div class="label">Combined T-codes</div>
+        </div>
+        <div class="summary-card ${data.violationCount > 0 ? 'critical' : ''}">
+          <div class="num">${data.violationCount}</div>
+          <div class="label">SoD violations found</div>
+        </div>
+      </div>
+      <div style="margin-bottom:18px;">
+        ${(data.roles || []).map(r => `<span class="role-chip">${escapeHtml(r)}</span>`).join('')}
+      </div>
+    `;
+
+    if (data.violationCount === 0) {
+      html += `<div class="clean-box">✅ No Segregation of Duties conflicts found for user "${escapeHtml(data.username || usernameFallback)}" across their assigned roles.</div>`;
+      return html;
+    }
+
+    for (const v of data.violations) {
+      const levelClass = (v.riskLevel || '').toLowerCase();
+      html += `
+        <div class="violation-card ${levelClass}">
+          <div class="violation-header">
+            <div>
+              <div class="risk-id">${escapeHtml(v.riskId)} &middot; ${escapeHtml(v.businessProcess || '')}</div>
+              <div class="risk-name">${escapeHtml(v.riskName)}</div>
+            </div>
+            <span class="badge ${levelClass}">${escapeHtml(v.riskLevel || 'N/A')}</span>
+          </div>
+      `;
+      for (const f of v.matchedFunctions) {
+        html += `
+          <div class="function-row">
+            <b>${escapeHtml(f.functionId)}</b> — ${escapeHtml(f.functionDescription)}<br/>
+            ${f.matchedTcodes.map(tc => `<span class="tcode-chip">${escapeHtml(tc)}</span>`).join('')}
+          </div>
+        `;
+      }
+      html += '</div>';
+    }
+    return html;
+  }
+
+  // ============================================================
+  // ROLE — single
+  // ============================================================
+  const roleNameInput = document.getElementById('roleNameInput');
+  const analyzeSingleBtn = document.getElementById('analyzeSingleBtn');
+  const singleResultArea = document.getElementById('singleResultArea');
+
+  async function runSingleAnalysis(){
+    const roleName = roleNameInput.value.trim();
+    if (!roleName) {
+      singleResultArea.innerHTML = '<div class="error-box">Please enter a role name.</div>';
+      return;
+    }
+    analyzeSingleBtn.disabled = true;
+    analyzeSingleBtn.textContent = 'Analyzing…';
+    singleResultArea.innerHTML = '<div class="loading-box">Fetching role T-codes from SAP and checking against ruleset…</div>';
+
+    try {
+      const res = await fetch(`/api/risk-analysis/role/${encodeURIComponent(roleName)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        singleResultArea.innerHTML = `<div class="error-box">${escapeHtml(data.error || 'Analysis failed.')}</div>`;
+      } else {
+        singleResultArea.innerHTML = renderRoleResult(data, roleName);
+      }
+    } catch (e) {
+      singleResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;
+    } finally {
+      analyzeSingleBtn.disabled = false;
+      analyzeSingleBtn.textContent = 'Analyze';
+    }
+  }
+
+  analyzeSingleBtn.addEventListener('click', runSingleAnalysis);
+  roleNameInput.addEventListener('keypress', e => { if (e.key === 'Enter') runSingleAnalysis(); });
+
+  // ============================================================
+  // ROLE — bulk
+  // ============================================================
+  const bulkRolesInput = document.getElementById('bulkRolesInput');
+  const analyzeBulkBtn = document.getElementById('analyzeBulkBtn');
+  const bulkResultArea = document.getElementById('bulkResultArea');
+
+  function parseList(raw){
+    return raw
+      .split(/[\n,]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  async function runBulkAnalysis(){
+    const roles = parseList(bulkRolesInput.value);
+    if (!roles.length) {
+      bulkResultArea.innerHTML = '<div class="error-box">Please enter at least one role name.</div>';
+      return;
+    }
+    analyzeBulkBtn.disabled = true;
+    analyzeBulkBtn.textContent = 'Analyzing…';
+    bulkResultArea.innerHTML = `<div class="loading-box">Checking ${roles.length} role(s) against the SoD ruleset…</div>`;
+
+    try {
+      const res = await fetch('/api/risk-analysis/roles-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roles })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        bulkResultArea.innerHTML = `<div class="error-box">${escapeHtml(data.error || 'Analysis failed.')}</div>`;
+        return;
+      }
+
+      const results = data.results || [];
+      const totalViolations = results.reduce((sum, r) => sum + (r.violationCount || 0), 0);
+      const rolesWithIssues = results.filter(r => (r.violationCount || 0) > 0).length;
+
+      let html = `
+        <div class="summary-row">
+          <div class="summary-card">
+            <div class="num">${results.length}</div>
+            <div class="label">Roles checked</div>
+          </div>
+          <div class="summary-card ${rolesWithIssues > 0 ? 'critical' : ''}">
+            <div class="num">${rolesWithIssues}</div>
+            <div class="label">Roles with conflicts</div>
+          </div>
+          <div class="summary-card ${totalViolations > 0 ? 'critical' : ''}">
+            <div class="num">${totalViolations}</div>
+            <div class="label">Total violations</div>
+          </div>
+        </div>
+
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>T-codes</th>
+              <th>Violations</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      for (const r of results) {
+        const vClass = r.error ? 'err' : ((r.violationCount || 0) > 0 ? 'some' : 'zero');
+        html += `
+          <tr>
+            <td class="uname">${escapeHtml(r.role)}</td>
+            <td>${typeof r.tcodeCount === 'number' ? r.tcodeCount : '—'}</td>
+            <td class="vcount ${vClass}">${r.error ? 'error' : (r.violationCount ?? '—')}</td>
+          </tr>
+        `;
+      }
+
+      html += `</tbody></table>`;
+
+      for (const r of results) {
+        if ((r.violationCount || 0) > 0 || r.error) {
+          const metaBits = [];
+          if (typeof r.tcodeCount === 'number') metaBits.push(`${r.tcodeCount} T-codes`);
+          if (typeof r.violationCount === 'number') metaBits.push(`${r.violationCount} violation(s)`);
+
+          html += `
+            <div class="bulk-role-block">
+              <div class="bulk-role-head">
+                <span class="rname">${escapeHtml(r.role)}</span>
+                <span class="rmeta">${escapeHtml(metaBits.join(' · ') || (r.error ? 'error' : ''))}</span>
+              </div>
+              <div class="bulk-role-body">${renderRoleResult(r, r.role)}</div>
+            </div>
+          `;
+        }
+      }
+
+      bulkResultArea.innerHTML = html;
+
+    } catch (e) {
+      bulkResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;
+    } finally {
+      analyzeBulkBtn.disabled = false;
+      analyzeBulkBtn.textContent = 'Analyze All';
+    }
+  }
+
+  analyzeBulkBtn.addEventListener('click', runBulkAnalysis);
+
+  // ============================================================
+  // USER — single
+  // ============================================================
+  const userNameInput = document.getElementById('userNameInput');
+  const analyzeSingleUserBtn = document.getElementById('analyzeSingleUserBtn');
+  const singleUserResultArea = document.getElementById('singleUserResultArea');
+
+  async function runSingleUserAnalysis(){
+    const username = userNameInput.value.trim();
+    if (!username) {
+      singleUserResultArea.innerHTML = '<div class="error-box">Please enter a username.</div>';
+      return;
+    }
+    analyzeSingleUserBtn.disabled = true;
+    analyzeSingleUserBtn.textContent = 'Analyzing…';
+    singleUserResultArea.innerHTML = '<div class="loading-box">Fetching user roles from SAP and checking combined T-codes against ruleset…</div>';
+
+    try {
+      const res = await fetch(`/api/risk-analysis/user/${encodeURIComponent(username)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        singleUserResultArea.innerHTML = `<div class="error-box">${escapeHtml(data.error || 'Analysis failed.')}</div>`;
+      } else {
+        singleUserResultArea.innerHTML = renderUserResult(data, username);
+      }
+    } catch (e) {
+      singleUserResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;
+    } finally {
+      analyzeSingleUserBtn.disabled = false;
+      analyzeSingleUserBtn.textContent = 'Analyze';
+    }
+  }
+
+  analyzeSingleUserBtn.addEventListener('click', runSingleUserAnalysis);
+  userNameInput.addEventListener('keypress', e => { if (e.key === 'Enter') runSingleUserAnalysis(); });
+
+  // ============================================================
+  // USER — bulk (results shown as a table, one row per user)
+  // ============================================================
+  const bulkUsersInput = document.getElementById('bulkUsersInput');
+  const analyzeBulkUsersBtn = document.getElementById('analyzeBulkUsersBtn');
+  const bulkUserResultArea = document.getElementById('bulkUserResultArea');
+
+  async function runBulkUserAnalysis(){
+    const usernames = parseList(bulkUsersInput.value);
+    if (!usernames.length) {
+      bulkUserResultArea.innerHTML = '<div class="error-box">Please enter at least one username.</div>';
+      return;
+    }
+    analyzeBulkUsersBtn.disabled = true;
+    analyzeBulkUsersBtn.textContent = 'Analyzing…';
+    bulkUserResultArea.innerHTML = `<div class="loading-box">Checking ${usernames.length} user(s) against the SoD ruleset…</div>`;
+
+    try {
+      const res = await fetch('/api/risk-analysis/users-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usernames })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        bulkUserResultArea.innerHTML = `<div class="error-box">${escapeHtml(data.error || 'Analysis failed.')}</div>`;
+        return;
+      }
+
+      const results = data.results || [];
+      const totalViolations = results.reduce((sum, r) => sum + (r.violationCount || 0), 0);
+      const usersWithIssues = results.filter(r => (r.violationCount || 0) > 0).length;
+
+      let html = `
+        <div class="summary-row">
+          <div class="summary-card">
+            <div class="num">${results.length}</div>
+            <div class="label">Users checked</div>
+          </div>
+          <div class="summary-card ${usersWithIssues > 0 ? 'critical' : ''}">
+            <div class="num">${usersWithIssues}</div>
+            <div class="label">Users with conflicts</div>
+          </div>
+          <div class="summary-card ${totalViolations > 0 ? 'critical' : ''}">
+            <div class="num">${totalViolations}</div>
+            <div class="label">Total violations</div>
+          </div>
+        </div>
+
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Roles</th>
+              <th>T-codes</th>
+              <th>Violations</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      for (const r of results) {
+        const vClass = r.error ? 'err' : ((r.violationCount || 0) > 0 ? 'some' : 'zero');
+        html += `
+          <tr>
+            <td class="uname">${escapeHtml(r.username)}</td>
+            <td>${typeof r.roleCount === 'number' ? r.roleCount : '—'}</td>
+            <td>${typeof r.tcodeCount === 'number' ? r.tcodeCount : '—'}</td>
+            <td class="vcount ${vClass}">${r.error ? 'error' : (r.violationCount ?? '—')}</td>
+          </tr>
+        `;
+      }
+
+      html += `</tbody></table>`;
+
+      // Detailed violation breakdown below the table — only for users with issues or errors
+      for (const r of results) {
+        if ((r.violationCount || 0) > 0 || r.error) {
+          const metaBits = [];
+          if (typeof r.roleCount === 'number') metaBits.push(`${r.roleCount} role(s)`);
+          if (typeof r.tcodeCount === 'number') metaBits.push(`${r.tcodeCount} T-codes`);
+          if (typeof r.violationCount === 'number') metaBits.push(`${r.violationCount} violation(s)`);
+
+          html += `
+            <div class="bulk-role-block">
+              <div class="bulk-role-head">
+                <span class="rname">${escapeHtml(r.username)}</span>
+                <span class="rmeta">${escapeHtml(metaBits.join(' · ') || (r.error ? 'error' : ''))}</span>
+              </div>
+              <div class="bulk-role-body">${renderUserResult(r, r.username)}</div>
+            </div>
+          `;
+        }
+      }
+
+      bulkUserResultArea.innerHTML = html;
+
+    } catch (e) {
+      bulkUserResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;
+    } finally {
+      analyzeBulkUsersBtn.disabled = false;
+      analyzeBulkUsersBtn.textContent = 'Analyze All';
+    }
+  }
+
+  analyzeBulkUsersBtn.addEventListener('click', runBulkUserAnalysis);
+
+})();
+</script>
+<script src="auth-guard.js"></script>
+
+</body>
+</html>
