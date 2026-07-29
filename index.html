@@ -1,354 +1,372 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CerberuS — SAP Access Governance</title>
+<title>IKAegis — SAP Access Governance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#FFFFFF;
-    --tint:#F5F6F3;
-    --tint-2:#EFF1EC;
-    --ink:#12181F;
-    --ink-soft:#5B6472;
-    --ink-faint:#8A93A0;
-    --line:#E3E5E0;
-    --navy:#122A4E;
-    --navy-2:#1B3D6E;
-    --blue:#2458D6;
-    --red:#C23B3B;
-    --amber:#C1811E;
-    --green:#1E8E5A;
-    --font-display:'Sora',sans-serif;
-    --font-body:'Inter',sans-serif;
-    --font-mono:'IBM Plex Mono',monospace;
+    --ice-1:#F5F7FA; --ice-2:#EDF2F8; --ice-3:#DCE5F0;
+    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
+    --navy:#15263F; --navy-corp:#1F497D; --navy-dark:#002060;
+    --crimson:#C33438; --green:#00B050; --gold:#FFC000; --amber:#C1811E;
+    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --shadow-sm:0 1px 3px rgba(21,38,63,0.06);
+    --shadow-md:0 4px 16px rgba(21,38,63,0.08);
+    --shadow-lg:0 12px 40px rgba(21,38,63,0.12);
+    --radius:10px;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  *{box-sizing:border-box; margin:0; padding:0;}
   body{
-    background:var(--bg); color:var(--ink); font-family:var(--font-body);
+    background:var(--ice-1); color:var(--ink); font-family:var(--font-body);
     -webkit-font-smoothing:antialiased;
   }
-  ::selection{ background:var(--navy); color:#fff; }
+  ::selection{ background:var(--navy-corp); color:#fff; }
 
-  /* ---------------- hero ---------------- */
+  /* ══════ NAV ══════ */
+  .ik-nav{
+    background:var(--navy); border-top:3px solid var(--gold);
+    padding:0 32px; position:sticky; top:0; z-index:100;
+    box-shadow:0 2px 16px rgba(21,38,63,0.3);
+  }
+  .ik-nav-inner{
+    max-width:1240px; margin:0 auto; display:flex; align-items:center;
+    justify-content:space-between; height:56px;
+  }
+  .ik-brand{
+    font-family:var(--font-display); font-weight:800; font-size:22px;
+    color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px;
+  }
+  .ik-gold{ color:var(--gold); }
+  .ik-nav-links{ display:flex; gap:4px; align-items:center; }
+  .ik-nav-links a{
+    font-family:var(--font-body); font-size:13px; font-weight:500;
+    color:#8FA3C4; text-decoration:none;
+    padding:8px 16px; border-radius:6px; transition:all .15s ease;
+  }
+  .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
+
+  /* ══════ HERO BANNER (compact) ══════ */
   .hero{
-    background:var(--navy); color:#EEF1F6;
-    padding:56px 28px 64px; text-align:center;
+    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%);
+    color:#EEF1F6; padding:28px 32px 24px;
   }
-  .hero-inner{ max-width:1180px; margin:0 auto; }
-  .hero .eyebrow-light{
-    font-family:var(--font-mono); font-size:12px; letter-spacing:2.5px;
-    text-transform:uppercase; color:#8FA3C4; display:block; margin-bottom:18px;
+  .hero-inner{ max-width:1240px; margin:0 auto; text-align:center; }
+  .hero-left h1{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(36px, 8vw, 72px);
+    letter-spacing:-1.5px; margin-bottom:6px; line-height:1;
   }
-  .mega-logo{
-    margin:0; line-height:0.95; width:100%;
-    display:flex; justify-content:center; align-items:baseline; flex-wrap:wrap;
-  }
-  .mega-logo span{
-    font-family:'Righteous',cursive; font-weight:400;
-    font-size:clamp(56px, 13vw, 150px);
-  }
-  .mega-logo .c-o{ color:#E88A3C; }
-  .mega-logo .c-s{
-    color:#C23B3B; font-size:clamp(62px, 14.3vw, 165px);
-    -webkit-text-stroke:2px #F7F5EF; text-stroke:2px #F7F5EF;
-  }
-  .hero-tag{
-    font-size:15px; color:#B9C2D6; max-width:520px; margin:22px auto 0; line-height:1.6;
-  }
-  .hero-badge{
-    display:inline-flex; align-items:center; gap:7px;
-    background:rgba(232,138,60,0.12); border:1px solid rgba(232,138,60,0.35);
-    padding:7px 16px; border-radius:20px; margin-top:20px;
-    font-family:var(--font-mono); font-size:11px; letter-spacing:1.4px;
-    text-transform:uppercase; color:#F0B27A;
-  }
-  .hero-quote{
-    font-family:var(--font-display); font-style:italic; font-weight:500;
-    font-size:18px; color:#D7DEEA; max-width:560px; margin:24px auto 0; line-height:1.6;
-  }
-  section{ padding:52px 28px; }
-  .section-inner{ max-width:1180px; margin:0 auto; }
-  section.tint{ background:var(--tint); }
+  .hero-left h1 .ik-gold{ color:var(--gold); }
+  .hero-left p{ font-family:var(--font-mono); font-size:11.5px; color:#8FA3C4; letter-spacing:1px; text-transform:uppercase; }
 
-  .eyebrow{
-    font-family:var(--font-mono); font-size:11px; letter-spacing:2px;
-    text-transform:uppercase; color:var(--blue); margin:0 0 10px; font-weight:600;
-  }
-  .section-title{
-    font-family:var(--font-display); font-weight:700; font-size:28px;
-    letter-spacing:-0.3px; margin:0 0 8px; max-width:640px; line-height:1.2;
-  }
-  .section-sub{
-    font-size:14.5px; color:var(--ink-soft); max-width:560px; line-height:1.6; margin:0 0 30px;
-  }
+  /* ══════ MAIN CONTENT ══════ */
+  .main{ max-width:1240px; margin:0 auto; padding:32px; }
 
-  /* ---------------- posture stats ---------------- */
+  /* ══════ STAT CARDS ══════ */
   .stat-row{
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:0; border-top:1px solid var(--line); margin-top:8px;
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:36px;
   }
-  .stat{
-    padding:26px 24px 0; border-right:1px solid var(--line);
+  .stat-card{
+    background:#fff; border-radius:var(--radius); padding:22px 24px;
+    box-shadow:var(--shadow-sm); border-left:4px solid var(--ice-3);
+    transition:box-shadow .2s;
   }
-  .stat:last-child{ border-right:none; }
-  .stat .v{
-    font-family:var(--font-display); font-weight:800; font-size:44px; line-height:1;
-    letter-spacing:-1px;
+  .stat-card:hover{ box-shadow:var(--shadow-md); }
+  .stat-card.navy{ border-left-color:var(--navy-corp); }
+  .stat-card.red{ border-left-color:var(--crimson); }
+  .stat-card.amber{ border-left-color:var(--amber); }
+  .stat-card.green{ border-left-color:var(--green); }
+  .stat-card .stat-value{
+    font-family:var(--font-display); font-weight:800; font-size:36px;
+    line-height:1; letter-spacing:-1px;
   }
-  .stat.red .v{ color:var(--red); }
-  .stat.amber .v{ color:var(--amber); }
-  .stat.green .v{ color:var(--green); }
-  .stat.navy .v{ color:var(--navy); }
-  .stat .l{
-    font-size:13px; color:var(--ink-soft); margin-top:8px; line-height:1.4; max-width:180px;
+  .stat-card.navy .stat-value{ color:var(--navy-corp); }
+  .stat-card.red .stat-value{ color:var(--crimson); }
+  .stat-card.amber .stat-value{ color:var(--amber); }
+  .stat-card.green .stat-value{ color:var(--green); }
+  .stat-card .stat-label{
+    font-size:12px; color:var(--slate); margin-top:8px; line-height:1.4;
+    font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.5px;
   }
 
-  /* ---------------- option cards ---------------- */
-  .option-grid{
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:16px; margin-top:8px;
+  /* ══════ SECTION HEADERS ══════ */
+  .section-header{
+    display:flex; align-items:baseline; gap:12px; margin-bottom:20px;
   }
-  .option-card{
-    display:block; text-align:left; width:100%;
-    background:var(--bg); border:1px solid var(--line); border-radius:10px;
-    padding:20px 22px; cursor:pointer; font-family:var(--font-body);
-    transition:border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+  .section-header h2{
+    font-family:var(--font-display); font-weight:700; font-size:18px;
+    color:var(--navy); letter-spacing:-0.2px;
   }
-  .option-card:hover{ border-color:var(--blue); box-shadow:0 4px 14px rgba(36,88,214,0.1); }
-  .option-card:active{ transform:scale(0.99); }
-  .option-card:focus-visible{ outline:2px solid var(--blue); outline-offset:2px; }
-  .option-card .icon{ font-size:20px; margin-bottom:12px; display:block; }
-  .option-card .title{
-    font-family:var(--font-display); font-weight:700; font-size:15.5px; color:var(--ink);
-    margin-bottom:5px;
+  .section-header .section-line{
+    flex:1; height:1px; background:var(--ice-3);
   }
-  .option-card .desc{ font-size:12.5px; color:var(--ink-soft); line-height:1.5; }
 
-  /* ---------------- inquiry ---------------- */
-  .inquiry-box{
-    background:var(--bg); border:1px solid var(--line); border-radius:10px;
-    padding:26px; box-shadow:0 1px 3px rgba(18,24,31,0.04);
+  /* ══════ ACTION CARDS (horizontal layout) ══════ */
+  .action-grid{
+    display:grid; grid-template-columns:repeat(5, 1fr);
+    gap:14px; margin-bottom:40px;
   }
-  .inquiry-row{ display:flex; gap:10px; margin-top:4px; }
-  .inquiry-row input{
-    flex:1; font-family:var(--font-body); font-size:14.5px;
-    background:var(--tint); border:1px solid var(--line); border-radius:7px;
-    padding:13px 16px; color:var(--ink); outline:none;
+  .action-card{
+    display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center;
+    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
+    padding:24px 16px; cursor:pointer; text-decoration:none; color:inherit;
+    box-shadow:var(--shadow-sm); transition:all .2s ease;
   }
-  .inquiry-row input:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
-  .inquiry-row input::placeholder{ color:var(--ink-faint); }
-  .go-btn{
+  .action-card:hover{
+    border-color:var(--navy-corp); box-shadow:var(--shadow-md);
+    transform:translateY(-2px);
+  }
+  .action-card:active{ transform:translateY(0); }
+  .action-icon{
+    width:44px; height:44px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .action-icon.navy-bg{ background:rgba(31,73,125,0.1); }
+  .action-icon.crimson-bg{ background:rgba(195,52,56,0.1); }
+  .action-icon.green-bg{ background:rgba(0,176,80,0.1); }
+  .action-icon.amber-bg{ background:rgba(193,129,30,0.1); }
+  .action-icon.gold-bg{ background:rgba(255,192,0,0.15); }
+  .action-card .action-title{
     font-family:var(--font-display); font-weight:700; font-size:14px;
-    background:var(--blue); color:#fff; border:none; border-radius:7px;
-    padding:0 24px; cursor:pointer; transition:background .15s ease, transform .1s ease;
+    color:var(--navy); margin-bottom:4px;
   }
-  .go-btn:hover{ background:#1B47B8; }
-  .go-btn:active{ transform:scale(0.97); }
-  .go-btn:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
-
-  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
-  .chip{
-    font-family:var(--font-body); font-size:12.5px; font-weight:500;
-    background:var(--tint); border:1px solid var(--line); border-radius:7px;
-    padding:8px 14px; cursor:pointer; color:var(--ink-soft);
-    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  .action-card .action-desc{
+    font-size:12.5px; color:var(--slate); line-height:1.45;
   }
-  .chip:hover{ border-color:var(--blue); color:var(--blue); background:#EEF2FE; }
 
+  /* ══════ INQUIRY BOX ══════ */
+  .inquiry-section{ margin-bottom:40px; }
+  .inquiry-box{
+    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
+    padding:24px; box-shadow:var(--shadow-sm);
+  }
+  .inquiry-row{ display:flex; gap:10px; }
+  .inquiry-row input{
+    flex:1; font-family:var(--font-body); font-size:14px;
+    background:var(--ice-1); border:1px solid var(--ice-3); border-radius:8px;
+    padding:12px 16px; color:var(--ink); outline:none;
+  }
+  .inquiry-row input:focus-visible{ outline:2px solid var(--navy-corp); outline-offset:1px; }
+  .inquiry-row input::placeholder{ color:var(--slate-light); }
+  .go-btn{
+    font-family:var(--font-display); font-weight:700; font-size:13px;
+    background:var(--navy-corp); color:#fff; border:none; border-radius:8px;
+    padding:0 24px; cursor:pointer; transition:all .15s ease;
+    box-shadow:0 2px 6px rgba(31,73,125,0.2);
+  }
+  .go-btn:hover{ background:var(--navy-dark); }
   .response-log{
-    margin-top:18px; border-top:1px solid var(--line); padding-top:16px;
-    font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft);
-    display:none; line-height:1.8;
+    margin-top:16px; border-top:1px solid var(--ice-3); padding-top:14px;
+    font-family:var(--font-mono); font-size:12px; color:var(--slate);
+    display:none; line-height:1.8; max-height:200px; overflow-y:auto;
   }
   .response-log.show{ display:block; }
-  .response-log .line{ padding-left:12px; border-left:2px solid var(--line); margin-bottom:8px; }
-  .response-log .line.q{ color:var(--navy); font-weight:600; border-left-color:var(--blue); }
+  .response-log .line{ padding:4px 0 4px 14px; border-left:2px solid var(--ice-3); margin-bottom:6px; }
+  .response-log .line.q{ color:var(--navy-corp); font-weight:600; border-left-color:var(--gold); }
 
-  /* ---------------- coverage table ---------------- */
-  .coverage{
-    background:var(--bg); border:1px solid var(--line); border-radius:10px; overflow:hidden;
-  }
-  .coverage table{ width:100%; border-collapse:collapse; }
-  .coverage th{
-    text-align:left; padding:13px 20px; background:var(--tint-2);
-    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px;
-    color:var(--ink-soft); border-bottom:1px solid var(--line);
-  }
-  .coverage td{
-    padding:14px 20px; border-bottom:1px solid var(--line); font-size:13.5px;
-  }
-  .coverage tr:last-child td{ border-bottom:none; }
-  .coverage .src{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); }
-  .flag{
-    display:inline-flex; align-items:center; gap:6px;
-    font-family:var(--font-mono); font-size:11.5px; font-weight:600;
-    padding:4px 10px; border-radius:5px;
-  }
-  .flag.live{ background:#E8F7EF; color:var(--green); }
-  .flag.pending{ background:#FBF1E2; color:var(--amber); }
-
-  /* ---------------- data panels ---------------- */
+  /* ══════ DATA PANELS ══════ */
   .panel{
-    background:var(--bg); border:1px solid var(--line); border-radius:10px; overflow:hidden;
-    margin-bottom:20px;
+    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
+    overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:20px;
   }
   .panel-head{
-    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
-    padding:18px 22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px; background:var(--ice-1); border-bottom:1px solid var(--ice-3);
   }
   .panel-head h3{
-    font-family:var(--font-display); font-weight:700; font-size:17px; margin:0;
+    font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--navy);
   }
-  .panel-head .src{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); margin-top:2px; }
   .table-scroll{ overflow-x:auto; }
-  table.data{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.data{ width:100%; border-collapse:collapse; font-size:13px; }
   table.data thead th{
-    text-align:left; padding:11px 22px; background:var(--tint);
-    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px;
-    color:var(--ink-soft); border-bottom:1px solid var(--line); white-space:nowrap;
+    text-align:left; padding:11px 22px; background:var(--navy-corp); color:#fff;
+    font-family:var(--font-mono); font-size:10px; text-transform:uppercase;
+    letter-spacing:1px; white-space:nowrap;
   }
   table.data tbody td{
-    padding:12px 22px; border-bottom:1px solid var(--line); font-family:var(--font-mono); font-size:12.5px;
+    padding:12px 22px; border-bottom:1px solid var(--ice-3);
+    font-family:var(--font-mono); font-size:12px; color:var(--slate);
   }
-  table.data tbody tr:last-child td{ border-bottom:none; }
-  table.data tbody tr:hover{ background:var(--tint); }
-  .user-id{ font-weight:600; font-family:var(--font-body); }
-  .utype{ display:inline-flex; align-items:center; gap:6px; }
-  .utype .dot{ width:6px;height:6px;border-radius:50%; }
-  .utype.A .dot{ background:var(--red); }
-  .utype.S .dot{ background:var(--blue); }
+  table.data tbody tr:hover{ background:var(--ice-2); }
+  .user-id{ font-weight:600; color:var(--ink); font-family:var(--font-body); }
+  .utype{ display:inline-flex; align-items:center; gap:6px; font-size:12px; }
+  .utype .dot{ width:7px; height:7px; border-radius:50%; }
+  .utype.A .dot{ background:var(--crimson); }
+  .utype.S .dot{ background:var(--navy-corp); }
   .utype.B .dot{ background:var(--amber); }
   .risk-tag{
-    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase;
-    padding:3px 9px; border-radius:5px; font-weight:600;
+    font-family:var(--font-mono); font-size:10px; text-transform:uppercase;
+    padding:4px 10px; border-radius:20px; font-weight:600; letter-spacing:0.5px;
   }
-  .risk-tag.high{ background:#FBEAEA; color:var(--red); }
-  .risk-tag.medium{ background:#FBF1E2; color:var(--amber); }
+  .risk-tag.high{ background:rgba(195,52,56,0.1); color:var(--crimson); }
+  .risk-tag.medium{ background:rgba(193,129,30,0.1); color:var(--amber); }
 
-  .empty-panel{ padding:40px 24px; text-align:center; }
-  .empty-panel p{ font-size:13.5px; color:var(--ink-soft); max-width:480px; margin:0 auto 8px; line-height:1.6; }
-  .empty-panel .code{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); }
-
-  /* ---------------- page routing ---------------- */
+  /* ══════ SUB-VIEWS (Locked, DevAccess) ══════ */
   .page-view{ display:none; }
   .page-view.active{ display:block; }
-  .page-head{ background:var(--navy); color:#EEF1F6; padding:28px 28px; }
-  .page-head-inner{ max-width:1180px; margin:0 auto; }
+  .page-head{
+    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%);
+    color:#EEF1F6; padding:32px;
+  }
+  .page-head-inner{ max-width:1240px; margin:0 auto; }
   .back-link{
     display:inline-flex; align-items:center; gap:6px;
-    font-family:var(--font-mono); font-size:12px; color:#B9C2D6;
+    font-family:var(--font-mono); font-size:12px; color:#8FA3C4;
     text-decoration:none; margin-bottom:14px; cursor:pointer; background:none; border:none; padding:0;
+    transition:color .15s;
   }
-  .back-link:hover{ color:#fff; }
+  .back-link:hover{ color:var(--gold); }
   .page-head h2{
-    font-family:var(--font-display); font-weight:700; font-size:26px; margin:0 0 6px;
+    font-family:var(--font-display); font-weight:800; font-size:24px; margin:0 0 6px;
   }
-  .page-head p{ font-size:13.5px; color:#B9C2D6; margin:0; max-width:520px; line-height:1.5; }
+  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; max-width:520px; line-height:1.5; }
+  section.sub-section{ padding:32px; }
+  section.sub-section .section-inner{ max-width:1240px; margin:0 auto; }
 
-  /* ---------------- form (user creation) ---------------- */
-  .form-card{
-    background:var(--bg); border:1px solid var(--line); border-radius:10px;
-    padding:26px; max-width:560px;
-  }
-  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .field{ display:flex; flex-direction:column; gap:6px; }
-  .field.full{ grid-column:1 / -1; }
-  .field label{
-    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px;
-    color:var(--ink-soft);
-  }
-  .field input, .field select{
-    font-family:var(--font-body); font-size:13.5px;
-    background:var(--tint); border:1px solid var(--line); border-radius:7px;
-    padding:10px 12px; color:var(--ink); outline:none;
-  }
-  .field input:focus-visible, .field select:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
-  .form-actions{ margin-top:20px; display:flex; align-items:center; gap:14px; }
-  .form-note{
-    margin-top:16px; font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);
-    border-top:1px dashed var(--line); padding-top:14px; display:none; line-height:1.6;
-  }
-  .form-note.show{ display:block; }
-
+  /* ══════ FOOTER ══════ */
   footer{
-    background:var(--navy); color:#8FA3C4;
-    padding:22px 28px; font-family:var(--font-mono); font-size:11px;
+    background:var(--navy); color:#8FA3C4; padding:20px 32px;
+    font-family:var(--font-mono); font-size:11px;
+    border-top:2px solid var(--gold);
   }
   .footer-inner{
-    max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+    max-width:1240px; margin:0 auto; display:flex; justify-content:space-between;
+    flex-wrap:wrap; gap:8px;
+  }
+  .footer-brand{
+    font-family:var(--font-display); font-weight:700; font-size:14px; color:#EEF1F6;
   }
 
-  @media (max-width:640px){
-    section{ padding:36px 18px; }
-    .hero{ padding:40px 18px 46px; }
-    .hero-tag{ font-size:13.5px; }
-    .section-title{ font-size:22px; }
-    .stat-row{ grid-template-columns:1fr 1fr; }
-    .stat{ border-right:none; border-bottom:1px solid var(--line); padding-bottom:20px; }
-    .inquiry-row{ flex-direction:column; }
+  /* ══════ SIGN OUT ROW ══════ */
+  .signout-row{
+    display:flex; align-items:center; gap:12px; margin-bottom:32px;
   }
-  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+  .signout-btn{
+    font-family:var(--font-mono); font-size:11px; color:#8FA3C4;
+    background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px;
+    border-radius:6px; cursor:pointer; transition:all .15s; margin-left:8px;
+  }
+  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
+
+  /* ══════ RESPONSIVE ══════ */
+  @media (max-width:900px){
+    .stat-row{ grid-template-columns:repeat(2,1fr); }
+    .hero-inner{ flex-direction:column; text-align:center; }
+    .hero-right{ text-align:center; }
+  }
+  @media (max-width:640px){
+    .stat-row{ grid-template-columns:1fr; }
+    .action-grid{ grid-template-columns:1fr; }
+    .ik-nav-inner{ height:auto; flex-direction:column; padding:10px 0; gap:8px; }
+    .inquiry-row{ flex-direction:column; }
+    .main{ padding:20px 16px; }
+  }
 </style>
 </head>
 <body>
 
+<!-- ══════ NAV ══════ -->
+<nav class="ik-nav">
+  <div class="ik-nav-inner">
+    <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
+    <div class="ik-nav-links">
+      <a href="index.html">Dashboard</a>
+      <a href="SOD.html">Risk Analytics</a>
+      <a href="create-user.html">User Creation</a>
+      <button class="signout-btn" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════ DASHBOARD VIEW ══════ -->
 <div id="view-dashboard" class="page-view active">
 
+<!-- Hero Banner (compact) -->
 <div class="hero">
   <div class="hero-inner">
-    <span class="eyebrow-light">Identity &amp; Access Governance for SAP</span>
-    <h1 class="mega-logo"><span class="c-o">Cerberu</span><span class="c-s">S</span></h1>
-    <span class="hero-badge">🛡️ Guardian of SAP Access</span>
-    <div style="margin-top:18px; font-family:var(--font-mono); font-size:11.5px; color:#8FA3C4;">
-      Signed in as <span id="heroWho">—</span> ·
-      <button onclick="logout()" style="background:none; border:none; color:#F0B27A; font-family:var(--font-mono); font-size:11.5px; cursor:pointer; text-decoration:underline; padding:0;">sign out</button>
+    <div class="hero-left">
+      <h1><span class="ik-gold">IK</span>Aegis</h1>
+      <p>SAP Access Governance Platform — Security · Compliance · Risk</p>
     </div>
   </div>
 </div>
 
-<section>
-  <div class="section-inner">
-    <p class="eyebrow">Quick actions</p>
-    <h2 class="section-title">What do you want to check?</h2>
-    <p class="section-sub">Click a card to open that report.</p>
-    <div class="option-grid">
-      <button class="option-card" data-nav="locked">
-        <span class="icon">🔒</span>
-        <span class="title">Locked Users</span>
-        <span class="desc">Every account currently locked in SAP, and why</span>
-      </button>
-      <button class="option-card" data-nav="devaccess">
-        <span class="icon">🔍</span>
-        <span class="title">S_DEVELOP Access Check</span>
-        <span class="desc">Users with S_DEVELOP authorization, activity 01 / 02</span>
-      </button>
-      <a class="option-card" href="SOD.html" target="_blank" rel="noopener">
-        <span class="icon">⚖️</span>
-        <span class="title">SoD Analytics</span>
-        <span class="desc">Segregation of Duties risk analysis across roles and users</span>
-      </a>
-      <a class="option-card" href="create-user.html" target="_blank" rel="noopener">
-        <span class="icon">👤</span>
-        <span class="title">User Creation</span>
-        <span class="desc">Create a new SAP user account — opens in a new page</span>
-      </a>
-      <a class="option-card" id="workflowCard" href="new-request.html">
-        <span class="icon">📝</span>
-        <span class="title" id="workflowCardTitle">Access Requests</span>
-        <span class="desc" id="workflowCardDesc">Request a role assignment for approval</span>
-      </a>
+<div class="main">
+
+  <!-- Security Posture Stats -->
+  <div class="section-header">
+    <h2>Security Posture</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card navy">
+      <div class="stat-value" id="mTotal">—</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-value" id="mLocked">—</div>
+      <div class="stat-label">Locked Accounts</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-value" id="mDev">—</div>
+      <div class="stat-label">S_DEVELOP Access</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-value">✓</div>
+      <div class="stat-label">System Online</div>
     </div>
   </div>
-</section>
 
-<section class="tint">
-  <div class="section-inner">
-    <p class="eyebrow">Ask the console</p>
-    <h2 class="section-title">Query your SAP security posture in plain language</h2>
+  <!-- Quick Actions -->
+  <div class="section-header">
+    <h2>Quick Actions</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="action-grid">
+    <button class="action-card" data-nav="locked">
+      <div class="action-icon crimson-bg">
+        <svg width="22" height="22" fill="none" stroke="#C33438" stroke-width="2" stroke-linecap="round"><rect x="3" y="10" width="16" height="10" rx="2"/><path d="M7 10V6a4 4 0 118 0v4"/></svg>
+      </div>
+      <div class="action-title">Locked Users</div>
+    </button>
+    <button class="action-card" data-nav="devaccess">
+      <div class="action-icon amber-bg">
+        <svg width="22" height="22" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-3"/><path d="M7 12l3 3 7-7"/></svg>
+      </div>
+      <div class="action-title">Developer Access</div>
+    </button>
+    <a class="action-card" href="SOD.html" target="_blank" rel="noopener">
+      <div class="action-icon navy-bg">
+        <svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="action-title">Risk Analytics</div>
+    </a>
+    <a class="action-card" href="create-user.html" target="_blank" rel="noopener">
+      <div class="action-icon green-bg">
+        <svg width="22" height="22" fill="none" stroke="#00B050" stroke-width="2" stroke-linecap="round"><path d="M16 18v-2a4 4 0 00-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+      </div>
+      <div class="action-title">User Creation</div>
+    </a>
+    <a class="action-card" id="workflowCard" href="new-request.html">
+      <div class="action-icon gold-bg">
+        <svg width="22" height="22" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      </div>
+      <div>
+        <div class="action-title" id="workflowCardTitle">Access Requests</div>
+      </div>
+    </a>
+  </div>
+
+  <span id="heroWho" style="display:none;"></span>
+  <div class="inquiry-section">
+    <div class="section-header">
+      <h2>Security Query</h2>
+      <div class="section-line"></div>
+    </div>
     <div class="inquiry-box">
       <div class="inquiry-row">
         <input type="text" id="queryInput" placeholder="e.g. Which users have S_DEVELOP access and are also locked?">
@@ -357,24 +375,11 @@
       <div class="response-log" id="responseLog"></div>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="section-inner">
-    <p class="eyebrow">Security posture — live snapshot</p>
-    <h2 class="section-title">Where your SAP access stands right now</h2>
-    <div class="stat-row">
-      <div class="stat navy"><div class="v" id="mTotal">—</div><div class="l">Total user accounts in the system</div></div>
-      <div class="stat red"><div class="v" id="mLocked">—</div><div class="l">Accounts currently locked (UFLAG)</div></div>
-      <div class="stat amber"><div class="v" id="mDev">—</div><div class="l">Users holding S_DEVELOP access</div></div>
-      <div class="stat green"><div class="v">👤</div><div class="l">Create new accounts via User Creation card above</div></div>
-    </div>
-  </div>
-</section>
 
 </div>
+</div>
 
-
+<!-- ══════ LOCKED USERS VIEW ══════ -->
 <div id="view-locked" class="page-view">
   <div class="page-head">
     <div class="page-head-inner">
@@ -383,7 +388,7 @@
       <p>Every account currently locked in SAP, ordered by user ID.</p>
     </div>
   </div>
-  <section>
+  <section class="sub-section">
     <div class="section-inner">
       <div class="panel">
         <div class="table-scroll">
@@ -397,6 +402,7 @@
   </section>
 </div>
 
+<!-- ══════ S_DEVELOP VIEW ══════ -->
 <div id="view-devaccess" class="page-view">
   <div class="page-head">
     <div class="page-head-inner">
@@ -405,7 +411,7 @@
       <p>Users holding S_DEVELOP authorization to create or change programs.</p>
     </div>
   </div>
-  <section>
+  <section class="sub-section">
     <div class="section-inner">
       <div class="panel">
         <div class="table-scroll">
@@ -419,9 +425,10 @@
   </section>
 </div>
 
+<!-- ══════ FOOTER ══════ -->
 <footer>
   <div class="footer-inner">
-    <span>Cerberu<span style="opacity:0.7">S</span></span>
+    <span class="footer-brand"><span class="ik-gold">IK</span>Aegis</span>
     <span id="dataSource">Data source: —</span>
   </div>
 </footer>
@@ -495,7 +502,6 @@
       .catch(() => {});
   }
 
-  // ---------------- page router ----------------
   const VIEWS = ['dashboard','locked','devaccess'];
   function showView(name){
     if(!VIEWS.includes(name)) name = 'dashboard';

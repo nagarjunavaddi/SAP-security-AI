@@ -3,67 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CerberuS — Sign in</title>
+<title>IKAegis — Sign in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FFFFFF; --tint:#F5F6F3; --ink:#12181F; --ink-soft:#5B6472; --ink-faint:#8A93A0;
-    --line:#E3E5E0; --navy:#122A4E; --blue:#2458D6; --red:#C23B3B;
+    --navy:#15263F; --navy-corp:#1F497D; --gold:#FFC000;
+    --ice-1:#F5F7FA; --ice-3:#DCE5F0;
+    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
+    --crimson:#C33438;
     --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
   body{
-    background:var(--navy); color:var(--ink); font-family:var(--font-body);
-    display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;
+    background:linear-gradient(160deg, #15263F 0%, #1F497D 60%, #15263F 100%);
+    color:var(--ink); font-family:var(--font-body);
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:20px;
     -webkit-font-smoothing:antialiased;
   }
+  .login-wrapper{ width:100%; max-width:400px; }
+
+  /* Gold accent line */
+  .gold-bar{ height:3px; background:var(--gold); border-radius:3px 3px 0 0; }
+
   .logo{
-    font-family:'Righteous',cursive; font-size:36px; text-align:center; margin-bottom:28px; color:#EEF1F6;
+    font-family:var(--font-display); font-size:42px; font-weight:800;
+    text-align:center; margin-bottom:32px; color:#EEF1F6; letter-spacing:-1px;
   }
-  .logo .c-o{ color:#E88A3C; }
-  .logo .c-s{ color:#C23B3B; }
+  .logo .ik-gold{ color:var(--gold); }
+  .logo-sub{
+    text-align:center; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:2.5px; color:#8FA3C4; margin-top:-20px; margin-bottom:28px;
+  }
+
   .card{
-    background:var(--bg); border-radius:12px; padding:32px; width:100%; max-width:380px;
-    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+    background:#fff; border-radius:0 0 12px 12px; padding:36px 32px 32px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
   }
-  h1{ font-family:var(--font-display); font-weight:700; font-size:19px; margin:0 0 6px; }
-  .sub{ font-size:13px; color:var(--ink-soft); margin:0 0 24px; }
-  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  h1{ font-family:var(--font-display); font-weight:700; font-size:20px; margin:0 0 6px; color:var(--navy); }
+  .sub{ font-size:13px; color:var(--slate); margin:0 0 28px; }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
   .field label{
-    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px; color:var(--ink-soft);
+    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase;
+    letter-spacing:1px; color:var(--slate);
   }
   .field input{
-    font-family:var(--font-body); font-size:14px; background:var(--tint);
-    border:1px solid var(--line); border-radius:7px; padding:11px 13px; color:var(--ink); outline:none;
+    font-family:var(--font-body); font-size:14px; background:var(--ice-1);
+    border:1px solid var(--ice-3); border-radius:8px; padding:12px 14px;
+    color:var(--ink); outline:none; transition:border-color .15s ease;
   }
-  .field input:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  .field input:focus-visible{ border-color:var(--navy-corp); outline:2px solid var(--navy-corp); outline-offset:1px; }
   .go-btn{
     width:100%; font-family:var(--font-display); font-weight:700; font-size:14px;
-    background:var(--blue); color:#fff; border:none; border-radius:7px;
-    padding:12px; cursor:pointer; margin-top:6px; transition:background .15s ease;
+    background:var(--navy-corp); color:#fff; border:none; border-radius:8px;
+    padding:13px; cursor:pointer; margin-top:4px;
+    transition:all .15s ease; box-shadow:0 2px 8px rgba(31,73,125,0.25);
   }
-  .go-btn:hover{ background:#1B47B8; }
+  .go-btn:hover{ background:var(--navy); box-shadow:0 4px 14px rgba(31,73,125,0.35); }
   .go-btn:disabled{ opacity:0.6; cursor:not-allowed; }
   .error{
-    margin-top:14px; font-family:var(--font-mono); font-size:12px; color:var(--red);
+    margin-top:16px; font-family:var(--font-mono); font-size:12px; color:var(--crimson);
     display:none; line-height:1.5;
   }
   .error.show{ display:block; }
   .hint{
-    margin-top:20px; padding-top:16px; border-top:1px dashed var(--line);
-    font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); line-height:1.8;
+    margin-top:22px; padding-top:18px; border-top:1px dashed var(--ice-3);
+    font-family:var(--font-mono); font-size:11px; color:var(--slate-light); line-height:1.8;
   }
 </style>
 </head>
 <body>
 
-<div>
-  <div class="logo"><span class="c-o">Cerberu</span><span class="c-s">S</span></div>
+<div class="login-wrapper">
+  <div class="logo"><span class="ik-gold">IK</span>Aegis</div>
+  <div class="logo-sub">SAP Access Governance</div>
+  <div class="gold-bar"></div>
   <div class="card">
     <h1>Sign in</h1>
-    <p class="sub">SAP Access Governance console</p>
+    <p class="sub">SAP Access Governance Platform</p>
 
     <form id="loginForm">
       <div class="field">

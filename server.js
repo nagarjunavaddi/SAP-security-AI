@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const https = require('https');
@@ -169,6 +169,24 @@ try {
   console.log('Could not load SoD ruleset:', e.message);
 }
 
+const PERMISSION_RULESET_FILE = path.join(__dirname, 'data', 'sod-ruleset-permissionlevel.json');
+let PERMISSION_RULESET = {};
+try {
+  PERMISSION_RULESET = JSON.parse(fs.readFileSync(PERMISSION_RULESET_FILE, 'utf8'));
+  console.log(`Loaded Permission-level ruleset: ${Object.keys(PERMISSION_RULESET).length} functions`);
+} catch (e) {
+  console.log('Could not load Permission-level ruleset:', e.message);
+}
+
+const CRITICAL_ACTION_RULESET_FILE = path.join(__dirname, 'data', 'critical-actions.json');
+let CRITICAL_ACTION_RULESET = [];
+try {
+  CRITICAL_ACTION_RULESET = JSON.parse(fs.readFileSync(CRITICAL_ACTION_RULESET_FILE, 'utf8'));
+  console.log(`Loaded Critical Action ruleset: ${CRITICAL_ACTION_RULESET.length} risks`);
+} catch (e) {
+  console.log('Could not load Critical Action ruleset:', e.message);
+}
+
 function getRoleTcodesFromSAP(roleName) {
   return new Promise((resolve, reject) => {
     const filter = encodeURIComponent(`RoleName eq '${roleName}'`);
@@ -203,6 +221,156 @@ function getRoleTcodesFromSAP(roleName) {
     req.on('error', (e) => reject(e));
     req.end();
   });
+}
+
+function getRoleAuthObjects(roleName) {
+  return new Promise((resolve, reject) => {
+    const filter = encodeURIComponent(`RoleName eq '${roleName}'`);
+    const options = {
+      hostname: SAP_CONFIG.hostname,
+      port: SAP_CONFIG.port,
+      path: `/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/RoleAuthObject?sap-client=${SAP_CONFIG.client}&$filter=${filter}&$format=json`,
+      method: 'GET',
+      auth: `${SAP_CONFIG.username}:${SAP_CONFIG.password}`,
+      rejectUnauthorized: false,
+      headers: { 'Accept': 'application/json' }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          console.log('===ROLE AUTH OBJECT RAW RESPONSE===');
+          console.log(data.substring(0, 500));
+          console.log('===END RAW===');
+          const parsed = JSON.parse(data);
+          const results = parsed.d.results;
+          const authObjects = results.map(r => ({
+            object: r.Object,
+            authField: r.AuthField,
+            lowValue: r.LowValue,
+            highValue: r.HighValue
+          }));
+          resolve(authObjects);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+    req.on('error', (e) => reject(e));
+    req.end();
+  });
+}
+
+// Checks if role's actual value for a field satisfies the required values list (OR logic, '*' = wildcard)
+function fieldValueMatches(requiredValues, roleValue) {
+  const val = (roleValue || '').toUpperCase();
+  for (const req of requiredValues) {
+    if (req === '*') return true;
+    if (typeof req === 'object' && req.low !== undefined) {
+      if (val >= req.low.toUpperCase() && val <= req.high.toUpperCase()) return true;
+    } else if (val === String(req).toUpperCase()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Checks ONE required object (all fields must match - AND across fields, OR within each field's values)
+function objectRequirementSatisfied(requiredObj, roleAuthObjects) {
+  const objName = requiredObj.object.toUpperCase();
+  const roleEntriesForObject = roleAuthObjects.filter(a => (a.object || '').toUpperCase() === objName);
+  if (roleEntriesForObject.length === 0) return false;
+
+  for (const fieldName of Object.keys(requiredObj.fields)) {
+    const requiredValues = requiredObj.fields[fieldName];
+    const roleEntriesForField = roleEntriesForObject.filter(a => (a.authField || '').toUpperCase() === fieldName.toUpperCase());
+    if (roleEntriesForField.length === 0) return false;
+    const matched = roleEntriesForField.some(entry => fieldValueMatches(requiredValues, entry.lowValue));
+    if (!matched) return false;
+  }
+  return true;
+}
+
+// Checks if a Function's permission requirement is satisfied (ALL required objects - AND)
+function functionPermissionSatisfied(functionId, roleAuthObjects) {
+  const actionGroups = PERMISSION_RULESET[functionId];
+  if (!actionGroups || actionGroups.length === 0) return false;
+  return actionGroups.some(group => group.objects.every(reqObj => objectRequirementSatisfied(reqObj, roleAuthObjects)));
+}
+// Returns the actual matched Object/Field/Value details for a satisfied function (for UI display)
+function getMatchedAuthDetails(functionId, roleAuthObjects) {
+  const actionGroups = PERMISSION_RULESET[functionId];
+  if (!actionGroups || actionGroups.length === 0) return [];
+  const satisfiedGroup = actionGroups.find(group => group.objects.every(reqObj => objectRequirementSatisfied(reqObj, roleAuthObjects)));
+  if (!satisfiedGroup) return [];
+
+  const perObject = [];
+  for (const reqObj of satisfiedGroup.objects) {
+    const objName = reqObj.object.toUpperCase();
+    const roleEntriesForObject = roleAuthObjects.filter(a => (a.object || '').toUpperCase() === objName);
+    let actvtValue = null;
+    const otherFields = [];
+    for (const fieldName of Object.keys(reqObj.fields)) {
+      const requiredValues = reqObj.fields[fieldName];
+      const matchedEntry = roleEntriesForObject.find(a => (a.authField || '').toUpperCase() === fieldName.toUpperCase() && fieldValueMatches(requiredValues, a.lowValue));
+      if (matchedEntry) {
+        if (fieldName.toUpperCase() === 'ACTVT') {
+          actvtValue = matchedEntry.lowValue;
+        } else {
+          otherFields.push({ field: fieldName, value: matchedEntry.lowValue });
+        }
+      }
+    }
+    perObject.push({ object: reqObj.object, actvt: actvtValue, otherFields });
+  }
+
+  const groupsByActvt = {};
+  const noActvtList = [];
+  for (const po of perObject) {
+    if (po.actvt !== null) {
+      if (!groupsByActvt[po.actvt]) groupsByActvt[po.actvt] = [];
+      groupsByActvt[po.actvt].push(po.object);
+    } else {
+      noActvtList.push(po);
+    }
+  }
+
+  const result = [];
+  for (const actvt of Object.keys(groupsByActvt)) {
+    result.push({ objects: groupsByActvt[actvt], actvt, otherFields: [] });
+  }
+  for (const po of noActvtList) {
+    result.push({ objects: [po.object], actvt: null, otherFields: po.otherFields });
+  }
+  return result;
+}
+
+// Main entry point - mirrors analyzeRoleLevelSoD but for Permission Level
+function checkObjectLevelSoD(roleAuthObjects) {
+  const violations = [];
+  for (const risk of SOD_RULESET) {
+    const matchedFunctions = [];
+    for (const func of risk.functions) {
+      if (functionPermissionSatisfied(func.functionId, roleAuthObjects)) {
+        matchedFunctions.push({
+          functionId: func.functionId,
+          functionDescription: func.functionDescription,
+          authDetails: getMatchedAuthDetails(func.functionId, roleAuthObjects)
+        });
+      }
+    }
+    if (matchedFunctions.length >= 2) {
+      violations.push({
+        riskId: risk.riskId,
+        riskName: risk.riskName,
+        riskLevel: risk.riskLevel,
+        businessProcess: risk.businessProcess,
+        matchedFunctions
+      });
+    }
+  }
+  return violations;
 }
 
 function getUserRolesFromSAP(username) {
@@ -247,17 +415,27 @@ app.get('/api/risk-analysis/user/:username', async (req, res) => {
     }
 
     let allTcodes = [];
+    let allAuthObjects = [];
     for (const role of roles) {
       const roleTcodes = await getRoleTcodesFromSAP(role);
       allTcodes = allTcodes.concat(roleTcodes);
+      try {
+        const roleAuthObjects = await getRoleAuthObjects(role);
+        allAuthObjects = allAuthObjects.concat(roleAuthObjects);
+      } catch (permErr) {
+        console.log('Permission-level fetch skipped for role', role, ':', permErr.message);
+      }
     }
 
-    const violations = analyzeRoleLevelSoD(allTcodes);
+    const actionViolations = analyzeRoleLevelSoD(allTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
+    const permissionViolations = checkObjectLevelSoD(allAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
+    const violations = [...actionViolations, ...permissionViolations];
     res.json({
       username,
       roleCount: roles.length,
       roles,
       tcodeCount: allTcodes.length,
+      authObjectCount: allAuthObjects.length,
       violationCount: violations.length,
       violations
     });
@@ -323,6 +501,35 @@ function analyzeRoleLevelSoD(roleTcodes) {
         matchedFunctions
       });
     }
+  }  return violations;
+}
+
+function checkCriticalActionRisks(roleTcodes) {
+  const tcodeSet = new Set(roleTcodes.map(t => (t || '').toUpperCase()));
+  const violations = [];
+
+  for (const risk of CRITICAL_ACTION_RULESET) {
+    const matchedFunctions = [];
+    for (const func of risk.functions) {
+      const matchedTcodes = (func.tcodes || []).filter(tc => tcodeSet.has(tc.toUpperCase()));
+      if (matchedTcodes.length > 0) {
+        matchedFunctions.push({
+          functionId: func.functionId,
+          functionDescription: func.functionDescription,
+          matchedTcodes
+        });
+      }
+    }
+    // A single critical action is a violation
+    if (matchedFunctions.length >= 1) {
+      violations.push({
+        riskId: risk.riskId,
+        riskName: risk.riskName,
+        riskLevel: risk.riskLevel,
+        businessProcess: risk.businessProcess,
+        matchedFunctions
+      });
+    }
   }
   return violations;
 }
@@ -330,15 +537,26 @@ function analyzeRoleLevelSoD(roleTcodes) {
 app.get('/api/risk-analysis/role/:roleName', async (req, res) => {
   const roleName = req.params.roleName.trim();
   try {
-    const roleTcodes = await getRoleTcodesFromSAP(roleName);
-    if (!roleTcodes.length) {
-      return res.json({ role: roleName, tcodeCount: 0, violations: [], message: 'No T-codes found for this role.' });
-    }
-    const violations = analyzeRoleLevelSoD(roleTcodes);
+    const roleTcodes = await getRoleTcodesFromSAP(roleName);    const actionViolations = roleTcodes.length
+      ? analyzeRoleLevelSoD(roleTcodes).map(v => ({ ...v, riskType: 'Action Level' }))
+      : [];
+
+    const criticalActionViolations = roleTcodes.length ? checkCriticalActionRisks(roleTcodes).map(v => ({ ...v, riskType: "Critical Action" })) : [];
+    let permissionViolations = [];
+    let authObjectCount = 0;
+    try {
+      const roleAuthObjects = await getRoleAuthObjects(roleName);
+      authObjectCount = roleAuthObjects.length;
+      permissionViolations = checkObjectLevelSoD(roleAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
+    } catch (permErr) {
+      console.log('Permission-level check skipped:', permErr.message);
+    }    const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations];
+
     res.json({
       role: roleName,
       tcodeCount: roleTcodes.length,
       tcodes: roleTcodes,
+      authObjectCount,
       violationCount: violations.length,
       violations
     });
@@ -741,4 +959,64 @@ app.post('/api/create-users-bulk', async (req, res) => {
   res.json({ results });
 });
 
+// TEMP DIAGNOSTIC - checks why a specific risk did/didn't match at permission level
+app.get('/api/debug-permission/:roleName/:riskId', async (req, res) => {
+  try {
+    const roleAuthObjects = await getRoleAuthObjects(req.params.roleName);
+    const risk = SOD_RULESET.find(r => r.riskId === req.params.riskId);
+    if (!risk) return res.status(404).json({ error: 'Risk not found' });
+
+    const debug = risk.functions.map(func => {
+      const requiredObjects = PERMISSION_RULESET[func.functionId] || [];
+      const objectStatus = requiredObjects.map(reqObj => {
+        const roleHasObject = roleAuthObjects.filter(a => (a.object || '').toUpperCase() === reqObj.object.toUpperCase());
+        return {
+          object: reqObj.object,
+          roleHasThisObject: roleHasObject.length > 0,
+          roleEntriesFound: roleHasObject,
+          requiredFields: reqObj.fields,
+          satisfied: objectRequirementSatisfied(reqObj, roleAuthObjects)
+        };
+      });
+      return {
+        functionId: func.functionId,
+        overallSatisfied: functionPermissionSatisfied(func.functionId, roleAuthObjects),
+        objectStatus
+      };
+    });
+
+    res.json({ role: req.params.roleName, riskId: req.params.riskId, authObjectCount: roleAuthObjects.length, debug });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// TEMP DIAGNOSTIC - summary of permission-level satisfaction across ALL functions matched at action level
+app.get('/api/debug-permission-summary/:roleName', async (req, res) => {
+  try {
+    const roleAuthObjects = await getRoleAuthObjects(req.params.roleName);
+    const roleTcodes = await getRoleTcodesFromSAP(req.params.roleName);
+    const actionViolations = analyzeRoleLevelSoD(roleTcodes);
+
+    const functionIds = new Set();
+    actionViolations.forEach(v => v.matchedFunctions.forEach(f => functionIds.add(f.functionId)));
+
+    const summary = Array.from(functionIds).map(fid => {
+      const actionGroups = PERMISSION_RULESET[fid] || [];
+      const bestGroup = actionGroups.find(g => g.objects.every(o => objectRequirementSatisfied(o, roleAuthObjects)))
+                       || actionGroups[0] || { action: 'N/A', objects: [] };
+      return {
+        functionId: fid,
+        requiredObjectCount: bestGroup.objects.length,
+        satisfied: functionPermissionSatisfied(fid, roleAuthObjects),
+        objectsMissing: bestGroup.objects.filter(o => !objectRequirementSatisfied(o, roleAuthObjects)).map(o => o.object),
+        checkedAction: bestGroup.action
+      };
+    });
+
+    res.json({ role: req.params.roleName, authObjectCount: roleAuthObjects.length, functionsChecked: summary.length, summary });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 app.listen(3000, () => console.log('Running on http://localhost:3000'));

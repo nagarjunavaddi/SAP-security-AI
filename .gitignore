@@ -1,2 +1,7 @@
 node_modules/
+.env*.bak.* 
 .env
+*.ps1
+*.txt
+git
+node
