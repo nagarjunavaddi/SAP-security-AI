@@ -1,34 +1,5 @@
-/**
- * auth-guard.js
- * Include this on any page that requires login.
- * Optionally set `window.REQUIRED_ROLE = 'requester' | 'approver'` before
- * this script runs to also enforce role-specific access.
- */
-(function () {
-  fetch('/api/session')
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-      if (!data.loggedIn) {
-        window.location.href = 'login.html';
-        return;
-      }
-      window.currentUser = data;
+(function () { fetch('/api/session').then(function (res) { return res.json(); }).then(function (data) { if (!data.loggedIn) { window.location.href = 'login.html'; return; } window.currentUser = data; fetch('/api/my-profile').then(function(r){return r.json();}).then(function(p){ window.currentUser.ikRole = p.role; window.currentUser.permissions = p.permissions || []; if (window.REQUIRED_ROLE && p.role !== 'admin' && window.REQUIRED_ROLE !== p.role) { window.location.href = 'index.html'; return; } var nav=document.querySelector('.ik-nav-links'); if(nav){ var links=nav.querySelectorAll('a'); for(var i=0;i<links.length;i++){links[i].style.display='none';} } var cc=document.getElementById('configCard'); if(cc && p.role==='admin'){cc.style.display='';} document.dispatchEvent(new CustomEvent('auth-ready', { detail: data })); }).catch(function(){ var nav=document.querySelector('.ik-nav-links'); if(nav){ var links=nav.querySelectorAll('a'); for(var i=0;i<links.length;i++){links[i].style.display='none';} } var cc=document.getElementById('configCard'); if(cc && p.role==='admin'){cc.style.display='';} document.dispatchEvent(new CustomEvent('auth-ready', { detail: data })); }); }).catch(function () { window.location.href = 'login.html'; }); window.logout = function () { fetch('/api/logout', { method: 'POST' }).then(function () { window.location.href = 'login.html'; }); }; })();
 
-      if (window.REQUIRED_ROLE && data.role !== window.REQUIRED_ROLE) {
-        // Logged in, but wrong role for this page — send them to their own home.
-        window.location.href = (data.role === 'approver') ? 'approvals.html' : 'new-request.html';
-        return;
-      }
 
-      document.dispatchEvent(new CustomEvent('auth-ready', { detail: data }));
-    })
-    .catch(function () {
-      window.location.href = 'login.html';
-    });
 
-  window.logout = function () {
-    fetch('/api/logout', { method: 'POST' }).then(function () {
-      window.location.href = 'login.html';
-    });
-  };
-})();
+

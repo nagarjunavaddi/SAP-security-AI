@@ -357,7 +357,7 @@
 
 <script src="auth-guard.js"></script>
 <script>
-window.REQUIRED_ROLE = 'requester';
+// window.REQUIRED_ROLE = 'requester';
 
 document.addEventListener('auth-ready', function(e){
   document.getElementById('whoName').textContent = e.detail.displayName + ' (' + e.detail.username + ')';
@@ -373,9 +373,10 @@ function fmtDate(iso){
 }
 
 function loadRequests(){
-  fetch('/api/requests')
+  fetch('/api/approval-requests')
     .then(res => res.json())
-    .then(list => {
+    .then(data => {
+      var list = data.requests || data;
       const body = document.getElementById('reqBody');
       const empty = document.getElementById('emptyMsg');
       if(!list.length){
@@ -390,8 +391,8 @@ function loadRequests(){
           sapNote = '<div class="sap-note">SAP sync: ' + escapeHtml(r.sapSyncStatus) + ' — ' + escapeHtml(r.sapSyncMessage || '') + '</div>';
         }
         return '<tr>' +
-          '<td>' + escapeHtml(r.sapUsername) + '</td>' +
-          '<td>' + escapeHtml(r.roleName) + '</td>' +
+          '<td>' + escapeHtml(r.sapUsername?r.sapUsername:r.requestedBy) + '</td>' +
+          '<td>' + escapeHtml(r.role?r.role:r.roleName) + '</td>' +
           '<td><span class="badge ' + r.status + '">' + r.status + '</span>' + sapNote + '</td>' +
           '<td>' + fmtDate(r.requestedAt) + '</td>' +
         '</tr>';
@@ -405,15 +406,15 @@ document.getElementById('reqForm').addEventListener('submit', function(e){
   const btn = document.getElementById('submitBtn');
   const note = document.getElementById('reqNote');
   note.classList.remove('show','error','success');
-  btn.disabled = true;
-
-  const payload = {
+  btn.disabled = true;  const payload = {
     sapUsername: document.getElementById('sapUsername').value.trim(),
     roleName: document.getElementById('roleName').value.trim(),
     reason: document.getElementById('reason').value.trim()
   };
 
-  fetch('/api/requests', {
+  if(payload.reason.length < 10){btn.disabled=false;note.classList.add('show','error');note.textContent='Business Reason must be at least 10 characters.';return;}
+
+  fetch('/api/sap-user-check/'+encodeURIComponent(payload.sapUsername)).then(function(r){return r.json();}).then(function(chk){if(!chk.exists){btn.disabled=false;note.classList.add('show','error');note.textContent='SAP User '+payload.sapUsername+' not found in SAP system.';return;}fetch('/api/sap-role-check/'+encodeURIComponent(payload.roleName)).then(function(r2){return r2.json();}).then(function(rchk){if(!rchk.exists){btn.disabled=false;note.classList.add('show','error');note.textContent='Role '+payload.roleName+' not found in SAP system.';return;}fetch('/api/approval-requests',{
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
   })
     .then(res => res.json().then(data => ({ ok: res.ok, data })))
@@ -433,8 +434,10 @@ document.getElementById('reqForm').addEventListener('submit', function(e){
     .catch(err => {
       btn.disabled = false;
       note.classList.add('show','error');
-      note.textContent = 'Not connected — /api/requests unreachable. ' + err.message;
+      note.textContent = 'Not connected — /api/approval-requests unreachable. ' + err.message;
     });
+  }).catch(function(err2){btn.disabled=false;note.classList.add('show','error');note.textContent='Role check failed: '+err2.message;});
+  }).catch(function(e){btn.disabled=false;note.classList.add('show','error');note.textContent='SAP check failed: '+e.message;});
 });
 </script>
 

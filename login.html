@@ -81,8 +81,6 @@
   <div class="logo-sub">SAP Access Governance</div>
   <div class="gold-bar"></div>
   <div class="card">
-    <h1>Sign in</h1>
-    <p class="sub">SAP Access Governance Platform</p>
 
     <form id="loginForm">
       <div class="field">
@@ -97,11 +95,7 @@
       <div class="error" id="loginError"></div>
     </form>
 
-    <div class="hint">
-      Demo accounts — change these in server.js before sharing this tool:<br>
-      requester / Req@12345<br>
-      approver / App@12345
-    </div>
+
   </div>
 </div>
 
@@ -131,7 +125,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e){
         err.classList.add('show');
         return;
       }
-      window.location.href = (data.role === 'approver') ? 'approvals.html' : 'new-request.html';
+      window.location.href = (data.role === 'user') ? 'new-request.html' : 'index.html';
     })
     .catch(() => {
       btn.disabled = false;

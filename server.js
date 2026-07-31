@@ -14,23 +14,11 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 8 * 60 * 60 * 1000 } // 8 hour login
 }));
+app.use(express.static(__dirname));
 
 // ===================== AUTH (Phase 1) =====================
 // Hardcoded demo users -- swap for a real user store / SAP-backed auth later.
-const USERS = {
-  requester: { password: 'Req@12345', role: 'requester', displayName: 'Access Requester' },
-  approver:  { password: 'App@12345', role: 'approver',  displayName: 'Security Approver' }
-};
-
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body || {};
-  const u = USERS[username];
-  if (!u || u.password !== password) {
-    return res.status(401).json({ error: 'Invalid username or password.' });
-  }
-  req.session.user = { username, role: u.role, displayName: u.displayName };
-  res.json({ success: true, username, role: u.role, displayName: u.displayName });
-});
+// Login is now handled by routes/approval-routes.js (file-based from data/ikaegis-users.json)
 
 app.post('/api/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
@@ -45,60 +33,6 @@ function requireLogin(req, res, next) {
   if (!req.session.user) return res.status(401).json({ error: 'Not logged in.' });
   next();
 }
-function requireRole(role) {
-  return (req, res, next) => {
-    if (!req.session.user) return res.status(401).json({ error: 'Not logged in.' });
-    if (req.session.user.role !== role) {
-      return res.status(403).json({ error: `Forbidden -- requires ${role} role.` });
-    }
-    next();
-  };
-}
-
-// Serve static files AFTER session is set up. Public pages (login.html, the
-// auth-guard script) must stay reachable without a session; protected pages
-// self-check via /api/session client-side (see auth-guard.js).
-app.use(express.static('.'));
-
-// ===================== REQUEST + APPROVAL WORKFLOW (Phase 2) =====================
-// Local JSON file store -- no DB needed for this scale.
-const REQUESTS_FILE = path.join(__dirname, 'data', 'requests.json');
-
-function ensureRequestsFile() {
-  const dir = path.dirname(REQUESTS_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(REQUESTS_FILE)) fs.writeFileSync(REQUESTS_FILE, '[]');
-}
-function readRequests() {
-  ensureRequestsFile();
-  try { return JSON.parse(fs.readFileSync(REQUESTS_FILE, 'utf8')); }
-  catch (e) { return []; }
-}
-function writeRequests(list) {
-  ensureRequestsFile();
-  fs.writeFileSync(REQUESTS_FILE, JSON.stringify(list, null, 2));
-}
-
-// Requester creates a role-assignment request
-app.post('/api/requests', requireRole('requester'), (req, res) => {
-  const { sapUsername, roleName, reason } = req.body || {};
-  if (!sapUsername || !roleName) {
-    return res.status(400).json({ error: 'sapUsername and roleName are required.' });
-  }
-  const list = readRequests();
-  const newReq = {
-    id: Date.now().toString(),
-    sapUsername: sapUsername.trim(),
-    roleName: roleName.trim(),
-    reason: (reason || '').trim(),
-    requestedBy: req.session.user.username,
-    requestedAt: new Date().toISOString(),
-    status: 'pending' // pending | approved | rejected
-  };
-  list.push(newReq);
-  writeRequests(list);
-  res.json({ success: true, request: newReq });
-});
 
 // List requests -- requester sees only their own, approver sees everything
 app.get('/api/requests', requireLogin, (req, res) => {
@@ -108,47 +42,8 @@ app.get('/api/requests', requireLogin, (req, res) => {
 });
 
 // Approve -- triggers SAP role assignment (see assignSapRoleInSAP below)
-app.post('/api/requests/:id/approve', requireRole('approver'), async (req, res) => {
-  const list = readRequests();
-  const item = list.find(r => r.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'Request not found.' });
-  if (item.status !== 'pending') return res.status(400).json({ error: 'Request already processed.' });
-
-  item.status = 'approved';
-  item.approvedBy = req.session.user.username;
-  item.approvedAt = new Date().toISOString();
-
-  try {
-    const sapResult = await assignSapRoleInSAP(item.sapUsername, item.roleName);
-    item.sapSyncStatus = 'success';
-    item.sapSyncMessage = (sapResult && (sapResult.Message || sapResult.message)) || 'Role assigned in SAP.';
-  } catch (e) {
-    // Phase 3 (SEGW RoleAssign entity) may not be built yet -- approval still
-    // records, but flags that SAP sync did not go through.
-    item.sapSyncStatus = 'pending';
-    item.sapSyncMessage = 'SAP sync not completed: ' + e.message;
-  }
-
-  writeRequests(list);
-  res.json({ success: true, request: item });
-});
 
 // Reject
-app.post('/api/requests/:id/reject', requireRole('approver'), (req, res) => {
-  const { reason } = req.body || {};
-  const list = readRequests();
-  const item = list.find(r => r.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'Request not found.' });
-  if (item.status !== 'pending') return res.status(400).json({ error: 'Request already processed.' });
-
-  item.status = 'rejected';
-  item.rejectedBy = req.session.user.username;
-  item.rejectedAt = new Date().toISOString();
-  item.rejectReason = (reason || '').trim();
-
-  writeRequests(list);
-  res.json({ success: true, request: item });
-});
 
 // SAP Connection Config
 const SAP_CONFIG = {
@@ -713,6 +608,8 @@ function getDevAccessUsersFromSAP() {
   });
 }
 
+app.get('/api/sap-user-check/:userId', async (req, res) => { try { const userId = req.params.userId.toUpperCase(); const roles = await getUserRolesFromSAP(userId); if (roles && roles.length > 0) { res.json({ exists: true, userId: userId, roleCount: roles.length }); } else { res.json({ exists: false, userId: userId }); } } catch (err) { res.json({ exists: false, userId: req.params.userId.toUpperCase(), error: err.message }); } });
+app.get('/api/sap-role-check/:roleName', async (req, res) => { try { const roleName = req.params.roleName.toUpperCase(); const tcodes = await getRoleTcodesFromSAP(roleName); if (tcodes && tcodes.length > 0) { res.json({ exists: true, roleName: roleName, tcodeCount: tcodes.length }); } else { res.json({ exists: false, roleName: roleName }); } } catch (err) { res.json({ exists: false, roleName: req.params.roleName.toUpperCase(), error: err.message }); } });
 app.get('/api/sap-data', async (req, res) => {
   try {
     const lockedResult = await getLockedUsersFromSAP();
@@ -1019,4 +916,9 @@ app.get('/api/debug-permission-summary/:roleName', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// ── IKAegis Approval Workflow Routes ──
+app.assignSapRole = assignSapRoleInSAP; require('./routes/approval-routes')(app);
+
 app.listen(3000, () => console.log('Running on http://localhost:3000'));
+

@@ -3,64 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IKAegis — Approvals</title>
+<title>IKAegis — Approval Queue</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#FFFFFF; --tint:#F5F7FA; --tint-2:#EDF2F8; --ink:#12181F; --ink-soft:#5A6A85; --ink-faint:#8A93A0;
-    --line:#DCE5F0; --navy:#15263F; --blue:#1F497D; --red:#C33438; --amber:#C1811E; --green:#00B050;
-    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{ background:var(--bg); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
-
-  .page-head{ background:var(--navy); color:#EEF1F6; padding:28px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; }
-  .page-head h2{ font-family:var(--font-display); font-weight:700; font-size:24px; margin:0 0 6px; }
-  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; }
-  .who{ font-family:var(--font-mono); font-size:12px; color:#B9C2D6; text-align:right; }
-  .who button{
-    display:block; margin-top:8px; background:none; border:1px solid rgba(255,255,255,0.25);
-    color:#EEF1F6; font-family:var(--font-mono); font-size:11px; padding:6px 12px; border-radius:6px; cursor:pointer;
-  }
-  .who button:hover{ border-color:#fff; }
-
-  section{ padding:36px 28px; max-width:1000px; margin:0 auto; }
-  h3.list-title{ font-family:var(--font-display); font-weight:700; font-size:17px; margin:0 0 14px; }
-
-  .queue{ display:flex; flex-direction:column; gap:14px; margin-bottom:40px; }
-  .req-card{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:18px 20px; }
-  .req-top{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px; }
-  .req-title{ font-family:var(--font-display); font-weight:700; font-size:15px; }
-  .req-meta{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); }
-  .req-reason{ font-size:13px; color:var(--ink-soft); margin:8px 0 14px; line-height:1.5; }
-  .req-actions{ display:flex; gap:10px; }
-  .btn{
-    font-family:var(--font-display); font-weight:700; font-size:13px; border:none; border-radius:7px;
-    padding:9px 18px; cursor:pointer;
-  }
-  .btn.approve{ background:var(--green); color:#fff; }
-  .btn.approve:hover{ background:#009040; }
-  .btn.reject{ background:var(--tint-2); color:var(--red); border:1px solid var(--line); }
-  .btn.reject:hover{ background:#FBEAEA; }
-  .btn:disabled{ opacity:0.6; cursor:not-allowed; }
-  .empty{ padding:24px 16px; color:var(--ink-faint); font-size:13px; font-family:var(--font-mono); background:var(--bg); border:1px solid var(--line); border-radius:10px; }
-
-  .coverage{ background:var(--bg); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
-  table{ width:100%; border-collapse:collapse; }
-  th{
-    text-align:left; padding:12px 16px; background:var(--tint-2); font-family:var(--font-mono);
-    font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:var(--ink-soft); border-bottom:1px solid var(--line);
-  }
-  td{ padding:12px 16px; border-bottom:1px solid var(--line); font-size:13px; }
-  tr:last-child td{ border-bottom:none; }
-  .badge{ display:inline-block; font-family:var(--font-mono); font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; }
-  .badge.approved{ background:#E5F5EC; color:var(--green); }
-  .badge.rejected{ background:#FBEAEA; color:var(--red); }
-  .sap-note{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); margin-top:2px; }
-
-  /* ══════ IKAegis Enterprise Design System ══════ */
   :root{
     --bg:#FFFFFF;
     --ice-1:#F5F7FA; --ice-2:#EDF2F8; --ice-3:#DCE5F0;
@@ -73,361 +19,386 @@
     --shadow-lg:0 12px 40px rgba(21,38,63,0.12);
     --radius:10px;
   }
-
-  /* ── Nav Bar ── */
-  .ik-nav{
-    background:var(--navy); border-top:3px solid var(--gold);
-    padding:0 28px; position:sticky; top:0; z-index:100;
-    box-shadow:0 2px 12px rgba(21,38,63,0.25);
-  }
-  .ik-nav-inner{
-    max-width:1200px; margin:0 auto; display:flex; align-items:center;
-    justify-content:space-between; height:56px;
-  }
-  .ik-brand{
-    font-family:var(--font-display); font-weight:800; font-size:22px;
-    color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px;
-  }
-  .ik-gold{ color:var(--gold); }
-  .ik-nav-links{ display:flex; gap:6px; align-items:center; }
-  .ik-nav-links a{
-    font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase;
-    letter-spacing:1px; color:#8FA3C4; text-decoration:none;
-    padding:8px 14px; border-radius:6px; transition:all .15s ease;
-  }
-  .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
-  .ik-nav-links a.active{ color:#fff; background:rgba(255,255,255,0.12); }
-
-  /* ── Updated common elements ── */
-  body{ background:var(--ice-1); color:var(--ink); }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--ice-1); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
   ::selection{ background:var(--navy-corp); color:#fff; }
 
-  .page-head{
-    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%);
-    color:#EEF1F6; padding:36px 28px 40px;
-  }
-  .page-head-inner{ max-width:1200px; margin:0 auto; }
-  .page-head h2{
-    font-family:var(--font-display); font-weight:800; font-size:28px;
-    margin:0 0 8px; letter-spacing:-0.3px;
-  }
-  .page-head p{ font-size:14px; color:#B9C2D6; margin:0; max-width:560px; line-height:1.6; }
+  .ik-nav{ background:var(--navy); border-top:3px solid var(--gold); padding:0 32px; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(21,38,63,0.3); }
+  .ik-nav-inner{ max-width:1240px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:56px; }
+  .ik-brand{ font-family:var(--font-display); font-weight:800; font-size:22px; color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px; }
+  .ik-gold{ color:var(--gold); }
+  .ik-nav-links{ display:flex; gap:4px; align-items:center; }
+  .ik-nav-links a{ font-family:var(--font-body); font-size:13px; font-weight:500; color:#8FA3C4; text-decoration:none; padding:8px 16px; border-radius:6px; transition:all .15s ease; }
+  .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; margin-left:8px; }
+  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
 
-  section{ padding:44px 28px; }
-  .section-inner{ max-width:1200px; margin:0 auto; }
-  section.tint{ background:var(--ice-2); }
+  .page-head{ background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%); color:#EEF1F6; padding:32px; }
+  .page-head-inner{ max-width:1240px; margin:0 auto; }
+  .page-head h2{ font-family:var(--font-display); font-weight:800; font-size:24px; margin:0 0 6px; }
+  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; max-width:520px; line-height:1.5; }
 
-  .eyebrow{
-    font-family:var(--font-mono); font-size:11px; letter-spacing:2.5px;
-    text-transform:uppercase; color:var(--navy-corp); margin:0 0 10px; font-weight:600;
-  }
-  .section-title{
-    font-family:var(--font-display); font-weight:800; font-size:26px;
-    letter-spacing:-0.3px; margin:0 0 8px; color:var(--navy); line-height:1.25;
-  }
-  .section-sub{
-    font-size:14px; color:var(--slate); max-width:560px; line-height:1.6; margin:0 0 28px;
-  }
+  .main{ max-width:1240px; margin:0 auto; padding:32px; }
 
-  /* ── Cards & Panels ── */
-  .option-card{
-    display:block; text-align:left; width:100%;
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    padding:24px; cursor:pointer; font-family:var(--font-body);
-    box-shadow:var(--shadow-sm);
-    transition:all .2s ease;
-  }
-  .option-card:hover{
-    border-color:var(--navy-corp); box-shadow:var(--shadow-md);
-    transform:translateY(-2px);
-  }
-  .option-card .icon{ font-size:24px; margin-bottom:14px; display:block; }
-  .option-card .title{
-    font-family:var(--font-display); font-weight:700; font-size:15px;
-    color:var(--navy); margin-bottom:6px;
-  }
-  .option-card .desc{ font-size:13px; color:var(--slate); line-height:1.5; }
+  .stat-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:36px; }
+  .stat-card{ background:#fff; border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow-sm); border-left:4px solid var(--ice-3); transition:box-shadow .2s; }
+  .stat-card:hover{ box-shadow:var(--shadow-md); }
+  .stat-card.navy{ border-left-color:var(--navy-corp); }
+  .stat-card.red{ border-left-color:var(--crimson); }
+  .stat-card.amber{ border-left-color:var(--amber); }
+  .stat-card.green{ border-left-color:var(--green); }
+  .stat-card .stat-value{ font-family:var(--font-display); font-weight:800; font-size:36px; line-height:1; letter-spacing:-1px; }
+  .stat-card.navy .stat-value{ color:var(--navy-corp); }
+  .stat-card.red .stat-value{ color:var(--crimson); }
+  .stat-card.amber .stat-value{ color:var(--amber); }
+  .stat-card.green .stat-value{ color:var(--green); }
+  .stat-card .stat-label{ font-size:12px; color:var(--slate); margin-top:8px; line-height:1.4; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.5px; }
 
-  .panel{
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    overflow:hidden; box-shadow:var(--shadow-sm);
-  }
-  .panel-head{
-    padding:18px 24px; border-bottom:1px solid var(--ice-3);
-    background:var(--ice-1);
-  }
+  .section-header{ display:flex; align-items:baseline; gap:12px; margin-bottom:20px; }
+  .section-header h2{ font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--navy); letter-spacing:-0.2px; }
+  .section-header .section-line{ flex:1; height:1px; background:var(--ice-3); }
 
-  /* ── Tables ── */
-  table.data thead th, .coverage th{
-    background:var(--navy-corp); color:#fff;
-    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase;
-    letter-spacing:1px; padding:12px 20px; border-bottom:none;
-  }
-  table.data tbody td, .coverage td{
-    padding:13px 20px; border-bottom:1px solid var(--ice-3); font-size:13.5px; color:var(--slate);
-  }
+  .filter-bar{ display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .filter-btn{ font-family:var(--font-mono); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; padding:8px 18px; border-radius:6px; border:1px solid var(--ice-3); background:#fff; color:var(--slate); cursor:pointer; transition:all .15s ease; }
+  .filter-btn:hover{ border-color:var(--navy-corp); color:var(--navy-corp); }
+  .filter-btn.active{ background:var(--navy-corp); color:#fff; border-color:var(--navy-corp); }
+  .filter-count{ display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; border-radius:9px; font-size:10px; font-weight:700; margin-left:6px; padding:0 5px; }
+  .filter-btn.active .filter-count{ background:rgba(255,255,255,0.25); color:#fff; }
+  .filter-btn:not(.active) .filter-count{ background:var(--ice-2); color:var(--slate); }
+
+  .panel{ background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:20px; }
+  .table-scroll{ overflow-x:auto; }
+  table.data{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.data thead th{ text-align:left; padding:11px 18px; background:var(--navy-corp); color:#fff; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
+  table.data tbody td{ padding:12px 18px; border-bottom:1px solid var(--ice-3); font-family:var(--font-mono); font-size:12px; color:var(--slate); vertical-align:middle; }
   table.data tbody tr:hover{ background:var(--ice-2); }
 
-  /* ── Buttons ── */
-  .go-btn{
-    font-family:var(--font-display); font-weight:700; font-size:14px;
-    background:var(--navy-corp); color:#fff; border:none; border-radius:8px;
-    padding:12px 28px; cursor:pointer;
-    transition:all .15s ease; box-shadow:0 2px 8px rgba(31,73,125,0.25);
-  }
-  .go-btn:hover{ background:var(--navy-dark); transform:translateY(-1px); box-shadow:0 4px 12px rgba(31,73,125,0.3); }
-  .go-btn:active{ transform:translateY(0); }
+  .status-badge{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; padding:4px 10px; border-radius:20px; font-weight:600; letter-spacing:0.5px; display:inline-block; }
+  .status-badge.pending{ background:rgba(195,52,56,0.1); color:var(--crimson); }
+  .status-badge.approved{ background:rgba(0,176,80,0.1); color:var(--green); }
+  .status-badge.rejected{ background:rgba(193,129,30,0.1); color:var(--amber); }
+  .status-badge.manager_approved{ background:rgba(31,73,125,0.1); color:var(--navy-corp); }
 
-  /* ── Stats ── */
-  .stat-row{
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:16px; margin-top:12px;
-  }
-  .stat{
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    padding:24px; box-shadow:var(--shadow-sm);
-    border-right:none;
-  }
-  .stat .v{
-    font-family:var(--font-display); font-weight:800; font-size:42px; line-height:1;
-    letter-spacing:-1px; color:var(--navy-corp);
-  }
-  .stat.red .v{ color:var(--crimson); }
-  .stat.amber .v{ color:var(--amber); }
-  .stat.green .v{ color:var(--green); }
-  .stat.navy .v{ color:var(--navy-corp); }
-  .stat .l{ font-size:13px; color:var(--slate); margin-top:10px; line-height:1.4; }
+  .action-btns{ display:flex; gap:6px; }
+  .btn-approve, .btn-reject{ font-family:var(--font-display); font-weight:700; font-size:11px; padding:6px 14px; border-radius:6px; border:none; cursor:pointer; transition:all .15s ease; letter-spacing:0.2px; }
+  .btn-approve{ background:var(--green); color:#fff; box-shadow:0 2px 6px rgba(0,176,80,0.2); }
+  .btn-approve:hover{ background:#009944; }
+  .btn-reject{ background:transparent; color:var(--crimson); border:1px solid var(--crimson); }
+  .btn-reject:hover{ background:rgba(195,52,56,0.08); }
 
-  /* ── Inquiry Box ── */
-  .inquiry-box{
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    padding:28px; box-shadow:var(--shadow-sm);
-  }
-  .inquiry-row input{
-    background:var(--ice-1); border:1px solid var(--ice-3); border-radius:8px;
-    padding:14px 18px; font-size:14.5px;
-  }
-  .inquiry-row input:focus-visible{ outline:2px solid var(--navy-corp); outline-offset:1px; }
+  .req-id{ font-weight:600; color:var(--navy-corp); }
+  .req-user{ font-weight:600; color:var(--ink); font-family:var(--font-body); }
+  .req-role{ font-family:var(--font-mono); font-size:11px; color:var(--navy); font-weight:600; }
+  .req-just{ max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:var(--font-body); font-size:12px; }
+  .req-date{ font-size:11px; color:var(--slate-light); }
+  .decided-info{ font-size:10px; color:var(--slate-light); margin-top:2px; }
+  .level-info{ font-size:9px; color:var(--slate-light); font-style:italic; }
 
-  /* ── Chips ── */
-  .chip{
-    background:var(--ice-1); border:1px solid var(--ice-3); border-radius:8px;
-    padding:8px 16px; font-size:12.5px; color:var(--slate);
-  }
-  .chip:hover{ border-color:var(--navy-corp); color:var(--navy-corp); background:var(--ice-2); }
+  .empty-state{ text-align:center; padding:60px 24px; color:var(--slate-light); }
+  .empty-state svg{ margin-bottom:16px; opacity:0.4; }
+  .empty-state h3{ font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--slate); margin-bottom:6px; }
+  .empty-state p{ font-size:13px; }
 
-  /* ── Risk Tags & Badges ── */
-  .risk-tag{
-    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase;
-    padding:4px 10px; border-radius:5px; font-weight:600;
-  }
-  .risk-tag.high, .risk-tag.HIGH{ background:#FBEAEA; color:var(--crimson); }
-  .risk-tag.medium, .risk-tag.MEDIUM{ background:#FBF1E2; color:var(--amber); }
-  .badge.approved{ background:#E5F5EC; color:var(--green); }
-  .badge.rejected{ background:#FBEAEA; color:var(--crimson); }
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(21,38,63,0.5); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.show{ display:flex; }
+  .modal{ background:#fff; border-radius:var(--radius); width:440px; max-width:92vw; box-shadow:var(--shadow-lg); overflow:hidden; }
+  .modal-header{ padding:20px 24px 16px; border-bottom:1px solid var(--ice-3); }
+  .modal-header h3{ font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--navy); }
+  .modal-header p{ font-size:12px; color:var(--slate); margin-top:4px; font-family:var(--font-mono); }
+  .modal-body{ padding:20px 24px; }
+  .modal-body label{ display:block; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--slate); margin-bottom:8px; }
+  .modal-body textarea{ width:100%; height:80px; font-family:var(--font-body); font-size:13px; border:1px solid var(--ice-3); border-radius:8px; padding:12px; color:var(--ink); resize:vertical; outline:none; background:var(--ice-1); }
+  .modal-body textarea:focus{ outline:2px solid var(--navy-corp); outline-offset:1px; }
+  .modal-footer{ padding:16px 24px; border-top:1px solid var(--ice-3); display:flex; justify-content:flex-end; gap:10px; }
+  .modal-cancel{ font-family:var(--font-display); font-weight:600; font-size:13px; padding:8px 20px; border-radius:6px; border:1px solid var(--ice-3); background:#fff; color:var(--slate); cursor:pointer; }
+  .modal-cancel:hover{ border-color:var(--slate); }
+  .modal-confirm{ font-family:var(--font-display); font-weight:700; font-size:13px; padding:8px 20px; border-radius:6px; border:none; color:#fff; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+  .modal-confirm.approve-action{ background:var(--green); }
+  .modal-confirm.approve-action:hover{ background:#009944; }
+  .modal-confirm.reject-action{ background:var(--crimson); }
+  .modal-confirm.reject-action:hover{ background:#a12a2e; }
 
-  /* ── Footer ── */
-  footer{
-    background:var(--navy); color:#8FA3C4;
-    padding:20px 28px; font-family:var(--font-mono); font-size:11px;
-    border-top:2px solid var(--gold);
-  }
-  .footer-inner{
-    max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
-  }
+  .toast{ position:fixed; bottom:24px; right:24px; z-index:300; padding:14px 24px; border-radius:8px; font-family:var(--font-body); font-size:13px; font-weight:600; color:#fff; box-shadow:var(--shadow-lg); transform:translateY(100px); opacity:0; transition:all .3s ease; }
+  .toast.show{ transform:translateY(0); opacity:1; }
+  .toast.success{ background:var(--green); }
+  .toast.error{ background:var(--crimson); }
+
+  footer{ background:var(--navy); color:#8FA3C4; padding:20px 32px; font-family:var(--font-mono); font-size:11px; border-top:2px solid var(--gold); }
+  .footer-inner{ max-width:1240px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
   .footer-brand{ font-family:var(--font-display); font-weight:700; font-size:14px; color:#EEF1F6; }
-  .footer-brand .footer-aegis{ color:#EEF1F6; }
-  .footer-brand .ik-gold, .footer-brand span:first-child{ color:var(--gold); }
 
-  /* ── Form elements ── */
-  .field input, .field select{
-    background:var(--ice-1); border:1px solid var(--ice-3); border-radius:8px;
-    padding:11px 14px; font-size:14px; color:var(--ink);
-  }
-  .field input:focus-visible, .field select:focus-visible{
-    outline:2px solid var(--navy-corp); outline-offset:1px;
-  }
-  .field label{
-    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase;
-    letter-spacing:1px; color:var(--slate);
-  }
-
-  /* ── Coverage table ── */
-  .coverage{
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    overflow:hidden; box-shadow:var(--shadow-sm);
-  }
-
-  /* ── Back links ── */
-  .back-link{
-    font-family:var(--font-mono); font-size:12px; color:#B9C2D6;
-    text-decoration:none; margin-bottom:14px; cursor:pointer; background:none; border:none; padding:0;
-  }
-  .back-link:hover{ color:var(--gold); }
-
-  /* ── Flags ── */
-  .flag.live{ background:#E5F5EC; color:var(--green); }
-  .flag.pending{ background:#FBF1E2; color:var(--amber); }
-
-  /* ── Approve/Reject buttons ── */
-  .btn.approve{ background:var(--green); color:#fff; border-radius:8px; }
-  .btn.approve:hover{ background:#009040; }
-  .btn.reject{ background:var(--ice-1); color:var(--crimson); border:1px solid var(--ice-3); border-radius:8px; }
-  .btn.reject:hover{ background:#FBEAEA; }
-
-  /* ── Request cards ── */
-  .req-card{
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    padding:20px 24px; box-shadow:var(--shadow-sm);
-  }
-
-  /* ── Empty states ── */
-  .empty{ background:var(--ice-1); border:1px solid var(--ice-3); border-radius:var(--radius); color:var(--slate); }
-  .empty-panel p{ color:var(--slate); }
-
-  /* ── Mobile ── */
-  @media (max-width:640px){
-    .ik-nav-inner{ height:auto; flex-direction:column; padding:12px 0; gap:10px; }
-    .ik-nav-links{ flex-wrap:wrap; justify-content:center; }
-    .stat-row{ grid-template-columns:1fr; }
-    .option-grid{ grid-template-columns:1fr; }
-  }
-
+  @media (max-width:900px){ .stat-row{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:640px){ .stat-row{ grid-template-columns:1fr; } .ik-nav-inner{ height:auto; flex-direction:column; padding:10px 0; gap:8px; } .main{ padding:20px 16px; } .action-btns{ flex-direction:column; } }
 </style>
 </head>
 <body>
+
 <nav class="ik-nav">
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
     <div class="ik-nav-links">
       <a href="index.html">Dashboard</a>
-      <a href="SOD.html">SoD Analytics</a>
+      <a href="SOD.html">Risk Analytics</a>
       <a href="create-user.html">User Creation</a>
+      <span id='navUser' style='font-family:var(--font-mono);font-size:11px;color:#8FA3C4;margin-right:4px;'></span>
+      <button class="signout-btn" onclick="logout()">Sign out</button>
     </div>
   </div>
 </nav>
 
-
 <div class="page-head">
-  <div>
-    <a href="index.html" style="display:inline-block; font-family:var(--font-mono); font-size:12px; color:#B9C2D6; text-decoration:none; margin-bottom:14px;">← Back to dashboard</a>
+  <div class="page-head-inner">
+    <a href='index.html' style='color:#8FA3C4;font-family:var(--font-mono);font-size:13px;text-decoration:none;display:inline-block;margin-bottom:8px;'>&larr; Back to dashboard</a>
     <h2>Approval Queue</h2>
-    <p>Review pending role-assignment requests before they sync to SAP.</p>
-  </div>
-  <div class="who">
-    <span id="whoName">—</span>
-    <button onclick="logout()">Sign out</button>
+    <p>Review, approve or reject pending access requests routed to you.</p>
   </div>
 </div>
 
-<section>
-  <h3 class="list-title">Pending</h3>
-  <div class="queue" id="pendingQueue"></div>
-  <div class="empty" id="emptyPending" style="display:none;">Nothing waiting on approval.</div>
-
-  <h3 class="list-title">History</h3>
-  <div class="coverage">
-    <table>
-      <thead><tr><th>SAP user</th><th>Role</th><th>Requested by</th><th>Status</th></tr></thead>
-      <tbody id="historyBody"></tbody>
-    </table>
-    <div class="empty" id="emptyHistory" style="display:none;">No processed requests yet.</div>
+<div class="main">
+  <div class="stat-row">
+    <div class="stat-card red"><div class="stat-value" id="sPending">&mdash;</div><div class="stat-label">Pending</div></div>
+    <div class="stat-card green"><div class="stat-value" id="sApproved">&mdash;</div><div class="stat-label">Approved</div></div>
+    <div class="stat-card amber"><div class="stat-value" id="sRejected">&mdash;</div><div class="stat-label">Rejected</div></div>
+    <div class="stat-card navy"><div class="stat-value" id="sTotal">&mdash;</div><div class="stat-label">Total Requests</div></div>
   </div>
-</section>
+
+  <div class="section-header"><h2>Requests</h2><div class="section-line"></div></div>
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All<span class="filter-count" id="fcAll">0</span></button>
+    <button class="filter-btn" data-filter="pending">Pending<span class="filter-count" id="fcPending">0</span></button>
+    <button class="filter-btn" data-filter="approved">Approved<span class="filter-count" id="fcApproved">0</span></button>
+    <button class="filter-btn" data-filter="rejected">Rejected<span class="filter-count" id="fcRejected">0</span></button>
+  </div>
+
+  <div class="panel">
+    <div class="table-scroll">
+      <table class="data">
+        <thead><tr><th>Request ID</th><th>Requester</th><th>SAP User</th><th>Role</th><th>Justification</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+        <tbody id="reqBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <svg width="48" height="48" fill="none" stroke="#8A95A8" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="10" width="36" height="28" rx="3"/><path d="M6 18h36M18 10V6M30 10V6"/></svg>
+      <h3>No requests found</h3>
+      <p>There are no requests matching the current filter.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="actionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Approve Request</h3>
+      <p id="modalSubtitle">REQ-XXXX</p>
+    </div>
+    <div class="modal-body">
+      <label for="modalComments">Comments (optional)</label>
+      <textarea id="modalComments" placeholder="Add a note for the requester..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" id="modalCancel">Cancel</button>
+      <button class="modal-confirm approve-action" id="modalConfirm">Approve</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="footer-inner">
+    <span class="footer-brand"><span class="ik-gold">IK</span>Aegis</span>
+    <span>Approval Workflow Engine</span>
+  </div>
+</footer>
 
 <script src="auth-guard.js"></script>
 <script>
-window.REQUIRED_ROLE = 'approver';
+(function(){
+  var ALL_REQUESTS = [];
+  var currentFilter = 'all';
+  var pendingAction = null;
+  var MY_USERNAME = '';
+  var MY_ROLE = '';
 
-document.addEventListener('auth-ready', function(e){
-  document.getElementById('whoName').textContent = e.detail.displayName + ' (' + e.detail.username + ')';
-  loadRequests();
-});
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
 
-function escapeHtml(s){
-  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function fmtDate(iso){
-  try { return new Date(iso).toLocaleString(); } catch(e){ return iso; }
-}
+  function fmtDate(iso){
+    if(!iso) return '\u2014';
+    var d = new Date(iso);
+    var dd = String(d.getDate()).padStart(2,'0');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return dd + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ', ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
 
-function loadRequests(){
-  fetch('/api/requests')
-    .then(res => res.json())
-    .then(list => {
-      const pending = list.filter(r => r.status === 'pending');
-      const done = list.filter(r => r.status !== 'pending');
+  /* --- WHO CAN ACT on this request? --- */
+  function canAct(r){
+    if(r.status === 'pending'){
+      /* Level 1: only assigned manager (approver) or admin */
+      return r.approver === MY_USERNAME || MY_ROLE === 'admin';
+    }
+    if(r.status === 'manager_approved'){
+      /* Level 2: only role owner or admin */
+      return r.roleOwner === MY_USERNAME || MY_ROLE === 'admin';
+    }
+    return false;
+  }
 
-      const queueEl = document.getElementById('pendingQueue');
-      document.getElementById('emptyPending').style.display = pending.length ? 'none' : 'block';
-      queueEl.innerHTML = pending.map(r => `
-        <div class="req-card" data-id="${r.id}">
-          <div class="req-top">
-            <div class="req-title">${escapeHtml(r.sapUsername)} → ${escapeHtml(r.roleName)}</div>
-            <div class="req-meta">requested by ${escapeHtml(r.requestedBy)} · ${fmtDate(r.requestedAt)}</div>
-          </div>
-          <div class="req-reason">${escapeHtml(r.reason) || '<em>No reason provided.</em>'}</div>
-          <div class="req-actions">
-            <button class="btn approve" data-action="approve">Approve</button>
-            <button class="btn reject" data-action="reject">Reject</button>
-          </div>
-        </div>
-      `).join('');
+  function updateStats(){
+    var pend = ALL_REQUESTS.filter(function(r){return r.status==='pending' || r.status==='manager_approved';}).length;
+    var appr = ALL_REQUESTS.filter(function(r){return r.status==='approved';}).length;
+    var rej  = ALL_REQUESTS.filter(function(r){return r.status==='rejected';}).length;
+    document.getElementById('sPending').textContent = pend;
+    document.getElementById('sApproved').textContent = appr;
+    document.getElementById('sRejected').textContent = rej;
+    document.getElementById('sTotal').textContent = ALL_REQUESTS.length;
+    document.getElementById('fcAll').textContent = ALL_REQUESTS.length;
+    document.getElementById('fcPending').textContent = pend;
+    document.getElementById('fcApproved').textContent = appr;
+    document.getElementById('fcRejected').textContent = rej;
+  }
 
-      const histBody = document.getElementById('historyBody');
-      document.getElementById('emptyHistory').style.display = done.length ? 'none' : 'block';
-      histBody.innerHTML = done.map(r => {
-        let sapNote = '';
-        if(r.status === 'approved' && r.sapSyncStatus){
-          sapNote = '<div class="sap-note">SAP sync: ' + escapeHtml(r.sapSyncStatus) + ' — ' + escapeHtml(r.sapSyncMessage || '') + '</div>';
-        }
-        if(r.status === 'rejected' && r.rejectReason){
-          sapNote = '<div class="sap-note">Reason: ' + escapeHtml(r.rejectReason) + '</div>';
-        }
-        return '<tr>' +
-          '<td>' + escapeHtml(r.sapUsername) + '</td>' +
-          '<td>' + escapeHtml(r.roleName) + '</td>' +
-          '<td>' + escapeHtml(r.requestedBy) + '</td>' +
-          '<td><span class="badge ' + r.status + '">' + r.status + '</span>' + sapNote + '</td>' +
-        '</tr>';
-      }).join('');
+  function renderTable(){
+    var filtered = currentFilter === 'all'
+      ? ALL_REQUESTS
+      : (currentFilter === 'pending'
+        ? ALL_REQUESTS.filter(function(r){ return r.status === 'pending' || r.status === 'manager_approved'; })
+        : ALL_REQUESTS.filter(function(r){ return r.status === currentFilter; }));
 
-      wireActions();
+    var tbody = document.getElementById('reqBody');
+    var empty = document.getElementById('emptyState');
+
+    if(filtered.length === 0){
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(function(r){
+      var showButtons = canAct(r);
+      var actions;
+      if(showButtons){
+        var levelLabel = r.status === 'manager_approved' ? '<div class=\"level-info\">Role Owner Approval</div>' : '<div class=\"level-info\">Manager Approval</div>';
+        actions = '<div class="action-btns">'
+          + '<button class="btn-approve" onclick="window._doAction(\'' + esc(r.id) + '\',\'approve\',\'' + esc(r.role) + '\')">Approve</button>'
+          + '<button class="btn-reject" onclick="window._doAction(\'' + esc(r.id) + '\',\'reject\',\'' + esc(r.role) + '\')">Reject</button>'
+          + '</div>' + levelLabel;
+      } else if(r.status === 'pending' || r.status === 'manager_approved'){
+        /* Actionable but NOT by this user */
+        var waitMsg = r.status === 'pending' ? 'Awaiting Manager' : 'Awaiting Role Owner';
+        actions = '<span class="decided-info">' + waitMsg + '</span>';
+      } else {
+        actions = '<span class="decided-info">' + (r.managerDecidedBy ? 'Manager: ' + esc(r.managerDecidedBy) + (r.managerComments ? ' — ' + esc(r.managerComments) : '') + '<br>' : '') + (r.decidedBy ? (r.status==='approved' ? 'Role Owner: ' : 'Rejected by: ') + esc(r.decidedBy) + (r.comments ? ' — ' + esc(r.comments) : '') : '') + '</span>';
+      }
+
+      return '<tr>'
+        + '<td class="req-id">' + esc(r.id) + '</td>'
+        + '<td class="req-user">' + esc(r.requestedByName || r.requestedBy) + '</td>'
+        + '<td class="req-sapuser">' + esc(r.sapUsername || r.userId || '\u2014') + '</td>'
+        + '<td class="req-role">' + esc(r.role) + '</td>'
+        + '<td class="req-just" title="' + esc(r.justification) + '">' + esc(r.justification || '\u2014') + '</td>'
+        + '<td><span class="status-badge ' + r.status + '">' + r.status.replace('_',' ') + '</span></td>'
+        + '<td class="req-date">' + fmtDate(r.requestedAt) + '</td>'
+        + '<td>' + actions + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  window._doAction = function(id, action, role){
+    pendingAction = { id: id, action: action, role: role };
+    document.getElementById('modalTitle').textContent = action === 'approve' ? 'Approve Request' : 'Reject Request';
+    document.getElementById('modalSubtitle').textContent = id + ' \u2014 ' + role;
+    document.getElementById('modalComments').value = '';
+    var btn = document.getElementById('modalConfirm');
+    btn.textContent = action === 'approve' ? 'Approve' : 'Reject';
+    btn.className = 'modal-confirm ' + (action === 'approve' ? 'approve-action' : 'reject-action');
+    btn.disabled = false;
+    document.getElementById('actionModal').classList.add('show');
+  };
+
+  document.getElementById('modalCancel').addEventListener('click', function(){
+    document.getElementById('actionModal').classList.remove('show');
+    pendingAction = null;
+  });
+  document.getElementById('actionModal').addEventListener('click', function(e){
+    if(e.target === e.currentTarget){ e.currentTarget.classList.remove('show'); pendingAction = null; }
+  });
+
+  document.getElementById('modalConfirm').addEventListener('click', function(){
+    if(!pendingAction) return;
+    var id = pendingAction.id;
+    var action = pendingAction.action;
+    var comments = document.getElementById('modalComments').value.trim();
+    var btn = document.getElementById('modalConfirm');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    fetch('/api/approval-requests/' + encodeURIComponent(id), {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action: action, comments: comments })
     })
-    .catch(() => {});
-}
-
-function wireActions(){
-  document.querySelectorAll('.req-card').forEach(card => {
-    const id = card.dataset.id;
-    card.querySelectorAll('.btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const action = btn.dataset.action;
-        card.querySelectorAll('.btn').forEach(b => b.disabled = true);
-
-        let body = {};
-        let url = '/api/requests/' + id + '/' + action;
-        if(action === 'reject'){
-          const reason = prompt('Reason for rejection (optional):') || '';
-          body = { reason };
-        }
-
-        fetch(url, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-        })
-          .then(res => res.json().then(data => ({ ok: res.ok, data })))
-          .then(({ ok, data }) => {
-            if(!ok){ alert(data.error || 'Action failed.'); }
-            loadRequests();
-          })
-          .catch(err => {
-            alert('Not connected: ' + err.message);
-            card.querySelectorAll('.btn').forEach(b => b.disabled = false);
-          });
-      });
+    .then(function(res){
+      if(!res.ok) return res.json().then(function(d){ throw new Error(d.error || 'Failed'); });
+      return res.json();
+    })
+    .then(function(data){
+      document.getElementById('actionModal').classList.remove('show');
+      pendingAction = null;
+      showToast(data.message || 'Request ' + action + 'd successfully', 'success');
+      loadRequests();
+    })
+    .catch(function(err){
+      showToast(err.message || 'Action failed', 'error');
+      btn.disabled = false;
+      btn.textContent = action === 'approve' ? 'Approve' : 'Reject';
     });
   });
-}
+
+  function showToast(msg, type){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type + ' show';
+    setTimeout(function(){ t.classList.remove('show'); }, 3500);
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderTable();
+    });
+  });
+
+  function loadRequests(){
+    fetch('/api/approval-requests')
+      .then(function(res){
+        if(!res.ok) throw new Error('Not authenticated or server error');
+        return res.json();
+      })
+      .then(function(data){
+        ALL_REQUESTS = data.requests || [];
+        updateStats();
+        renderTable();
+      })
+      .catch(function(err){
+        console.error('Failed to load requests:', err);
+        document.getElementById('reqBody').innerHTML = '';
+        document.getElementById('emptyState').style.display = 'block';
+        document.querySelector('#emptyState h3').textContent = 'Unable to load requests';
+        document.querySelector('#emptyState p').textContent = err.message;
+      });
+  }
+
+  /* Wait for auth-guard to set currentUser, THEN load */
+  document.addEventListener('auth-ready', function(e){
+    document.getElementById('navUser').textContent=e.detail.displayName || e.detail.username;
+    MY_USERNAME = (e.detail.username || '').toUpperCase();
+    MY_ROLE = window.currentUser && window.currentUser.ikRole ? window.currentUser.ikRole : '';
+    loadRequests();
+  });
+})();
 </script>
 
 </body>

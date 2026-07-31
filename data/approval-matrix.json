@@ -1,0 +1,14 @@
+{
+  "userManagers": {
+    "S4GRC1": "MANAGER1",
+    "JDOE": "MANAGER1",
+    "NAGARJUNA": "BHARGAV",
+    "NAG1": "VENKATA"
+  },
+  "roleOwners": {
+    "Z_AP_ACCOUNTANT": "MANAGER1",
+    "Z_AR_CLERK": "MANAGER1",
+    "Z_SOD_TEST2": "VENKATA"
+  },
+  "defaultApprover": "IKSEC2"
+}

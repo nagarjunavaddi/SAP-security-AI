@@ -277,7 +277,7 @@
       <a href="index.html">Dashboard</a>
       <a href="SOD.html">Risk Analytics</a>
       <a href="create-user.html">User Creation</a>
-      <button class="signout-btn" onclick="logout()">Sign out</button>
+      <span id='navUser' style='font-family:var(--font-display);font-weight:600;font-size:12px;color:var(--gold);letter-spacing:0.3px;'></span><button class="signout-btn" onclick="logout()">Sign out</button>
     </div>
   </div>
 </nav>
@@ -359,9 +359,8 @@
         <div class="action-title" id="workflowCardTitle">Access Requests</div>
       </div>
     </a>
-  </div>
-
-  <span id="heroWho" style="display:none;"></span>
+    <a class='action-card' id='inboxCard' href='approvals.html' style='display:none;position:relative;'><div class='action-icon crimson-bg'><svg width='22' height='22' fill='none' stroke='#C33438' stroke-width='2' stroke-linecap='round'><path d='M22 12h-6l-2 3H10l-2-3H2'/><path d='M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z'/></svg></div><div><div class='action-title'>Approval Inbox</div><span id='inboxBadge' style='position:absolute;top:10px;right:10px;background:#C33438;color:#fff;font-family:Sora,sans-serif;font-weight:800;font-size:11px;min-width:22px;height:22px;border-radius:11px;display:none;align-items:center;justify-content:center;padding:0 6px;'>0</span></div></a>
+    <a class="action-card" id="configCard" href="approval-config.html" style="display:none;"><div class="action-icon" style="background:#EAF1FE;"><svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="action-title">Approval Config</div></a></div><span id="heroWho" style="display:none;"></span>
   <div class="inquiry-section">
     <div class="section-header">
       <h2>Security Query</h2>
@@ -553,22 +552,36 @@
 })();
 
 document.addEventListener('auth-ready', function(e){
+  document.getElementById('navUser').textContent=e.detail.displayName || e.detail.username;
   document.getElementById('heroWho').textContent = e.detail.displayName + ' (' + e.detail.username + ')';
   const card = document.getElementById('workflowCard');
   const title = document.getElementById('workflowCardTitle');
-  const desc = document.getElementById('workflowCardDesc');
+
   if(e.detail.role === 'approver'){
     card.setAttribute('href', 'approvals.html');
     title.textContent = 'Approval Queue';
-    desc.textContent = 'Review and approve pending role requests';
-  } else {
-    card.setAttribute('href', 'new-request.html');
-    title.textContent = 'Access Requests';
-    desc.textContent = 'Request a role assignment for approval';
-  }
+} else {
+      card.setAttribute('href', 'new-request.html');
+      title.textContent = 'Access Requests';
+
+    }
+    var inboxCard=document.getElementById('inboxCard');
+    if(e.detail.role==='admin'||e.detail.role==='manager'||e.detail.role==='role_owner'){
+      inboxCard.style.display='';
+      fetch('/api/approval-stats').then(function(r){
+        return r.json();
+      }).then(function(d){
+        var badge=document.getElementById('inboxBadge');
+        if(d.pending>0){
+          badge.textContent=d.pending;
+          badge.style.display='flex';
+        }
+      }).catch(function(){});
+    }
 });
 </script>
 <script src="auth-guard.js"></script>
 
 </body>
 </html>
+
