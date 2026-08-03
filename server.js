@@ -18,7 +18,7 @@ app.use(express.static(__dirname));
 
 // ===================== AUTH (Phase 1) =====================
 // Hardcoded demo users -- swap for a real user store / SAP-backed auth later.
-// Login is now handled by routes/approval-routes.js (file-based from data/ikaegis-users.json)
+// Login is now handled by routes/approval-routes.js (PostgreSQL via db.js)
 
 app.post('/api/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
