@@ -240,6 +240,9 @@
   }
   .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
   .ik-nav-links a.active{ color:#fff; background:rgba(255,255,255,0.12); }
+  .nav-user{ font-family:var(--font-body); font-size:13px; font-weight:600; color:var(--gold); margin-right:8px; }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
+  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
 
   /* ── Updated common elements ── */
   body{ background:var(--ice-1); color:var(--ink); }
@@ -443,9 +446,8 @@
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
     <div class="ik-nav-links">
-      <a href="index.html">Dashboard</a>
-      <a href="SOD.html">SoD Analytics</a>
-      <a href="create-user.html">User Creation</a>
+      <span class="nav-user" id="navUser"></span>
+      <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">SIGN OUT</button>
     </div>
   </div>
 </nav>
@@ -787,6 +789,7 @@
       });
   });
 })();
+fetch('/api/my-profile').then(r=>r.json()).then(u=>{var n=document.getElementById('navUser');if(n)n.textContent=u.displayName||u.username;}).catch(()=>{});
 </script>
 
 <script src="auth-guard.js"></script>

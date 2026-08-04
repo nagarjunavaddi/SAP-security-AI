@@ -1,0 +1,274 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKAegis — Audit Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --ice-1:#F5F7FA; --ice-2:#EDF2F8; --ice-3:#DCE5F0;
+    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
+    --navy:#15263F; --navy-corp:#1F497D; --navy-dark:#002060;
+    --crimson:#C33438; --green:#00B050; --gold:#FFC000; --amber:#C1811E;
+    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --shadow-sm:0 1px 3px rgba(21,38,63,0.06);
+    --shadow-md:0 4px 16px rgba(21,38,63,0.08);
+    --shadow-lg:0 12px 40px rgba(21,38,63,0.12);
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--ice-1); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--navy-corp); color:#fff; }
+  .ik-nav{ background:var(--navy); border-top:3px solid var(--gold); padding:0 32px; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(21,38,63,0.3); }
+  .ik-nav-inner{ max-width:1240px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:56px; }
+  .ik-brand{ font-family:var(--font-display); font-weight:800; font-size:22px; color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px; }
+  .ik-gold{ color:var(--gold); }
+  .ik-nav-links{ display:flex; gap:4px; align-items:center; }
+  .nav-user{ font-family:var(--font-body); font-size:13px; font-weight:600; color:var(--gold); margin-right:8px; }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
+  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
+  .page-head{ background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%); color:#EEF1F6; padding:32px; }
+  .page-head-inner{ max-width:1240px; margin:0 auto; }
+  .page-head-inner a{ color:var(--gold); font-size:13px; text-decoration:none; font-weight:500; }
+  .page-head-inner a:hover{ text-decoration:underline; }
+  .page-head h2{ font-family:var(--font-display); font-weight:800; font-size:24px; margin:8px 0 6px; }
+  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; max-width:520px; line-height:1.5; }
+  .main{ max-width:1240px; margin:0 auto; padding:32px; }
+
+  /* Filters */
+  .filter-bar{ background:#fff; border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow-sm); margin-bottom:24px; display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; }
+  .filter-group{ display:flex; flex-direction:column; gap:4px; }
+  .filter-group label{ font-family:var(--font-mono); font-size:11px; font-weight:500; color:var(--slate-light); text-transform:uppercase; letter-spacing:0.5px; }
+  .filter-group select, .filter-group input{ font-family:var(--font-body); font-size:13px; padding:8px 12px; border:1px solid var(--ice-3); border-radius:6px; background:#fff; color:var(--ink); min-width:180px; }
+  .filter-group select:focus, .filter-group input:focus{ outline:none; border-color:var(--navy-corp); box-shadow:0 0 0 3px rgba(31,73,125,0.1); }
+  .btn-filter{ font-family:var(--font-body); font-size:13px; font-weight:600; padding:9px 20px; border:none; border-radius:6px; cursor:pointer; transition:all .15s; }
+  .btn-primary{ background:var(--navy-corp); color:#fff; }
+  .btn-primary:hover{ background:var(--navy-dark); }
+  .btn-secondary{ background:var(--ice-2); color:var(--slate); }
+  .btn-secondary:hover{ background:var(--ice-3); }
+
+  /* Table */
+  .table-wrap{ background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
+  table{ width:100%; border-collapse:collapse; }
+  thead th{ background:var(--navy-corp); color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; padding:14px 16px; text-align:left; white-space:nowrap; }
+  tbody td{ padding:12px 16px; font-size:13px; border-bottom:1px solid var(--ice-2); vertical-align:top; }
+  tbody tr:hover{ background:var(--ice-1); }
+  tbody tr:last-child td{ border-bottom:none; }
+
+  /* Badges */
+  .badge{ display:inline-block; padding:3px 10px; border-radius:4px; font-family:var(--font-mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  .badge-user{ background:#E8F0FE; color:var(--navy-corp); }
+  .badge-request{ background:#FFF3E0; color:var(--amber); }
+  .badge-config{ background:#E8F5E9; color:#2E7D32; }
+  .badge-auth{ background:#FCE4EC; color:var(--crimson); }
+
+  /* Details JSON */
+  .detail-toggle{ font-size:12px; color:var(--navy-corp); cursor:pointer; text-decoration:underline; background:none; border:none; font-family:var(--font-body); }
+  .detail-block{ display:none; margin-top:6px; background:var(--ice-1); border-radius:6px; padding:10px 14px; font-family:var(--font-mono); font-size:11px; color:var(--slate); white-space:pre-wrap; word-break:break-all; max-width:400px; }
+
+  .empty-state{ text-align:center; padding:60px 20px; color:var(--slate-light); }
+  .empty-state svg{ width:48px; height:48px; margin-bottom:12px; opacity:0.4; }
+  .empty-state p{ font-size:14px; }
+  .loading{ text-align:center; padding:40px; color:var(--slate-light); font-size:14px; }
+
+  @media(max-width:768px){
+    .stat-row{ grid-template-columns:1fr; }
+    .filter-bar{ flex-direction:column; }
+    .filter-group select, .filter-group input{ min-width:100%; }
+    table{ font-size:12px; }
+    thead th, tbody td{ padding:10px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="ik-nav">
+  <div class="ik-nav-inner">
+    <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
+    <div class="ik-nav-links">
+      <span class="nav-user" id="navUser"></span>
+      <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">SIGN OUT</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-head">
+  <div class="page-head-inner">
+    <a href="index.html">← Back to dashboard</a>
+    <h2>Audit Log</h2>
+    <p>Complete trail of all system actions — user management, approval decisions, configuration changes.</p>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Action Type</label>
+      <select id="filterAction">
+        <option value="">All Actions</option>
+        <option value="USER_CREATED">User Created</option>
+        <option value="USER_UPDATED">User Updated</option>
+        <option value="USER_DELETED">User Deleted</option>
+        <option value="PASSWORD_RESET">Password Reset</option>
+        <option value="REQUEST_SUBMITTED">Request Submitted</option>
+        <option value="REQUEST_APPROVED">Request Approved</option>
+        <option value="REQUEST_MANAGER_APPROVED">Manager Approved</option>
+        <option value="REQUEST_REJECTED">Request Rejected</option>
+        <option value="MANAGER_MAPPING_SET">Manager Mapping Set</option>
+        <option value="MANAGER_MAPPING_REMOVED">Manager Mapping Removed</option>
+        <option value="ROLE_OWNER_SET">Role Owner Set</option>
+        <option value="ROLE_OWNER_REMOVED">Role Owner Removed</option>
+        <option value="DEFAULT_APPROVER_SET">Default Approver Set</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Performed By</label>
+      <input type="text" id="filterUser" placeholder="e.g. ADMIN">
+    </div>
+    <button class="btn-filter btn-primary" onclick="loadLogs()">Apply</button>
+    <button class="btn-filter btn-secondary" onclick="clearFilters()">Clear</button>
+    <button class="btn-filter btn-secondary" onclick="downloadCSV()" style="margin-left:auto;">⬇ Download CSV</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Action</th>
+          <th>Performed By</th>
+          <th>Target User</th>
+          <th>Target Role</th>
+          <th>Request ID</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="logBody">
+        <tr><td colspan="7" class="loading">Loading audit logs...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// Auth guard
+fetch('/api/my-profile').then(r => {
+  if (!r.ok) { location.href = 'login.html'; return; }
+  return r.json();
+}).then(u => {
+  if (!u) return;
+  if (u.role !== 'admin') { location.href = 'index.html'; return; }
+  document.getElementById('navUser').textContent = u.displayName || u.username;
+  loadLogs();
+});
+
+function getActionBadgeClass(action) {
+  if (action.startsWith('USER_') || action === 'PASSWORD_RESET') return 'badge-user';
+  if (action.startsWith('REQUEST_')) return 'badge-request';
+  if (action.includes('MAPPING') || action.includes('OWNER') || action.includes('APPROVER')) return 'badge-config';
+  return 'badge-auth';
+}
+
+function formatAction(action) {
+  return action.replace(/_/g, ' ');
+}
+
+function formatTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const date = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  const time = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  return date + '<br><span style="color:var(--slate-light);font-size:11px;">' + time + '</span>';
+}
+
+function toggleDetail(btn) {
+  const block = btn.nextElementSibling;
+  if (block.style.display === 'block') {
+    block.style.display = 'none';
+    btn.textContent = 'View';
+  } else {
+    block.style.display = 'block';
+    btn.textContent = 'Hide';
+  }
+}
+
+async function loadLogs() {
+  const action = document.getElementById('filterAction').value;
+  const user = document.getElementById('filterUser').value.trim();
+  let url = '/api/audit-logs?';
+  if (action) url += 'action=' + encodeURIComponent(action) + '&';
+  if (user) url += 'performedBy=' + encodeURIComponent(user) + '&';
+
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Failed to fetch');
+    const data = await resp.json();
+    const logs = data.logs || [];
+    allLogsCache = logs;
+
+    // Table
+    const body = document.getElementById('logBody');
+    if (logs.length === 0) {
+      body.innerHTML = '<tr><td colspan="7" class="empty-state"><p>No audit log entries found.</p></td></tr>';
+      return;
+    }
+
+    body.innerHTML = logs.map(log => {
+      const details = log.details || {};
+      const detailStr = typeof details === 'string' ? details : JSON.stringify(details, null, 2);
+      const hasDetails = detailStr && detailStr !== '{}' && detailStr !== 'null';
+      return `<tr>
+        <td>${formatTime(log.created_at)}</td>
+        <td><span class="badge ${getActionBadgeClass(log.action)}">${formatAction(log.action)}</span></td>
+        <td style="font-weight:600;">${log.performed_by || '—'}</td>
+        <td>${log.target_user || '—'}</td>
+        <td>${log.target_role || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;">${log.request_id || '—'}</td>
+        <td>${hasDetails ? '<button class="detail-toggle" onclick="toggleDetail(this)">View</button><div class="detail-block">' + detailStr.replace(/</g,'&lt;') + '</div>' : '—'}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    document.getElementById('logBody').innerHTML = '<tr><td colspan="7" class="empty-state"><p>Error loading audit logs.</p></td></tr>';
+  }
+}
+
+function clearFilters() {
+  document.getElementById('filterAction').value = '';
+  document.getElementById('filterUser').value = '';
+  loadLogs();
+}
+
+var allLogsCache = [];
+
+function downloadCSV() {
+  if (allLogsCache.length === 0) { alert('No logs to download'); return; }
+  const headers = ['Timestamp','Action','Performed By','Target User','Target Role','Request ID','Details'];
+  const rows = allLogsCache.map(function(log) {
+    var details = log.details || {};
+    var detailStr = typeof details === 'string' ? details : JSON.stringify(details);
+    return [
+      log.created_at || '',
+      log.action || '',
+      log.performed_by || '',
+      log.target_user || '',
+      log.target_role || '',
+      log.request_id || '',
+      '"' + detailStr.replace(/"/g, '""') + '"'
+    ].join(',');
+  });
+  var csv = headers.join(',') + '\n' + rows.join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'IKAegis_AuditLog_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

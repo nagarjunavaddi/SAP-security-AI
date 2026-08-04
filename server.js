@@ -17,7 +17,7 @@ app.use(session({
 app.use(express.static(__dirname));
 
 // ===================== AUTH (Phase 1) =====================
-// Hardcoded demo users -- swap for a real user store / SAP-backed auth later.
+// User auth handled via PostgreSQL (db.js) through approval-routes.js
 // Login is now handled by routes/approval-routes.js (PostgreSQL via db.js)
 
 app.post('/api/logout', (req, res) => {
@@ -324,7 +324,8 @@ app.get('/api/risk-analysis/user/:username', async (req, res) => {
 
     const actionViolations = analyzeRoleLevelSoD(allTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
     const permissionViolations = checkObjectLevelSoD(allAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
-    const violations = [...actionViolations, ...permissionViolations];
+    const criticalActionViolations = allTcodes.length ? checkCriticalActionRisks(allTcodes).map(v => ({ ...v, riskType: 'Critical Action' })) : [];
+    const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations];
     res.json({
       username,
       roleCount: roles.length,
@@ -361,7 +362,17 @@ app.post('/api/risk-analysis/users-bulk', async (req, res) => {
         const roleTcodes = await getRoleTcodesFromSAP(role);
         allTcodes = allTcodes.concat(roleTcodes);
       }
-      const violations = analyzeRoleLevelSoD(allTcodes);
+      let allAuthObjects = [];
+      for (const role of roles) {
+        try {
+          const roleAuthObjects = await getRoleAuthObjects(role);
+          allAuthObjects = allAuthObjects.concat(roleAuthObjects);
+        } catch (permErr) { console.log('Permission-level fetch skipped for role', role, ':', permErr.message); }
+      }
+      const actionViolations = analyzeRoleLevelSoD(allTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
+      const permissionViolations = checkObjectLevelSoD(allAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
+      const criticalActionViolations = allTcodes.length ? checkCriticalActionRisks(allTcodes).map(v => ({ ...v, riskType: 'Critical Action' })) : [];
+      const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations];
       results.push({ username, roleCount: roles.length, roles, tcodeCount: allTcodes.length, violationCount: violations.length, violations });
     } catch (error) {
       results.push({ username, error: error.message });
@@ -477,7 +488,14 @@ app.post('/api/risk-analysis/roles-bulk', async (req, res) => {
         results.push({ role: roleName, tcodeCount: 0, violationCount: 0, violations: [], message: 'No T-codes found.' });
         continue;
       }
-      const violations = analyzeRoleLevelSoD(roleTcodes);
+      const actionViolations = analyzeRoleLevelSoD(roleTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
+      let permissionViolations = [];
+      try {
+        const roleAuthObjects = await getRoleAuthObjects(roleName);
+        permissionViolations = checkObjectLevelSoD(roleAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
+      } catch (permErr) { console.log('Permission-level fetch skipped for role', roleName, ':', permErr.message); }
+      const criticalActionViolations = roleTcodes.length ? checkCriticalActionRisks(roleTcodes).map(v => ({ ...v, riskType: 'Critical Action' })) : [];
+      const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations];
       results.push({ role: roleName, tcodeCount: roleTcodes.length, violationCount: violations.length, violations });
     } catch (error) {
       results.push({ role: roleName, error: error.message });

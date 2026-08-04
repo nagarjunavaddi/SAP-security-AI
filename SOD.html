@@ -71,7 +71,7 @@
   .tab-panel.active{ display:block; }
 
   /* ---------------- sub-mode toggle (single / bulk) ---------------- */
-  .mode-row{
+  .mode-row{display:none!important;} .mode-row{
     display:inline-flex; background:var(--tint); border:1px solid var(--line);
     border-radius:8px; padding:3px; margin-bottom:22px;
   }
@@ -104,6 +104,32 @@
     padding:14px 16px; color:var(--ink); outline:none; resize:vertical; min-height:110px;
   }
   textarea.bulk-input:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  /* Spreadsheet Grid */
+  .spreadsheet-grid{ width:100%; border-collapse:separate; border-spacing:0; font-family:var(--font-mono); font-size:13px; border:1px solid var(--line); border-radius:7px; overflow:hidden; }
+  .spreadsheet-grid thead th{ background:var(--blue); color:#fff; font-family:var(--font-display); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; padding:9px 12px; text-align:left; }
+
+  .spreadsheet-grid thead th:last-child{ width:36px; }
+  .spreadsheet-grid tbody td{ padding:0; border-bottom:1px solid var(--line); background:var(--tint); }
+
+  .spreadsheet-grid tbody td input.grid-cell{ width:100%; border:none; background:transparent; padding:8px 12px; font-family:var(--font-mono); font-size:13px; color:var(--ink); outline:none; box-sizing:border-box; }
+  .spreadsheet-grid tbody td input.grid-cell:focus{ background:rgba(31,73,125,.05); }
+  .spreadsheet-grid tbody td input.grid-cell::placeholder{ color:var(--ink-faint); }
+  .spreadsheet-grid tbody tr:hover td{ background:rgba(31,73,125,.03); }
+
+  .grid-del-btn{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:15px; padding:6px; border-radius:4px; line-height:1; }
+  .grid-del-btn:hover{ color:var(--crim); background:rgba(195,52,56,.08); }
+  .grid-toolbar{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+  .grid-toolbar button{ font-family:var(--font-display); font-size:12px; font-weight:600; padding:6px 14px; border-radius:5px; cursor:pointer; transition:all .15s ease; }
+  .btn-add-row{ background:var(--tint); border:1px solid var(--line); color:var(--ink); }
+  .btn-add-row:hover{ background:var(--line); }
+  .btn-upload-xl{ background:#E8F0E8; border:1px solid #B8D4B8; color:#2E6B2E; }
+  .btn-upload-xl:hover{ background:#D4E8D4; }
+  .btn-clear-grid{ background:rgba(195,52,56,.06); border:1px solid rgba(195,52,56,.2); color:var(--crim); }
+  .btn-clear-grid:hover{ background:rgba(195,52,56,.12); }
+  .btn-paste{ background:var(--tint); border:1px solid var(--line); color:var(--ink); }
+  .btn-paste:hover{ background:var(--line); }
+  .upload-inline-btn{ font-family:var(--font-display); font-size:12px; font-weight:600; padding:0 14px; border-radius:5px; cursor:pointer; background:#E8F0E8; border:1px solid #B8D4B8; color:#2E6B2E; height:100%; transition:all .15s ease; }
+  .upload-inline-btn:hover{ background:#D4E8D4; }
   .field-hint{ font-size:12px; color:var(--ink-faint); margin-top:8px; line-height:1.5; }
 
   .go-btn{
@@ -273,6 +299,9 @@
   }
   .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
   .ik-nav-links a.active{ color:#fff; background:rgba(255,255,255,0.12); }
+  .nav-user{ font-family:var(--font-body); font-size:13px; font-weight:600; color:var(--gold); margin-right:8px; }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
+  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
 
   /* ── Updated common elements ── */
   body{ background:var(--ice-1); color:var(--ink); }
@@ -469,16 +498,23 @@
     .option-grid{ grid-template-columns:1fr; }
   }
 
+  .chk-warning{ position:fixed; top:80px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; font-family:var(--font-body); font-size:14px; font-weight:500; padding:14px 28px; border-radius:8px; box-shadow:0 8px 32px rgba(21,38,63,0.3); z-index:9999; display:flex; align-items:center; gap:10px; animation:slideDown .3s ease; border-left:4px solid var(--gold); }
+  .chk-warning svg{ flex-shrink:0; }
+  @keyframes slideDown{ from{opacity:0;transform:translateX(-50%) translateY(-20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+  .export-btn{ font-family:var(--font-mono); font-size:11px; font-weight:600; background:var(--green); color:#fff; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; transition:all .15s; display:none; margin-left:8px; }
+  .export-btn:hover{ background:#009040; }
+  .export-btn svg{ vertical-align:middle; margin-right:4px; }
+  .analyze-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 </style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <nav class="ik-nav">
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
     <div class="ik-nav-links">
-      <a href="index.html">Dashboard</a>
-      <a href="SOD.html">SoD Analytics</a>
-      <a href="create-user.html">User Creation</a>
+      <span class="nav-user" id="navUser"></span>
+      <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">SIGN OUT</button>
     </div>
   </div>
 </nav>
@@ -496,8 +532,8 @@
   <div class="section-inner">
 
     <div class="tab-row">
-      <button class="tab-btn active" id="tabBtnRole" data-tab="role">Role Analysis</button>
-      <button class="tab-btn" id="tabBtnUser" data-tab="user">User Analysis</button>
+      <button class="tab-btn active" id="tabBtnRole" data-tab="role">Roles</button>
+      <button class="tab-btn" id="tabBtnUser" data-tab="user">Users</button>
     </div>
 
     <!-- ===================== ROLE ANALYSIS ===================== -->
@@ -509,11 +545,14 @@
       </div>
 
       <!-- Single role -->
-      <div class="mode-panel active" id="modeSingle">
+      <div class="mode-panel" id="modeSingle" style="display:none">
         <div class="inquiry-box">
           <div class="inquiry-row">
             <input type="text" id="roleNameInput" placeholder="Enter SAP Role Name (e.g. Z_AP_ACCOUNTANT)">
+            <button type="button" class="upload-inline-btn" onclick="document.getElementById('xlFileSingleRole').click()">Upload Excel</button>
+            <input type="file" id="xlFileSingleRole" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleSingleUpload(this,'roleNameInput')">
             <button class="go-btn" id="analyzeSingleBtn">Analyze</button>
+            <button class="export-btn" id="exportSingleBtn">⬇ Export XLSX</button>
           </div>
           <div class="field-hint">Fetches the role's T-codes from SAP and checks them against the SoD ruleset.</div>
           <div class="risk-type-row">
@@ -527,17 +566,28 @@
       </div>
 
       <!-- Bulk roles -->
-      <div class="mode-panel" id="modeBulk">
+      <div class="mode-panel active" id="modeBulk">
         <div class="inquiry-box">
-          <textarea class="bulk-input" id="bulkRolesInput" placeholder="Enter multiple role names, one per line&#10;e.g.&#10;Z_AP_ACCOUNTANT&#10;Z_AR_CLERK&#10;Z_PROCUREMENT_MGR"></textarea>
-          <div class="field-hint">One role name per line (or comma-separated). Each role is checked independently.</div>
+          <table class="spreadsheet-grid" id="bulkRolesGrid">
+            <thead><tr><th>Role Name</th><th></th></tr></thead>
+            <tbody id="bulkRolesGridBody"></tbody>
+          </table>
+          <div class="grid-toolbar">
+            <button type="button" class="btn-add-row" onclick="addGridRow('bulkRolesGridBody','e.g. Z_AP_ACCOUNTANT')">+ Add Row</button>
+            <button type="button" class="btn-upload-xl" onclick="document.getElementById('xlFileRoles').click()">Upload Excel</button>
+            <button type="button" class="btn-paste" onclick="pasteIntoGrid('bulkRolesGridBody','e.g. Z_AP_ACCOUNTANT')">Paste</button>
+            <button type="button" class="btn-clear-grid" onclick="clearGrid('bulkRolesGridBody','e.g. Z_AP_ACCOUNTANT',5)">Clear</button>
+            <input type="file" id="xlFileRoles" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleGridUpload(this,'bulkRolesGridBody','e.g. Z_AP_ACCOUNTANT')">
+          </div>
+          <div class="field-hint">Type in the grid, paste from clipboard, or upload an Excel/CSV file. Each role is checked independently.</div>
           <div class="risk-type-row">
             <label><input type="checkbox" id="chkActionBulk" checked> Action Level</label>
             <label><input type="checkbox" id="chkPermissionBulk"> Permission Level</label>
             <label><input type="checkbox" id="chkCritActionBulk"> Critical Action</label>
             <label><input type="checkbox" id="chkCritPermBulk"> Critical Permission</label>
           </div>
-          <button class="go-btn block" id="analyzeBulkBtn">Analyze All</button>
+          <button class="go-btn block" id="analyzeBulkBtn">Analyze</button>
+            <button class="export-btn" id="exportBulkBtn">⬇ Export XLSX</button>
         </div>
         <div class="result-area" id="bulkResultArea"></div>
       </div>
@@ -553,11 +603,14 @@
       </div>
 
       <!-- Single user -->
-      <div class="mode-panel active" id="userModeSingle">
+      <div class="mode-panel" id="userModeSingle" style="display:none">
         <div class="inquiry-box">
           <div class="inquiry-row">
             <input type="text" id="userNameInput" placeholder="Enter SAP Username (e.g. S4GRC1)">
+            <button type="button" class="upload-inline-btn" onclick="document.getElementById('xlFileSingleUser').click()">Upload Excel</button>
+            <input type="file" id="xlFileSingleUser" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleSingleUpload(this,'userNameInput')">
             <button class="go-btn" id="analyzeSingleUserBtn">Analyze</button>
+            <button class="export-btn" id="exportSingleUserBtn">⬇ Export XLSX</button>
           </div>
           <div class="field-hint">Fetches all roles assigned to the user, combines their T-codes, and checks against the SoD ruleset.</div>
           <div class="risk-type-row">
@@ -571,17 +624,28 @@
       </div>
 
       <!-- Bulk users -->
-      <div class="mode-panel" id="userModeBulk">
+      <div class="mode-panel active" id="userModeBulk">
         <div class="inquiry-box">
-          <textarea class="bulk-input" id="bulkUsersInput" placeholder="Enter multiple usernames, one per line&#10;e.g.&#10;S4GRC1&#10;S4GRC2&#10;JDOE"></textarea>
-          <div class="field-hint">One username per line (or comma-separated). Each user's combined roles are checked independently.</div>
+          <table class="spreadsheet-grid" id="bulkUsersGrid">
+            <thead><tr><th>Username</th><th></th></tr></thead>
+            <tbody id="bulkUsersGridBody"></tbody>
+          </table>
+          <div class="grid-toolbar">
+            <button type="button" class="btn-add-row" onclick="addGridRow('bulkUsersGridBody','e.g. S4GRC1')">+ Add Row</button>
+            <button type="button" class="btn-upload-xl" onclick="document.getElementById('xlFileUsers').click()">Upload Excel</button>
+            <button type="button" class="btn-paste" onclick="pasteIntoGrid('bulkUsersGridBody','e.g. S4GRC1')">Paste</button>
+            <button type="button" class="btn-clear-grid" onclick="clearGrid('bulkUsersGridBody','e.g. S4GRC1',5)">Clear</button>
+            <input type="file" id="xlFileUsers" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleGridUpload(this,'bulkUsersGridBody','e.g. S4GRC1')">
+          </div>
+          <div class="field-hint">Type in the grid, paste from clipboard, or upload an Excel/CSV file. Each user is checked independently.</div>
           <div class="risk-type-row">
             <label><input type="checkbox" id="chkActionUserBulk" checked> Action Level</label>
             <label><input type="checkbox" id="chkPermissionUserBulk"> Permission Level</label>
             <label><input type="checkbox" id="chkCritActionUserBulk"> Critical Action</label>
             <label><input type="checkbox" id="chkCritPermUserBulk"> Critical Permission</label>
           </div>
-          <button class="go-btn block" id="analyzeBulkUsersBtn">Analyze All</button>
+          <button class="go-btn block" id="analyzeBulkUsersBtn">Analyze</button>
+            <button class="export-btn" id="exportBulkUsersBtn">⬇ Export XLSX</button>
         </div>
         <div class="result-area" id="bulkUserResultArea"></div>
       </div>
@@ -590,6 +654,112 @@
 
   </div>
 </section>
+
+<script>
+function addGridRow(tbodyId, placeholder, value) {
+  var tbody = document.getElementById(tbodyId);
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><input type="text" class="grid-cell" placeholder="' + placeholder + '" value="' + (value || '') + '"></td>'
+    + '<td style="width:36px;text-align:center"><button type="button" class="grid-del-btn" title="Remove" onclick="removeGridRow(this,\'' + tbodyId + '\')">&times;</button></td>';
+  tbody.appendChild(tr);
+  var input = tr.querySelector('input.grid-cell');
+  input.addEventListener('input', function() {
+    var allRows = tbody.querySelectorAll('tr');
+    if (tr === allRows[allRows.length - 1] && this.value.trim()) addGridRow(tbodyId, placeholder);
+  });
+  input.addEventListener('paste', function(e) {
+    var paste = (e.clipboardData || window.clipboardData).getData('text');
+    if (paste.indexOf('\n') !== -1 || paste.indexOf('\r') !== -1) {
+      e.preventDefault();
+      var lines = paste.split(/[\r\n]+/).map(function(s){return s.trim();}).filter(Boolean);
+      if (lines.length > 0) this.value = lines[0];
+      for (var i = 1; i < lines.length; i++) addGridRow(tbodyId, placeholder, lines[i]);
+    }
+  });
+  return tr;
+}
+function removeGridRow(btn, tbodyId) {
+  var tbody = document.getElementById(tbodyId);
+  if (tbody.querySelectorAll('tr').length <= 1) return;
+  btn.closest('tr').remove();
+}
+function clearGrid(tbodyId, placeholder, rows) {
+  document.getElementById(tbodyId).innerHTML = '';
+  for (var i = 0; i < (rows || 10); i++) addGridRow(tbodyId, placeholder);
+}
+function getGridValues(tbodyId) {
+  var inputs = document.getElementById(tbodyId).querySelectorAll('input.grid-cell');
+  var vals = [];
+  inputs.forEach(function(inp) { if (inp.value.trim()) vals.push(inp.value.trim().toUpperCase()); });
+  return vals;
+}
+var HEADER_SKIP = ['role','role name','rolename','username','user','user name','#','sr','no','s.no','sr.no','sl.no','sno'];
+function handleGridUpload(fileInput, tbodyId, placeholder) {
+  var f = fileInput.files[0]; if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      var data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+      var values = [];
+      data.forEach(function(row) {
+        if (Array.isArray(row)) {
+          for (var j = 0; j < row.length; j++) {
+            var v = String(row[j] || '').trim();
+            if (v && HEADER_SKIP.indexOf(v.toLowerCase()) === -1) { values.push(v); break; }
+          }
+        }
+      });
+      if (!values.length) { alert('No valid data found.'); fileInput.value = ''; return; }
+      document.getElementById(tbodyId).innerHTML = '';
+      values.forEach(function(v) { addGridRow(tbodyId, placeholder, v); });
+      addGridRow(tbodyId, placeholder);
+      if (typeof showToast === 'function') showToast(values.length + ' entries loaded', 'success');
+    } catch (err) { alert('Error: ' + err.message); }
+    fileInput.value = '';
+  };
+  reader.readAsArrayBuffer(f);
+}
+function handleSingleUpload(fileInput, targetInputId) {
+  var f = fileInput.files[0]; if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      var data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+      for (var i = 0; i < data.length; i++) {
+        if (Array.isArray(data[i])) {
+          for (var j = 0; j < data[i].length; j++) {
+            var v = String(data[i][j] || '').trim();
+            if (v && HEADER_SKIP.indexOf(v.toLowerCase()) === -1) {
+              document.getElementById(targetInputId).value = v;
+              if (typeof showToast === 'function') showToast('Loaded: ' + v, 'success');
+              fileInput.value = ''; return;
+            }
+          }
+        }
+      }
+      alert('No valid data found.');
+    } catch (err) { alert('Error: ' + err.message); }
+    fileInput.value = '';
+  };
+  reader.readAsArrayBuffer(f);
+}
+function pasteIntoGrid(tbodyId, placeholder) {
+  navigator.clipboard.readText().then(function(text) {
+    var lines = text.split(/[\r\n,]+/).map(function(s){return s.trim();}).filter(Boolean);
+    if (!lines.length) { alert('Clipboard is empty.'); return; }
+    document.getElementById(tbodyId).innerHTML = '';
+    lines.forEach(function(v) { addGridRow(tbodyId, placeholder, v); });
+    addGridRow(tbodyId, placeholder);
+    if (typeof showToast === 'function') showToast(lines.length + ' entries pasted', 'success');
+  }).catch(function() { alert('Use Ctrl+V in a grid cell instead.'); });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('bulkRolesGridBody')) clearGrid('bulkRolesGridBody', 'e.g. Z_AP_ACCOUNTANT', 10);
+  if (document.getElementById('bulkUsersGridBody')) clearGrid('bulkUsersGridBody', 'e.g. S4GRC1', 10);
+});
+</script>
 
 <script>
 (function(){
@@ -774,6 +944,9 @@
       singleResultArea.innerHTML = '<div class="error-box">Please enter a role name.</div>';
       return;
     }
+    if (!(document.getElementById('chkActionSingle').checked || document.getElementById('chkPermissionSingle').checked || document.getElementById('chkCritActionSingle').checked || document.getElementById('chkCritPermSingle').checked)) {
+      showCheckboxWarning(); return;
+    }
     analyzeSingleBtn.disabled = true;
     analyzeSingleBtn.textContent = 'Analyzing…';
     singleResultArea.innerHTML = '<div class="loading-box">Fetching role T-codes from SAP and checking against ruleset…</div>';
@@ -792,6 +965,7 @@
         };
         const filteredData = filterViolationsByType(data, selected);
         singleResultArea.innerHTML = renderRoleResult(filteredData, roleName);
+        lastSingleRoleData = filteredData; document.getElementById('exportSingleBtn').style.display='inline-block';
       }
     } catch (e) {
       singleResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;
@@ -807,7 +981,7 @@
   // ============================================================
   // ROLE — bulk
   // ============================================================
-  const bulkRolesInput = document.getElementById('bulkRolesInput');
+  // bulkRolesInput replaced by spreadsheet grid
   const analyzeBulkBtn = document.getElementById('analyzeBulkBtn');
   const bulkResultArea = document.getElementById('bulkResultArea');
 
@@ -819,10 +993,13 @@
   }
 
   async function runBulkAnalysis(){
-    const roles = parseList(bulkRolesInput.value);
+    const roles = getGridValues('bulkRolesGridBody');
     if (!roles.length) {
       bulkResultArea.innerHTML = '<div class="error-box">Please enter at least one role name.</div>';
       return;
+    }
+    if (!(document.getElementById('chkActionBulk').checked || document.getElementById('chkPermissionBulk').checked || document.getElementById('chkCritActionBulk').checked || document.getElementById('chkCritPermBulk').checked)) {
+      showCheckboxWarning(); return;
     }
     analyzeBulkBtn.disabled = true;
     analyzeBulkBtn.textContent = 'Analyzing…';
@@ -915,6 +1092,7 @@
     } finally {
       analyzeBulkBtn.disabled = false;
       analyzeBulkBtn.textContent = 'Analyze All';
+      lastBulkRoleData = data; document.getElementById('exportBulkBtn').style.display='inline-block';
     }
   }
 
@@ -932,6 +1110,9 @@
     if (!username) {
       singleUserResultArea.innerHTML = '<div class="error-box">Please enter a username.</div>';
       return;
+    }
+    if (!(document.getElementById('chkActionUserSingle').checked || document.getElementById('chkPermissionUserSingle').checked || document.getElementById('chkCritActionUserSingle').checked || document.getElementById('chkCritPermUserSingle').checked)) {
+      showCheckboxWarning(); return;
     }
     analyzeSingleUserBtn.disabled = true;
     analyzeSingleUserBtn.textContent = 'Analyzing…';
@@ -951,6 +1132,7 @@
         };
         const filteredData = filterViolationsByType(data, selected);
         singleUserResultArea.innerHTML = renderUserResult(filteredData, username);
+        lastSingleUserData = filteredData; document.getElementById('exportSingleUserBtn').style.display='inline-block';
       }
     } catch (e) {
       singleUserResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;
@@ -966,15 +1148,18 @@
   // ============================================================
   // USER — bulk (results shown as a table, one row per user)
   // ============================================================
-  const bulkUsersInput = document.getElementById('bulkUsersInput');
+  // bulkUsersInput replaced by spreadsheet grid
   const analyzeBulkUsersBtn = document.getElementById('analyzeBulkUsersBtn');
   const bulkUserResultArea = document.getElementById('bulkUserResultArea');
 
   async function runBulkUserAnalysis(){
-    const usernames = parseList(bulkUsersInput.value);
+    const usernames = getGridValues('bulkUsersGridBody');
     if (!usernames.length) {
       bulkUserResultArea.innerHTML = '<div class="error-box">Please enter at least one username.</div>';
       return;
+    }
+    if (!(document.getElementById('chkActionUserBulk').checked || document.getElementById('chkPermissionUserBulk').checked || document.getElementById('chkCritActionUserBulk').checked || document.getElementById('chkCritPermUserBulk').checked)) {
+      showCheckboxWarning(); return;
     }
     analyzeBulkUsersBtn.disabled = true;
     analyzeBulkUsersBtn.textContent = 'Analyzing…';
@@ -1071,14 +1256,140 @@
     } finally {
       analyzeBulkUsersBtn.disabled = false;
       analyzeBulkUsersBtn.textContent = 'Analyze All';
+      lastBulkUserData = data; document.getElementById('exportBulkUsersBtn').style.display='inline-block';
     }
   }
 
   analyzeBulkUsersBtn.addEventListener('click', runBulkUserAnalysis);
 
 })();
+fetch('/api/my-profile').then(r=>r.json()).then(u=>{var n=document.getElementById('navUser');if(n)n.textContent=u.displayName||u.username;}).catch(()=>{});
+function showCheckboxWarning() {
+  var existing = document.querySelector('.chk-warning');
+  if (existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.className = 'chk-warning';
+  toast.innerHTML = '<svg width="20" height="20" fill="none" stroke="#FFC000" stroke-width="2"><circle cx="10" cy="10" r="9"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r="0.5" fill="#FFC000"/></svg><span>Select at least one risk type before analyzing</span>';
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.style.opacity='0'; toast.style.transition='opacity .3s'; setTimeout(function(){ toast.remove(); }, 300); }, 3000);
+}
+
+// ============ EXCEL EXPORT ============
+var lastSingleRoleData = null;
+var lastBulkRoleData = null;
+var lastSingleUserData = null;
+var lastBulkUserData = null;
+
+function violationsToRows(violations, source) {
+  var rows = [];
+  if (!violations || !violations.length) {
+    rows.push({ Source: source, 'Risk ID': 'No violations found', 'Risk Name': '', 'Risk Type': '', 'Risk Level': '', 'Business Process': '', 'Function ID': '', 'Function Description': '', 'Matched T-Codes': '', 'Auth Objects': '', 'Auth Values': '' });
+    return rows;
+  }
+  for (var v of violations) {
+    if (!v.matchedFunctions || !v.matchedFunctions.length) {
+      rows.push({
+        Source: source,
+        'Risk ID': v.riskId || '',
+        'Risk Name': v.riskName || '',
+        'Risk Type': v.riskType || 'Action Level',
+        'Risk Level': v.riskLevel || '',
+        'Business Process': v.businessProcess || '',
+        'Function ID': '',
+        'Function Description': '',
+        'Matched T-Codes': '',
+        'Auth Objects': '',
+        'Auth Values': ''
+      });
+      continue;
+    }
+    for (var f of v.matchedFunctions) {
+      var authObjs = '';
+      var authVals = '';
+      if (f.authDetails && f.authDetails.length) {
+        authObjs = f.authDetails.map(function(ad){ return (ad.objects||[]).join(', '); }).join('; ');
+        authVals = f.authDetails.map(function(ad){
+          if (ad.actvt) return 'ACTVT: ' + ad.actvt;
+          if (ad.otherFields && ad.otherFields.length) return ad.otherFields.map(function(of){ return of.field + ': ' + of.value; }).join(', ');
+          return '';
+        }).join('; ');
+      }
+      rows.push({
+        Source: source,
+        'Risk ID': v.riskId || '',
+        'Risk Name': v.riskName || '',
+        'Risk Type': v.riskType || 'Action Level',
+        'Risk Level': v.riskLevel || '',
+        'Business Process': v.businessProcess || '',
+        'Function ID': f.functionId || '',
+        'Function Description': f.functionDescription || '',
+        'Matched T-Codes': (f.matchedTcodes || []).join(', '),
+        'Auth Objects': authObjs,
+        'Auth Values': authVals
+      });
+    }
+  }
+  return rows;
+}
+
+function exportToXlsx(rows, filename) {
+  if (!window.XLSX) { alert('Export library not loaded. Check internet connection.'); return; }
+  var ws = XLSX.utils.json_to_sheet(rows);
+  // Column widths
+  ws['!cols'] = [
+    {wch:20},{wch:12},{wch:35},{wch:18},{wch:10},{wch:25},{wch:14},{wch:35},{wch:30},{wch:25},{wch:25}
+  ];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'SoD Analysis');
+  
+  // Add summary sheet
+  var summary = [
+    { Field: 'Report', Value: 'IKAegis SoD Analysis Report' },
+    { Field: 'Generated', Value: new Date().toLocaleString() },
+    { Field: 'Total Violations', Value: rows.filter(function(r){ return r['Risk ID'] !== 'No violations found'; }).length },
+    { Field: 'Risk Types', Value: [...new Set(rows.map(function(r){ return r['Risk Type']; }).filter(Boolean))].join(', ') }
+  ];
+  var ws2 = XLSX.utils.json_to_sheet(summary);
+  ws2['!cols'] = [{wch:20},{wch:50}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
+  
+  XLSX.writeFile(wb, filename);
+}
+
+document.getElementById('exportSingleBtn').addEventListener('click', function() {
+  if (!lastSingleRoleData || !lastSingleRoleData.violations) return;
+  var rows = violationsToRows(lastSingleRoleData.violations, lastSingleRoleData.role || 'Role');
+  exportToXlsx(rows, 'IKAegis_SoD_' + (lastSingleRoleData.role || 'Role') + '_' + new Date().toISOString().slice(0,10) + '.xlsx');
+});
+
+document.getElementById('exportBulkBtn').addEventListener('click', function() {
+  if (!lastBulkRoleData || !lastBulkRoleData.results) return;
+  var allRows = [];
+  for (var r of lastBulkRoleData.results) {
+    allRows = allRows.concat(violationsToRows(r.violations || [], r.role || ''));
+  }
+  exportToXlsx(allRows, 'IKAegis_SoD_BulkRoles_' + new Date().toISOString().slice(0,10) + '.xlsx');
+});
+
+document.getElementById('exportSingleUserBtn').addEventListener('click', function() {
+  if (!lastSingleUserData || !lastSingleUserData.violations) return;
+  var rows = violationsToRows(lastSingleUserData.violations, lastSingleUserData.username || 'User');
+  exportToXlsx(rows, 'IKAegis_SoD_User_' + (lastSingleUserData.username || 'User') + '_' + new Date().toISOString().slice(0,10) + '.xlsx');
+});
+
+document.getElementById('exportBulkUsersBtn').addEventListener('click', function() {
+  if (!lastBulkUserData || !lastBulkUserData.results) return;
+  var allRows = [];
+  for (var r of lastBulkUserData.results) {
+    allRows = allRows.concat(violationsToRows(r.violations || [], r.username || ''));
+  }
+  exportToXlsx(allRows, 'IKAegis_SoD_BulkUsers_' + new Date().toISOString().slice(0,10) + '.xlsx');
+});
+
 </script>
-<script src="auth-guard.js"></script>
+<script src="auth-guard.js">
+  // ============================================================
+  </script>
 
 </body>
 </html>

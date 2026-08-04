@@ -419,4 +419,20 @@ module.exports = function(app) {
       res.json({ pending: 0 });
     }
   });
+
+  // ═══════════════════════════════════════════════════════════════
+  // AUDIT LOGS (admin only)
+  // ═══════════════════════════════════════════════════════════════
+  app.get('/api/audit-logs', requireRole('admin'), async (req, res) => {
+    try {
+      const filters = {};
+      if (req.query.action) filters.action = req.query.action;
+      if (req.query.performedBy) filters.performedBy = req.query.performedBy.toUpperCase();
+      const logs = await db.getAuditLogs(filters);
+      res.json({ total: logs.length, logs });
+    } catch (err) {
+      console.error('GET /api/audit-logs error:', err.message);
+      res.status(500).json({ error: 'Failed to fetch audit logs' });
+    }
+  });
 };
