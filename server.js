@@ -82,6 +82,15 @@ try {
   console.log('Could not load Critical Action ruleset:', e.message);
 }
 
+const CRITICAL_PERMISSION_RULESET_FILE = path.join(__dirname, 'data', 'critical-permissions.json');
+let CRITICAL_PERMISSION_RULESET = [];
+try {
+  CRITICAL_PERMISSION_RULESET = JSON.parse(fs.readFileSync(CRITICAL_PERMISSION_RULESET_FILE, 'utf8'));
+  console.log('Loaded Critical Permission ruleset: ' + CRITICAL_PERMISSION_RULESET.length + ' rules');
+} catch (e) {
+  console.log('Could not load Critical Permission ruleset:', e.message);
+}
+
 function getRoleTcodesFromSAP(roleName) {
   return new Promise((resolve, reject) => {
     const filter = encodeURIComponent(`RoleName eq '${roleName}'`);
@@ -325,7 +334,8 @@ app.get('/api/risk-analysis/user/:username', async (req, res) => {
     const actionViolations = analyzeRoleLevelSoD(allTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
     const permissionViolations = checkObjectLevelSoD(allAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
     const criticalActionViolations = allTcodes.length ? checkCriticalActionRisks(allTcodes).map(v => ({ ...v, riskType: 'Critical Action' })) : [];
-    const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations];
+    const criticalPermissionViolations = allAuthObjects.length ? checkCriticalPermissions(allAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' })) : [];
+    const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations, ...criticalPermissionViolations];
     res.json({
       username,
       roleCount: roles.length,
@@ -346,10 +356,10 @@ app.post('/api/risk-analysis/users-bulk', async (req, res) => {
   if (!Array.isArray(usernames) || !usernames.length) {
     return res.status(400).json({ error: 'No usernames provided.' });
   }
-
+  const uniqueUsernames = [...new Set(usernames.map(u => (u || '').trim().toUpperCase()))].filter(Boolean);
   const results = [];
-  for (const raw of usernames) {
-    const username = (raw || '').trim().toUpperCase();
+  for (const raw of uniqueUsernames) {
+    const username = raw;
     if (!username) continue;
     try {
       const roles = await getUserRolesFromSAP(username);
@@ -372,7 +382,8 @@ app.post('/api/risk-analysis/users-bulk', async (req, res) => {
       const actionViolations = analyzeRoleLevelSoD(allTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
       const permissionViolations = checkObjectLevelSoD(allAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
       const criticalActionViolations = allTcodes.length ? checkCriticalActionRisks(allTcodes).map(v => ({ ...v, riskType: 'Critical Action' })) : [];
-      const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations];
+      const criticalPermissionViolations = allAuthObjects.length ? checkCriticalPermissions(allAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' })) : [];
+      const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations, ...criticalPermissionViolations];
       results.push({ username, roleCount: roles.length, roles, tcodeCount: allTcodes.length, violationCount: violations.length, violations });
     } catch (error) {
       results.push({ username, error: error.message });
@@ -383,12 +394,14 @@ app.post('/api/risk-analysis/users-bulk', async (req, res) => {
 });
 function analyzeRoleLevelSoD(roleTcodes) {
   const tcodeSet = new Set(roleTcodes.map(t => (t || '').toUpperCase()));
-  const violations = [];
-
-  for (const risk of SOD_RULESET) {
+  const violations = [];  for (const risk of SOD_RULESET) {
     const matchedFunctions = [];
     for (const func of risk.functions) {
-      const matchedTcodes = (func.tcodes || []).filter(tc => tcodeSet.has(tc.toUpperCase()));
+      const matchedTcodes = (func.tcodes || []).filter(tc => {
+        const up = tc.toUpperCase();
+        if (up.endsWith('*')) return [...tcodeSet].some(rt => rt.startsWith(up.slice(0, -1)));
+        return tcodeSet.has(up);
+      });
       if (matchedTcodes.length > 0) {
         matchedFunctions.push({
           functionId: func.functionId,
@@ -412,12 +425,14 @@ function analyzeRoleLevelSoD(roleTcodes) {
 
 function checkCriticalActionRisks(roleTcodes) {
   const tcodeSet = new Set(roleTcodes.map(t => (t || '').toUpperCase()));
-  const violations = [];
-
-  for (const risk of CRITICAL_ACTION_RULESET) {
+  const violations = [];  for (const risk of CRITICAL_ACTION_RULESET) {
     const matchedFunctions = [];
     for (const func of risk.functions) {
-      const matchedTcodes = (func.tcodes || []).filter(tc => tcodeSet.has(tc.toUpperCase()));
+      const matchedTcodes = (func.tcodes || []).filter(tc => {
+        const up = tc.toUpperCase();
+        if (up.endsWith('*')) return [...tcodeSet].some(rt => rt.startsWith(up.slice(0, -1)));
+        return tcodeSet.has(up);
+      });
       if (matchedTcodes.length > 0) {
         matchedFunctions.push({
           functionId: func.functionId,
@@ -440,6 +455,28 @@ function checkCriticalActionRisks(roleTcodes) {
   return violations;
 }
 
+function checkCriticalPermissions(roleAuthObjects) {
+  const violations = [];
+  for (const rule of CRITICAL_PERMISSION_RULESET) {
+    const objName = rule.authObject;
+    const criticalActivities = rule.criticalActivities || ['01', '02', '06'];
+    const matchedEntries = roleAuthObjects.filter(ra => ra.object && ra.object.toUpperCase() === objName.toUpperCase() && ra.authField && ra.authField.toUpperCase() === 'ACTVT' && criticalActivities.includes(ra.lowValue));
+    if (matchedEntries.length > 0) {
+      violations.push({
+        riskId: rule.riskId,
+        riskName: rule.riskName,
+        riskLevel: rule.riskLevel,
+        businessProcess: rule.businessProcess,
+        authObject: rule.authObject,
+        matchedActivities: matchedEntries.map(e => e.lowValue),
+        sourceFunctions: rule.sourceFunctions,
+        rationale: rule.rationale
+      });
+    }
+  }
+  return violations;
+}
+
 app.get('/api/risk-analysis/role/:roleName', async (req, res) => {
   const roleName = req.params.roleName.trim();
   try {
@@ -449,14 +486,16 @@ app.get('/api/risk-analysis/role/:roleName', async (req, res) => {
 
     const criticalActionViolations = roleTcodes.length ? checkCriticalActionRisks(roleTcodes).map(v => ({ ...v, riskType: "Critical Action" })) : [];
     let permissionViolations = [];
+    let criticalPermissionViolations = [];
     let authObjectCount = 0;
     try {
       const roleAuthObjects = await getRoleAuthObjects(roleName);
       authObjectCount = roleAuthObjects.length;
       permissionViolations = checkObjectLevelSoD(roleAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
+      criticalPermissionViolations = checkCriticalPermissions(roleAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' }));
     } catch (permErr) {
       console.log('Permission-level check skipped:', permErr.message);
-    }    const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations];
+    }    const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations, ...criticalPermissionViolations];
 
     res.json({
       role: roleName,
@@ -478,9 +517,10 @@ app.post('/api/risk-analysis/roles-bulk', async (req, res) => {
     return res.status(400).json({ error: 'No roles provided.' });
   }
 
+  const uniqueRoles = [...new Set(roles.map(r => (r || '').trim().toUpperCase()))].filter(Boolean);
   const results = [];
-  for (const raw of roles) {
-    const roleName = (raw || '').trim();
+  for (const raw of uniqueRoles) {
+    const roleName = raw;
     if (!roleName) continue;
     try {
       const roleTcodes = await getRoleTcodesFromSAP(roleName);
@@ -490,12 +530,14 @@ app.post('/api/risk-analysis/roles-bulk', async (req, res) => {
       }
       const actionViolations = analyzeRoleLevelSoD(roleTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
       let permissionViolations = [];
+      let criticalPermissionViolations = [];
       try {
         const roleAuthObjects = await getRoleAuthObjects(roleName);
         permissionViolations = checkObjectLevelSoD(roleAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' }));
+        criticalPermissionViolations = checkCriticalPermissions(roleAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' }));
       } catch (permErr) { console.log('Permission-level fetch skipped for role', roleName, ':', permErr.message); }
       const criticalActionViolations = roleTcodes.length ? checkCriticalActionRisks(roleTcodes).map(v => ({ ...v, riskType: 'Critical Action' })) : [];
-      const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations];
+      const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations, ...criticalPermissionViolations];
       results.push({ role: roleName, tcodeCount: roleTcodes.length, violationCount: violations.length, violations });
     } catch (error) {
       results.push({ role: roleName, error: error.message });

@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="badge ${levelClass}">${escapeHtml(v.riskLevel || 'N/A')}</span>
           </div>
       `;
-      for (const f of v.matchedFunctions) {
+      if (v.matchedFunctions) { for (const f of v.matchedFunctions) {
         html += `
           <div class="function-row">
             <b>${escapeHtml(f.functionId)}</b> — ${escapeHtml(f.functionDescription)}<br/>
@@ -864,6 +864,9 @@ document.addEventListener('DOMContentLoaded', function() {
             ${f.authDetails && f.authDetails.length ? `<div class="authdetail-box">${f.authDetails.map(ad => `<div class="authdetail-row"><span class="ad-obj">${ad.objects.map(o => escapeHtml(o)).join(', ')}</span><span class="ad-val">${ad.actvt ? 'ACTVT: ' + escapeHtml(ad.actvt) : (ad.otherFields && ad.otherFields.length ? ad.otherFields.map(of => escapeHtml(of.field) + ': ' + escapeHtml(of.value)).join(', ') : '')}</span></div>`).join('')}</div>` : ''}
           </div>
         `;
+      }
+      } else if (v.authObject) {
+        html += '<div class="function-row"><b>' + escapeHtml(v.authObject) + '</b> \u2014 Activities: ' + (v.matchedActivities||[]).map(function(a){ return '<span class="tcode-chip">' + escapeHtml(a) + '</span>'; }).join('') + '<br/>Source: ' + (v.sourceFunctions||[]).join(', ') + '</div>';
       }
       html += '</div>';
     }
@@ -917,7 +920,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="badge ${levelClass}">${escapeHtml(v.riskLevel || 'N/A')}</span>
           </div>
       `;
-      for (const f of v.matchedFunctions) {
+      if (v.matchedFunctions) { for (const f of v.matchedFunctions) {
         html += `
           <div class="function-row">
             <b>${escapeHtml(f.functionId)}</b> — ${escapeHtml(f.functionDescription)}<br/>
@@ -925,6 +928,9 @@ document.addEventListener('DOMContentLoaded', function() {
             ${f.authDetails && f.authDetails.length ? `<div class="authdetail-box">${f.authDetails.map(ad => `<div class="authdetail-row"><span class="ad-obj">${ad.objects.map(o => escapeHtml(o)).join(', ')}</span><span class="ad-val">${ad.actvt ? 'ACTVT: ' + escapeHtml(ad.actvt) : (ad.otherFields && ad.otherFields.length ? ad.otherFields.map(of => escapeHtml(of.field) + ': ' + escapeHtml(of.value)).join(', ') : '')}</span></div>`).join('')}</div>` : ''}
           </div>
         `;
+      }
+      } else if (v.authObject) {
+        html += '<div class="function-row"><b>' + escapeHtml(v.authObject) + '</b> \u2014 Activities: ' + (v.matchedActivities||[]).map(function(a){ return '<span class="tcode-chip">' + escapeHtml(a) + '</span>'; }).join('') + '<br/>Source: ' + (v.sourceFunctions||[]).join(', ') + '</div>';
       }
       html += '</div>';
     }
@@ -1086,13 +1092,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       bulkResultArea.innerHTML = html;
+      lastBulkRoleData = data; document.getElementById('exportBulkBtn').style.display='inline-block';
 
     } catch (e) {
-      bulkResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;
-    } finally {
+      bulkResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;    } finally {
       analyzeBulkBtn.disabled = false;
       analyzeBulkBtn.textContent = 'Analyze All';
-      lastBulkRoleData = data; document.getElementById('exportBulkBtn').style.display='inline-block';
     }
   }
 
@@ -1247,16 +1252,14 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
           `;
         }
-      }
-
-      bulkUserResultArea.innerHTML = html;
-
+      }      bulkUserResultArea.innerHTML = html;
+      lastBulkUserData = data; document.getElementById('exportBulkUsersBtn').style.display='inline-block';
     } catch (e) {
       bulkUserResultArea.innerHTML = `<div class="error-box">Error: ${escapeHtml(e.message)}</div>`;
     } finally {
       analyzeBulkUsersBtn.disabled = false;
       analyzeBulkUsersBtn.textContent = 'Analyze All';
-      lastBulkUserData = data; document.getElementById('exportBulkUsersBtn').style.display='inline-block';
+
     }
   }
 

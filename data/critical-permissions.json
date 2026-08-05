@@ -1,0 +1,1404 @@
+[
+  {
+    "riskId": "CP-A_S_ANLKL",
+    "riskName": "Critical Permission: A_S_ANLKL",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "A_S_ANLKL",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F06"
+    ],
+    "rationale": "Auth object A_S_ANLKL with Create/Change/Delete activity grants sensitive access in RTR-F06"
+  },
+  {
+    "riskId": "CP-F_ANLA_AKS",
+    "riskName": "Critical Permission: F_ANLA_AKS",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "F_ANLA_AKS",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F07"
+    ],
+    "rationale": "Auth object F_ANLA_AKS with Create/Change/Delete activity grants sensitive access in RTR-F07"
+  },
+  {
+    "riskId": "CP-F_ANLA_BUK",
+    "riskName": "Critical Permission: F_ANLA_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "F_ANLA_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F06",
+      "RTR-F07",
+      "RTR-F08"
+    ],
+    "rationale": "Auth object F_ANLA_BUK with Create/Change/Delete activity grants sensitive access in RTR-F06, RTR-F07, RTR-F08"
+  },
+  {
+    "riskId": "CP-F_BKPF_BED",
+    "riskName": "Critical Permission: F_BKPF_BED",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "F_BKPF_BED",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F02",
+      "RTR-F03",
+      "OTC-F16",
+      "OTC-F14"
+    ],
+    "rationale": "Auth object F_BKPF_BED with Create/Change/Delete activity grants sensitive access in RTR-F02, RTR-F03, OTC-F16, OTC-F14"
+  },
+  {
+    "riskId": "CP-F_BKPF_BUK",
+    "riskName": "Critical Permission: F_BKPF_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "F_BKPF_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F15",
+      "RTR-F03",
+      "OTC-F16",
+      "OTC-F14",
+      "P2P-F10",
+      "H2R-F07",
+      "RTR-F13",
+      "RTR-F02",
+      "P2P-F12",
+      "RTR-F11"
+    ],
+    "rationale": "Auth object F_BKPF_BUK with Create/Change/Delete activity grants sensitive access in OTC-F15, RTR-F03, OTC-F16, OTC-F14, P2P-F10, H2R-F07, RTR-F13, RTR-F02, P2P-F12, RTR-F11"
+  },
+  {
+    "riskId": "CP-F_BKPF_KOA",
+    "riskName": "Critical Permission: F_BKPF_KOA",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "F_BKPF_KOA",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F02",
+      "OTC-F15",
+      "OTC-F14",
+      "P2P-F10"
+    ],
+    "rationale": "Auth object F_BKPF_KOA with Create/Change/Delete activity grants sensitive access in RTR-F02, OTC-F15, OTC-F14, P2P-F10"
+  },
+  {
+    "riskId": "CP-F_KNA1_AEN",
+    "riskName": "Critical Permission: F_KNA1_AEN",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "F_KNA1_AEN",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F01"
+    ],
+    "rationale": "Auth object F_KNA1_AEN with Create/Change/Delete activity grants sensitive access in OTC-F01"
+  },
+  {
+    "riskId": "CP-F_KNA1_BED",
+    "riskName": "Critical Permission: F_KNA1_BED",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "F_KNA1_BED",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F02",
+      "OTC-F01"
+    ],
+    "rationale": "Auth object F_KNA1_BED with Create/Change/Delete activity grants sensitive access in OTC-F02, OTC-F01"
+  },
+  {
+    "riskId": "CP-F_KNA1_BUK",
+    "riskName": "Critical Permission: F_KNA1_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "F_KNA1_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F02",
+      "OTC-F17",
+      "OTC-F01"
+    ],
+    "rationale": "Auth object F_KNA1_BUK with Create/Change/Delete activity grants sensitive access in OTC-F02, OTC-F17, OTC-F01"
+  },
+  {
+    "riskId": "CP-F_KNKA_AAT",
+    "riskName": "Critical Permission: F_KNKA_AAT",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "F_KNKA_AAT",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F03"
+    ],
+    "rationale": "Auth object F_KNKA_AAT with Create/Change/Delete activity grants sensitive access in OTC-F03"
+  },
+  {
+    "riskId": "CP-F_KNKA_BUK",
+    "riskName": "Critical Permission: F_KNKA_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "F_KNKA_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F03"
+    ],
+    "rationale": "Auth object F_KNKA_BUK with Create/Change/Delete activity grants sensitive access in OTC-F03"
+  },
+  {
+    "riskId": "CP-F_LFA1_APP",
+    "riskName": "Critical Permission: F_LFA1_APP",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "F_LFA1_APP",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F01"
+    ],
+    "rationale": "Auth object F_LFA1_APP with Create/Change/Delete activity grants sensitive access in P2P-F01"
+  },
+  {
+    "riskId": "CP-F_LFA1_BEK",
+    "riskName": "Critical Permission: F_LFA1_BEK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "F_LFA1_BEK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F02"
+    ],
+    "rationale": "Auth object F_LFA1_BEK with Create/Change/Delete activity grants sensitive access in P2P-F02"
+  },
+  {
+    "riskId": "CP-F_LFA1_BUK",
+    "riskName": "Critical Permission: F_LFA1_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "F_LFA1_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F01",
+      "P2P-F02"
+    ],
+    "rationale": "Auth object F_LFA1_BUK with Create/Change/Delete activity grants sensitive access in P2P-F01, P2P-F02"
+  },
+  {
+    "riskId": "CP-F_LFA1_GEN",
+    "riskName": "Critical Permission: F_LFA1_GEN",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "F_LFA1_GEN",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F01"
+    ],
+    "rationale": "Auth object F_LFA1_GEN with Create/Change/Delete activity grants sensitive access in P2P-F01"
+  },
+  {
+    "riskId": "CP-F_REGU_BUK",
+    "riskName": "Critical Permission: F_REGU_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "F_REGU_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F11"
+    ],
+    "rationale": "Auth object F_REGU_BUK with Create/Change/Delete activity grants sensitive access in P2P-F11"
+  },
+  {
+    "riskId": "CP-F_REGU_KOA",
+    "riskName": "Critical Permission: F_REGU_KOA",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "F_REGU_KOA",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F11"
+    ],
+    "rationale": "Auth object F_REGU_KOA with Create/Change/Delete activity grants sensitive access in P2P-F11"
+  },
+  {
+    "riskId": "CP-F_SKA1_BUK",
+    "riskName": "Critical Permission: F_SKA1_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "F_SKA1_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F01"
+    ],
+    "rationale": "Auth object F_SKA1_BUK with Create/Change/Delete activity grants sensitive access in RTR-F01"
+  },
+  {
+    "riskId": "CP-F_SKA1_KTP",
+    "riskName": "Critical Permission: F_SKA1_KTP",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "F_SKA1_KTP",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F01"
+    ],
+    "rationale": "Auth object F_SKA1_KTP with Create/Change/Delete activity grants sensitive access in RTR-F01"
+  },
+  {
+    "riskId": "CP-F_T012_BNK",
+    "riskName": "Critical Permission: F_T012_BNK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "F_T012_BNK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F12"
+    ],
+    "rationale": "Auth object F_T012_BNK with Create/Change/Delete activity grants sensitive access in RTR-F12"
+  },
+  {
+    "riskId": "CP-K_CSKS_SET",
+    "riskName": "Critical Permission: K_CSKS_SET",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "K_CSKS_SET",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F10",
+      "RTR-F09"
+    ],
+    "rationale": "Auth object K_CSKS_SET with Create/Change/Delete activity grants sensitive access in RTR-F10, RTR-F09"
+  },
+  {
+    "riskId": "CP-K_ORDER",
+    "riskName": "Critical Permission: K_ORDER",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "K_ORDER",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F10",
+      "RTR-F09"
+    ],
+    "rationale": "Auth object K_ORDER with Create/Change/Delete activity grants sensitive access in RTR-F10, RTR-F09"
+  },
+  {
+    "riskId": "CP-L_LGNUM",
+    "riskName": "Critical Permission: L_LGNUM",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "WM",
+    "businessProcessDesc": "Warehouse Management",
+    "authObject": "L_LGNUM",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "WM-F06",
+      "WM-F05",
+      "WM-F08"
+    ],
+    "rationale": "Auth object L_LGNUM with Create/Change/Delete activity grants sensitive access in WM-F06, WM-F05, WM-F08"
+  },
+  {
+    "riskId": "CP-L_TO_CONF",
+    "riskName": "Critical Permission: L_TO_CONF",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "WM",
+    "businessProcessDesc": "Warehouse Management",
+    "authObject": "L_TO_CONF",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "WM-F06"
+    ],
+    "rationale": "Auth object L_TO_CONF with Create/Change/Delete activity grants sensitive access in WM-F06"
+  },
+  {
+    "riskId": "CP-L_TO_CREA",
+    "riskName": "Critical Permission: L_TO_CREA",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "WM",
+    "businessProcessDesc": "Warehouse Management",
+    "authObject": "L_TO_CREA",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "WM-F05"
+    ],
+    "rationale": "Auth object L_TO_CREA with Create/Change/Delete activity grants sensitive access in WM-F05"
+  },
+  {
+    "riskId": "CP-M_BANF_EKG",
+    "riskName": "Critical Permission: M_BANF_EKG",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_BANF_EKG",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F03"
+    ],
+    "rationale": "Auth object M_BANF_EKG with Create/Change/Delete activity grants sensitive access in P2P-F03"
+  },
+  {
+    "riskId": "CP-M_BANF_WRK",
+    "riskName": "Critical Permission: M_BANF_WRK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_BANF_WRK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F03"
+    ],
+    "rationale": "Auth object M_BANF_WRK with Create/Change/Delete activity grants sensitive access in P2P-F03"
+  },
+  {
+    "riskId": "CP-M_BEST_BSA",
+    "riskName": "Critical Permission: M_BEST_BSA",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_BEST_BSA",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F04"
+    ],
+    "rationale": "Auth object M_BEST_BSA with Create/Change/Delete activity grants sensitive access in P2P-F04"
+  },
+  {
+    "riskId": "CP-M_BEST_EKG",
+    "riskName": "Critical Permission: M_BEST_EKG",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_BEST_EKG",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F04"
+    ],
+    "rationale": "Auth object M_BEST_EKG with Create/Change/Delete activity grants sensitive access in P2P-F04"
+  },
+  {
+    "riskId": "CP-M_BEST_FRG",
+    "riskName": "Critical Permission: M_BEST_FRG",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_BEST_FRG",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F14"
+    ],
+    "rationale": "Auth object M_BEST_FRG with Create/Change/Delete activity grants sensitive access in P2P-F14"
+  },
+  {
+    "riskId": "CP-M_BEST_WRK",
+    "riskName": "Critical Permission: M_BEST_WRK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_BEST_WRK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F04"
+    ],
+    "rationale": "Auth object M_BEST_WRK with Create/Change/Delete activity grants sensitive access in P2P-F04"
+  },
+  {
+    "riskId": "CP-M_EINK_FRG",
+    "riskName": "Critical Permission: M_EINK_FRG",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_EINK_FRG",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F06"
+    ],
+    "rationale": "Auth object M_EINK_FRG with Create/Change/Delete activity grants sensitive access in P2P-F06"
+  },
+  {
+    "riskId": "CP-M_ISEG_WIB",
+    "riskName": "Critical Permission: M_ISEG_WIB",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "WM",
+    "businessProcessDesc": "Warehouse Management",
+    "authObject": "M_ISEG_WIB",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "WM-F02",
+      "WM-F04",
+      "WM-F03"
+    ],
+    "rationale": "Auth object M_ISEG_WIB with Create/Change/Delete activity grants sensitive access in WM-F02, WM-F04, WM-F03"
+  },
+  {
+    "riskId": "CP-M_LIFN_EKO",
+    "riskName": "Critical Permission: M_LIFN_EKO",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_LIFN_EKO",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F05"
+    ],
+    "rationale": "Auth object M_LIFN_EKO with Create/Change/Delete activity grants sensitive access in P2P-F05"
+  },
+  {
+    "riskId": "CP-M_MATE_MAR",
+    "riskName": "Critical Permission: M_MATE_MAR",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "WM",
+    "businessProcessDesc": "Warehouse Management",
+    "authObject": "M_MATE_MAR",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "WM-F09"
+    ],
+    "rationale": "Auth object M_MATE_MAR with Create/Change/Delete activity grants sensitive access in WM-F09"
+  },
+  {
+    "riskId": "CP-M_MATE_WRK",
+    "riskName": "Critical Permission: M_MATE_WRK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "WM",
+    "businessProcessDesc": "Warehouse Management",
+    "authObject": "M_MATE_WRK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "WM-F09"
+    ],
+    "rationale": "Auth object M_MATE_WRK with Create/Change/Delete activity grants sensitive access in WM-F09"
+  },
+  {
+    "riskId": "CP-M_MSEG_WMB",
+    "riskName": "Critical Permission: M_MSEG_WMB",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "M_MSEG_WMB",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "WM-F01",
+      "P2P-F07",
+      "WM-F10",
+      "OTC-F09"
+    ],
+    "rationale": "Auth object M_MSEG_WMB with Create/Change/Delete activity grants sensitive access in WM-F01, P2P-F07, WM-F10, OTC-F09"
+  },
+  {
+    "riskId": "CP-M_MSEG_WWA",
+    "riskName": "Critical Permission: M_MSEG_WWA",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "M_MSEG_WWA",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "WM-F01",
+      "P2P-F07",
+      "OTC-F09",
+      "WM-F07"
+    ],
+    "rationale": "Auth object M_MSEG_WWA with Create/Change/Delete activity grants sensitive access in WM-F01, P2P-F07, OTC-F09, WM-F07"
+  },
+  {
+    "riskId": "CP-M_RECH_BUK",
+    "riskName": "Critical Permission: M_RECH_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_RECH_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F08"
+    ],
+    "rationale": "Auth object M_RECH_BUK with Create/Change/Delete activity grants sensitive access in P2P-F08"
+  },
+  {
+    "riskId": "CP-M_RECH_WRK",
+    "riskName": "Critical Permission: M_RECH_WRK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "M_RECH_WRK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "P2P-F08",
+      "P2P-F09"
+    ],
+    "rationale": "Auth object M_RECH_WRK with Create/Change/Delete activity grants sensitive access in P2P-F08, P2P-F09"
+  },
+  {
+    "riskId": "CP-PLOG",
+    "riskName": "Critical Permission: PLOG",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "H2R",
+    "businessProcessDesc": "Hire to Retire",
+    "authObject": "PLOG",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "H2R-F04",
+      "H2R-F12"
+    ],
+    "rationale": "Auth object PLOG with Create/Change/Delete activity grants sensitive access in H2R-F04, H2R-F12"
+  },
+  {
+    "riskId": "CP-P_ABAP",
+    "riskName": "Critical Permission: P_ABAP",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "H2R",
+    "businessProcessDesc": "Hire to Retire",
+    "authObject": "P_ABAP",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "H2R-F05"
+    ],
+    "rationale": "Auth object P_ABAP with Create/Change/Delete activity grants sensitive access in H2R-F05"
+  },
+  {
+    "riskId": "CP-P_ORGIN",
+    "riskName": "Critical Permission: P_ORGIN",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "H2R",
+    "businessProcessDesc": "Hire to Retire",
+    "authObject": "P_ORGIN",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "H2R-F03",
+      "H2R-F08",
+      "H2R-F02",
+      "H2R-F10",
+      "H2R-F05",
+      "H2R-F07",
+      "H2R-F06",
+      "H2R-F11",
+      "H2R-F01",
+      "H2R-F12",
+      "H2R-F09"
+    ],
+    "rationale": "Auth object P_ORGIN with Create/Change/Delete activity grants sensitive access in H2R-F03, H2R-F08, H2R-F02, H2R-F10, H2R-F05, H2R-F07, H2R-F06, H2R-F11, H2R-F01, H2R-F12, H2R-F09"
+  },
+  {
+    "riskId": "CP-P_ORGXX",
+    "riskName": "Critical Permission: P_ORGXX",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "H2R",
+    "businessProcessDesc": "Hire to Retire",
+    "authObject": "P_ORGXX",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "H2R-F01"
+    ],
+    "rationale": "Auth object P_ORGXX with Create/Change/Delete activity grants sensitive access in H2R-F01"
+  },
+  {
+    "riskId": "CP-P_PCLX",
+    "riskName": "Critical Permission: P_PCLX",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "H2R",
+    "businessProcessDesc": "Hire to Retire",
+    "authObject": "P_PCLX",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "H2R-F06"
+    ],
+    "rationale": "Auth object P_PCLX with Create/Change/Delete activity grants sensitive access in H2R-F06"
+  },
+  {
+    "riskId": "CP-P_PERNR",
+    "riskName": "Critical Permission: P_PERNR",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "H2R",
+    "businessProcessDesc": "Hire to Retire",
+    "authObject": "P_PERNR",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "H2R-F02",
+      "H2R-F08",
+      "H2R-F03",
+      "H2R-F09"
+    ],
+    "rationale": "Auth object P_PERNR with Create/Change/Delete activity grants sensitive access in H2R-F02, H2R-F08, H2R-F03, H2R-F09"
+  },
+  {
+    "riskId": "CP-S_ADMI_FCD",
+    "riskName": "Critical Permission: S_ADMI_FCD",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_ADMI_FCD",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F12",
+      "BSA-F14",
+      "BSA-F13"
+    ],
+    "rationale": "Auth object S_ADMI_FCD with Create/Change/Delete activity grants sensitive access in BSA-F12, BSA-F14, BSA-F13"
+  },
+  {
+    "riskId": "CP-S_BTCH_ADM",
+    "riskName": "Critical Permission: S_BTCH_ADM",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_BTCH_ADM",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F10"
+    ],
+    "rationale": "Auth object S_BTCH_ADM with Create/Change/Delete activity grants sensitive access in BSA-F10"
+  },
+  {
+    "riskId": "CP-S_BTCH_JOB",
+    "riskName": "Critical Permission: S_BTCH_JOB",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_BTCH_JOB",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F09"
+    ],
+    "rationale": "Auth object S_BTCH_JOB with Create/Change/Delete activity grants sensitive access in BSA-F09"
+  },
+  {
+    "riskId": "CP-S_BTCH_NAM",
+    "riskName": "Critical Permission: S_BTCH_NAM",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_BTCH_NAM",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F11"
+    ],
+    "rationale": "Auth object S_BTCH_NAM with Create/Change/Delete activity grants sensitive access in BSA-F11"
+  },
+  {
+    "riskId": "CP-S_CTS_ADMI",
+    "riskName": "Critical Permission: S_CTS_ADMI",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_CTS_ADMI",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F08",
+      "BSA-F04"
+    ],
+    "rationale": "Auth object S_CTS_ADMI with Create/Change/Delete activity grants sensitive access in BSA-F08, BSA-F04"
+  },
+  {
+    "riskId": "CP-S_DEVELOP",
+    "riskName": "Critical Permission: S_DEVELOP",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_DEVELOP",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F06",
+      "BSA-F07"
+    ],
+    "rationale": "Auth object S_DEVELOP with Create/Change/Delete activity grants sensitive access in BSA-F06, BSA-F07"
+  },
+  {
+    "riskId": "CP-S_TABU_DIS",
+    "riskName": "Critical Permission: S_TABU_DIS",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "P2P",
+    "businessProcessDesc": "Procure to Pay",
+    "authObject": "S_TABU_DIS",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F04",
+      "RTR-F05",
+      "BSA-F05",
+      "BSA-F12",
+      "P2P-F13",
+      "WM-F08"
+    ],
+    "rationale": "Auth object S_TABU_DIS with Create/Change/Delete activity grants sensitive access in RTR-F04, RTR-F05, BSA-F05, BSA-F12, P2P-F13, WM-F08"
+  },
+  {
+    "riskId": "CP-S_TABU_NAM",
+    "riskName": "Critical Permission: S_TABU_NAM",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "R2R",
+    "businessProcessDesc": "Record to Report",
+    "authObject": "S_TABU_NAM",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "RTR-F04",
+      "BSA-F05"
+    ],
+    "rationale": "Auth object S_TABU_NAM with Create/Change/Delete activity grants sensitive access in RTR-F04, BSA-F05"
+  },
+  {
+    "riskId": "CP-S_TRANSPRT",
+    "riskName": "Critical Permission: S_TRANSPRT",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_TRANSPRT",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F08",
+      "BSA-F04"
+    ],
+    "rationale": "Auth object S_TRANSPRT with Create/Change/Delete activity grants sensitive access in BSA-F08, BSA-F04"
+  },
+  {
+    "riskId": "CP-S_USER_AGR",
+    "riskName": "Critical Permission: S_USER_AGR",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_USER_AGR",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F03",
+      "BSA-F04",
+      "BSA-F02"
+    ],
+    "rationale": "Auth object S_USER_AGR with Create/Change/Delete activity grants sensitive access in BSA-F03, BSA-F04, BSA-F02"
+  },
+  {
+    "riskId": "CP-S_USER_AUT",
+    "riskName": "Critical Permission: S_USER_AUT",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_USER_AUT",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F02"
+    ],
+    "rationale": "Auth object S_USER_AUT with Create/Change/Delete activity grants sensitive access in BSA-F02"
+  },
+  {
+    "riskId": "CP-S_USER_GRP",
+    "riskName": "Critical Permission: S_USER_GRP",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_USER_GRP",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F01",
+      "BSA-F03"
+    ],
+    "rationale": "Auth object S_USER_GRP with Create/Change/Delete activity grants sensitive access in BSA-F01, BSA-F03"
+  },
+  {
+    "riskId": "CP-S_USER_PRO",
+    "riskName": "Critical Permission: S_USER_PRO",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "BSA",
+    "businessProcessDesc": "Basis & Security",
+    "authObject": "S_USER_PRO",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "BSA-F01"
+    ],
+    "rationale": "Auth object S_USER_PRO with Create/Change/Delete activity grants sensitive access in BSA-F01"
+  },
+  {
+    "riskId": "CP-UKM_ACTIVITY",
+    "riskName": "Critical Permission: UKM_ACTIVITY",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "UKM_ACTIVITY",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F06",
+      "OTC-F03"
+    ],
+    "rationale": "Auth object UKM_ACTIVITY with Create/Change/Delete activity grants sensitive access in OTC-F06, OTC-F03"
+  },
+  {
+    "riskId": "CP-V_KNA1_VKO",
+    "riskName": "Critical Permission: V_KNA1_VKO",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_KNA1_VKO",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F01"
+    ],
+    "rationale": "Auth object V_KNA1_VKO with Create/Change/Delete activity grants sensitive access in OTC-F01"
+  },
+  {
+    "riskId": "CP-V_KONH_VKO",
+    "riskName": "Critical Permission: V_KONH_VKO",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_KONH_VKO",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F07"
+    ],
+    "rationale": "Auth object V_KONH_VKO with Create/Change/Delete activity grants sensitive access in OTC-F07"
+  },
+  {
+    "riskId": "CP-V_KONH_VKS",
+    "riskName": "Critical Permission: V_KONH_VKS",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_KONH_VKS",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F07"
+    ],
+    "rationale": "Auth object V_KONH_VKS with Create/Change/Delete activity grants sensitive access in OTC-F07"
+  },
+  {
+    "riskId": "CP-V_LIKP_VKO",
+    "riskName": "Critical Permission: V_LIKP_VKO",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_LIKP_VKO",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F08"
+    ],
+    "rationale": "Auth object V_LIKP_VKO with Create/Change/Delete activity grants sensitive access in OTC-F08"
+  },
+  {
+    "riskId": "CP-V_LIKP_VST",
+    "riskName": "Critical Permission: V_LIKP_VST",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_LIKP_VST",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F08"
+    ],
+    "rationale": "Auth object V_LIKP_VST with Create/Change/Delete activity grants sensitive access in OTC-F08"
+  },
+  {
+    "riskId": "CP-V_VBAK_AAT",
+    "riskName": "Critical Permission: V_VBAK_AAT",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_VBAK_AAT",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F05",
+      "OTC-F18",
+      "OTC-F04",
+      "OTC-F19",
+      "OTC-F12"
+    ],
+    "rationale": "Auth object V_VBAK_AAT with Create/Change/Delete activity grants sensitive access in OTC-F05, OTC-F18, OTC-F04, OTC-F19, OTC-F12"
+  },
+  {
+    "riskId": "CP-V_VBAK_BUK",
+    "riskName": "Critical Permission: V_VBAK_BUK",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_VBAK_BUK",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F04"
+    ],
+    "rationale": "Auth object V_VBAK_BUK with Create/Change/Delete activity grants sensitive access in OTC-F04"
+  },
+  {
+    "riskId": "CP-V_VBAK_VKO",
+    "riskName": "Critical Permission: V_VBAK_VKO",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_VBAK_VKO",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F05",
+      "OTC-F04",
+      "OTC-F06"
+    ],
+    "rationale": "Auth object V_VBAK_VKO with Create/Change/Delete activity grants sensitive access in OTC-F05, OTC-F04, OTC-F06"
+  },
+  {
+    "riskId": "CP-V_VBRK_FKA",
+    "riskName": "Critical Permission: V_VBRK_FKA",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_VBRK_FKA",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F13",
+      "OTC-F10",
+      "OTC-F11"
+    ],
+    "rationale": "Auth object V_VBRK_FKA with Create/Change/Delete activity grants sensitive access in OTC-F13, OTC-F10, OTC-F11"
+  },
+  {
+    "riskId": "CP-V_VBRK_VKO",
+    "riskName": "Critical Permission: V_VBRK_VKO",
+    "riskType": "Critical Permission",
+    "riskLevel": "High",
+    "ruleSet": "RM_RULES",
+    "businessProcess": "OTC",
+    "businessProcessDesc": "Order to Cash",
+    "authObject": "V_VBRK_VKO",
+    "criticalActivities": [
+      "01",
+      "02",
+      "06"
+    ],
+    "sourceFunctions": [
+      "OTC-F10",
+      "OTC-F11"
+    ],
+    "rationale": "Auth object V_VBRK_VKO with Create/Change/Delete activity grants sensitive access in OTC-F10, OTC-F11"
+  }
+]
