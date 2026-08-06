@@ -19,14 +19,14 @@
   body{
     background:linear-gradient(160deg, #15263F 0%, #1F497D 60%, #15263F 100%);
     color:var(--ink); font-family:var(--font-body);
-    display:flex; align-items:center; justify-content:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
     min-height:100vh; padding:20px;
     -webkit-font-smoothing:antialiased;
   }
   .login-wrapper{ width:100%; max-width:400px; }
 
   /* Gold accent line */
-  .gold-bar{ height:3px; background:var(--gold); border-radius:3px 3px 0 0; }
+  .gold-bar{ height:2px; background:var(--gold); border-radius:3px 3px 0 0; }
 
   .logo{
     font-family:var(--font-display); font-size:42px; font-weight:800;
@@ -61,7 +61,7 @@
     padding:13px; cursor:pointer; margin-top:4px;
     transition:all .15s ease; box-shadow:0 2px 8px rgba(31,73,125,0.25);
   }
-  .go-btn:hover{ background:var(--navy); box-shadow:0 4px 14px rgba(31,73,125,0.35); }
+  .go-btn:hover{ background:var(--navy); box-shadow:0 6px 20px rgba(31,73,125,0.45); transform:translateY(-1px); }
   .go-btn:disabled{ opacity:0.6; cursor:not-allowed; }
   .error{
     margin-top:16px; font-family:var(--font-mono); font-size:12px; color:var(--crimson);
@@ -72,6 +72,21 @@
     margin-top:22px; padding-top:18px; border-top:1px dashed var(--ice-3);
     font-family:var(--font-mono); font-size:11px; color:var(--slate-light); line-height:1.8;
   }
+
+  /* Shield icon */
+  .shield-icon{ text-align:center; margin-bottom:8px; }
+  .shield-icon svg{ filter:drop-shadow(0 2px 8px rgba(255,192,0,0.3)); }
+  /* Forgot password */
+  .forgot-link{ display:block; text-align:center; margin-top:14px; font-family:var(--font-mono); font-size:11px; color:var(--slate-light); text-decoration:none; transition:color .15s; }
+  .forgot-link:hover{ color:var(--navy-corp); }
+  /* Footer */
+  .login-footer{ text-align:center; margin-top:24px; font-family:var(--font-mono); font-size:10px; color:#5A7099; letter-spacing:0.5px; line-height:1.6; }
+  /* Subtle background circles */
+  body::before{ content:''; position:fixed; top:-200px; right:-200px; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle, rgba(31,73,125,0.15) 0%, transparent 70%); pointer-events:none; }
+  body::after{ content:''; position:fixed; bottom:-300px; left:-200px; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle, rgba(255,192,0,0.05) 0%, transparent 70%); pointer-events:none; }
+
+  .forgot-msg{ display:none; text-align:center; margin-top:10px; font-family:var(--font-mono); font-size:11px; color:var(--gold); background:rgba(255,192,0,0.08); border:1px solid rgba(255,192,0,0.2); border-radius:6px; padding:10px 14px; line-height:1.5; }
+  .forgot-msg.show{ display:block; }
 </style>
 </head>
 <body>
@@ -79,6 +94,7 @@
 <div class="login-wrapper">
   <div class="logo"><span class="ik-gold">IK</span>Aegis</div>
   <div class="logo-sub">SAP Access Governance</div>
+  <div class="shield-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFC000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" stroke="#8FA3C4" stroke-width="1.5"/></svg></div>
   <div class="gold-bar"></div>
   <div class="card">
 
@@ -96,8 +112,14 @@
     </form>
 
 
+
+    <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
+    <div class="forgot-msg" id="forgotMsg">Contact your IKAegis administrator to reset your password.</div>
   </div>
 </div>
+
+
+<div class="login-footer">&copy; 2026 Infokrafts &middot; IKAegis v1.0</div>
 
 <script>
 document.getElementById('loginForm').addEventListener('submit', function(e){
@@ -134,6 +156,8 @@ document.getElementById('loginForm').addEventListener('submit', function(e){
       err.classList.add('show');
     });
 });
+
+document.getElementById('forgotLink').addEventListener('click',function(e){e.preventDefault();document.getElementById('forgotMsg').classList.toggle('show');});
 </script>
 
 </body>

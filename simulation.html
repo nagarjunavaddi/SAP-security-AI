@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulation — IKAegis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --tint:#F5F7FA;
+    --tint-2:#EDF2F8;
+    --ink:#12181F;
+    --ink-soft:#5A6A85;
+    --ink-faint:#8A93A0;
+    --line:#DCE5F0;
+    --navy:#15263F;
+    --navy-2:#1F497D;
+    --blue:#1F497D;
+    --red:#C33438;
+    --amber:#C1811E;
+    --green:#00B050;
+    --gold:#FFC000;
+    --font-display:'Sora',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--navy); color:#fff; }
+
+  /* ====== IKAegis Enterprise Design System ====== */
+  .ik-nav{ background:var(--navy); padding:0 28px; height:52px; display:flex; align-items:center; }
+  .ik-nav-inner{ max-width:1180px; width:100%; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+  .ik-brand{ font-family:'Righteous',sans-serif; font-size:22px; color:#fff; text-decoration:none; letter-spacing:0.5px; }
+  .ik-gold{ color:var(--gold); }
+  .ik-nav-links{ display:flex; align-items:center; gap:18px; }
+  .nav-user{ font-family:var(--font-mono); font-size:12px; color:#B9C2D6; }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
+  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
+
+  .page-head{ background:var(--navy); color:#EEF1F6; padding:28px 28px; }
+  .page-head-inner{ max-width:1180px; margin:0 auto; }
+  .back-link{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:12px; color:#B9C2D6; text-decoration:none; margin-bottom:14px; cursor:pointer; background:none; border:none; padding:0; }
+  .back-link:hover{ color:#fff; }
+  .page-head h2{ font-family:var(--font-display); font-weight:700; font-size:26px; margin:0 0 6px; }
+  .page-head p{ font-size:13.5px; color:#B9C2D6; margin:0; max-width:560px; line-height:1.5; }
+
+  section{ padding:36px 28px 60px; }
+  .section-inner{ max-width:1180px; margin:0 auto; }
+
+  /* Tabs */
+  .tab-row{ display:flex; gap:8px; border-bottom:1px solid var(--line); margin-bottom:28px; }
+  .tab-btn{ font-family:var(--font-display); font-weight:700; font-size:14.5px; background:none; border:none; padding:12px 4px; margin-right:22px; color:var(--ink-faint); cursor:pointer; position:relative; top:1px; border-bottom:2px solid transparent; }
+  .tab-btn.active{ color:var(--navy); border-bottom-color:var(--blue); }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  /* Input box */
+  .inquiry-box{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:24px; box-shadow:0 1px 3px rgba(18,24,31,0.04); max-width:720px; }
+  .input-label{ font-family:var(--font-display); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-soft); margin-bottom:8px; display:block; }
+  .sim-input{ width:100%; font-family:var(--font-body); font-size:14.5px; background:var(--tint); border:1px solid var(--line); border-radius:7px; padding:13px 16px; color:var(--ink); outline:none; margin-bottom:18px; }
+  .sim-input:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  .sim-input::placeholder{ color:var(--ink-faint); }
+
+  /* Spreadsheet Grid */
+  .grid-label{ font-family:var(--font-display); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-soft); margin-bottom:8px; display:block; }
+  .spreadsheet-grid{ width:100%; border-collapse:separate; border-spacing:0; font-family:var(--font-mono); font-size:13px; border:1px solid var(--line); border-radius:7px; overflow:hidden; margin-bottom:12px; }
+  .spreadsheet-grid thead th{ background:var(--blue); color:#fff; font-family:var(--font-display); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; padding:9px 12px; text-align:left; }
+  .spreadsheet-grid thead th:last-child{ width:36px; }
+  .spreadsheet-grid tbody td{ padding:0; border-bottom:1px solid var(--line); background:var(--tint); }
+  .spreadsheet-grid tbody td input.grid-cell{ width:100%; border:none; background:transparent; padding:8px 12px; font-family:var(--font-mono); font-size:13px; color:var(--ink); outline:none; box-sizing:border-box; }
+  .spreadsheet-grid tbody td input.grid-cell:focus{ background:rgba(31,73,125,.05); }
+  .spreadsheet-grid tbody td input.grid-cell::placeholder{ color:var(--ink-faint); }
+  .spreadsheet-grid tbody tr:hover td{ background:rgba(31,73,125,.03); }
+  .grid-del-btn{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:15px; padding:6px; border-radius:4px; line-height:1; }
+  .grid-del-btn:hover{ color:var(--red); background:rgba(195,52,56,.08); }
+
+  /* Toolbar */
+  .grid-toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .grid-toolbar button{ font-family:var(--font-mono); font-size:11px; font-weight:600; padding:7px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
+  .add-row-btn{ background:var(--tint); color:var(--ink-soft); border:1px solid var(--line); }
+  .add-row-btn:hover{ background:var(--tint-2); }
+  .clear-btn{ background:var(--tint); color:var(--ink-soft); border:1px solid var(--line); }
+  .clear-btn:hover{ background:var(--tint-2); }
+
+  /* Checkboxes */
+  .chk-row{ display:flex; flex-wrap:wrap; gap:16px; margin-bottom:18px; font-family:var(--font-body); font-size:13.5px; color:var(--ink-soft); }
+  .chk-row label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+
+  /* Go button */
+  .go-btn{ font-family:var(--font-display); font-weight:700; font-size:14px; letter-spacing:0.3px; background:var(--navy); color:#fff; border:none; border-radius:8px; padding:16px 32px; cursor:pointer; transition:all .15s; }
+  .go-btn:hover{ background:var(--navy-2); }
+  .go-btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .go-btn.block{ display:block; width:100%; text-align:center; }
+
+  /* Results */
+  .result-area{ margin-top:28px; }
+  .summary-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px; }
+  .summary-card{ background:var(--tint); border:1px solid var(--line); border-radius:10px; padding:22px; text-align:center; }
+  .summary-card .num{ font-family:var(--font-display); font-weight:800; font-size:36px; color:var(--navy); }
+  .summary-card .num.red{ color:var(--red); }
+  .summary-card .num.green{ color:var(--green); }
+  .summary-card .num.amber{ color:var(--amber); }
+  .summary-card .lbl{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px; color:var(--ink-soft); margin-top:6px; }
+
+  /* Violation cards */
+  .violation-card{ background:var(--tint); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:12px; }
+  .violation-card.new-violation{ border-left:4px solid var(--red); background:#FFF8F8; }
+  .violation-card.existing-violation{ border-left:4px solid var(--ink-faint); }
+  .violation-header{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .violation-header .risk-meta{ font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); }
+  .violation-header .risk-name{ font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--ink); margin-top:2px; }
+  .violation-badges{ display:flex; gap:6px; flex-wrap:wrap; }
+  .badge{ font-family:var(--font-mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; padding:3px 10px; border-radius:10px; }
+  .badge-new{ background:var(--red); color:#fff; }
+  .badge-existing{ background:var(--tint-2); color:var(--ink-soft); border:1px solid var(--line); }
+  .badge-high{ background:#C33438; color:#fff; }
+  .badge-medium{ background:var(--amber); color:#fff; }
+  .badge-low{ background:var(--green); color:#fff; }
+  .risktype-badge{ background:var(--tint-2); color:var(--navy); border:1px solid var(--line); }
+
+  .function-row{ font-size:13px; color:var(--ink-soft); padding:6px 0; border-top:1px solid var(--line); margin-top:6px; }
+  .function-row b{ color:var(--ink); }
+  .tcode-chip{ display:inline-block; font-family:var(--font-mono); font-size:11px; background:var(--tint-2); border:1px solid var(--line); border-radius:4px; padding:2px 8px; margin:2px 3px 2px 0; color:var(--navy); }
+
+  .error-box{ background:#FFF0F0; border:1px solid #FFCDD2; color:var(--red); border-radius:8px; padding:14px 18px; font-size:13px; }
+  .clean-box{ background:#F0FFF4; border:1px solid #C8E6C9; color:#2E7D32; border-radius:8px; padding:14px 18px; font-size:13px; }
+
+  /* Roles list (for user simulation) */
+  .roles-info{ background:var(--tint); border:1px solid var(--line); border-radius:8px; padding:14px 18px; margin-bottom:20px; font-size:13px; }
+  .roles-info strong{ font-family:var(--font-display); color:var(--navy); }
+  .role-chip{ display:inline-block; font-family:var(--font-mono); font-size:11px; background:var(--tint-2); border:1px solid var(--line); border-radius:4px; padding:3px 10px; margin:3px 4px 3px 0; color:var(--navy); }
+  .role-chip.proposed{ background:#FFF3E0; border-color:#FFB74D; color:#E65100; }
+
+  /* Loading */
+  .spinner{ display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle; margin-right:8px; }
+  @keyframes spin{ to{transform:rotate(360deg);} }
+
+  /* Toast warning */
+  .chk-warning{ position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#FFF3E0; border:1px solid #FFB74D; color:#E65100; font-family:var(--font-mono); font-size:12px; padding:10px 20px; border-radius:8px; z-index:999; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+</style>
+</head>
+<body>
+<nav class="ik-nav">
+  <div class="ik-nav-inner">
+    <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
+    <div class="ik-nav-links">
+      <span class="nav-user" id="navUser"></span>
+      <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">SIGN OUT</button>
+    </div>
+  </div>
+</nav>
+<div class="page-head">
+  <div class="page-head-inner">
+    <a class="back-link" href="index.html">&#8592; Back to dashboard</a>
+    <h2>Access Simulation</h2>
+
+  </div>
+</div>
+
+<section>
+<div class="section-inner">
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="switchTab('user')">User Simulation</button>
+    <button class="tab-btn" onclick="switchTab('role')">Role Simulation</button>
+  </div>
+
+  <!-- ==================== USER SIMULATION ==================== -->
+  <div class="tab-panel active" id="panel-user">
+    <div class="inquiry-box">
+      <label class="input-label">SAP Username</label>
+      <input type="text" class="sim-input" id="simUsername" placeholder="e.g. NAG" autocomplete="off">
+
+      <label class="grid-label">Proposed Roles to Add</label>
+      <table class="spreadsheet-grid" id="userRolesGrid">
+        <thead><tr><th>Role Name</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="grid-toolbar">
+        <button class="add-row-btn" onclick="addGridRow('userRolesGrid','e.g. Z_AP_ACCOUNTANT')">+ Add Row</button>
+        <button class="clear-btn" onclick="clearGrid('userRolesGrid','e.g. Z_AP_ACCOUNTANT')">Clear</button>
+      </div>
+
+      <div class="chk-row">
+        <label><input type="checkbox" id="simUserChkAction" checked> Action Level</label>
+        <label><input type="checkbox" id="simUserChkPermission"> Permission Level</label>
+        <label><input type="checkbox" id="simUserChkCritAction"> Critical Action</label>
+        <label><input type="checkbox" id="simUserChkCritPerm"> Critical Permission</label>
+      </div>
+
+      <button class="go-btn block" id="simUserBtn">Simulate</button>
+    </div>
+    <div class="result-area" id="simUserResult"></div>
+  </div>
+
+  <!-- ==================== ROLE SIMULATION ==================== -->
+  <div class="tab-panel" id="panel-role">
+    <div class="inquiry-box">
+      <label class="input-label">SAP Role Name</label>
+      <input type="text" class="sim-input" id="simRoleName" placeholder="e.g. Z_SOD_TEST" autocomplete="off">
+
+      <label class="grid-label">Proposed T-Codes to Add</label>
+      <table class="spreadsheet-grid" id="roleTcodesGrid">
+        <thead><tr><th>T-Code</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="grid-toolbar">
+        <button class="add-row-btn" onclick="addGridRow('roleTcodesGrid','e.g. F110')">+ Add Row</button>
+        <button class="clear-btn" onclick="clearGrid('roleTcodesGrid','e.g. F110')">Clear</button>
+      </div>
+
+      <div class="chk-row">
+        <label><input type="checkbox" id="simRoleChkAction" checked> Action Level</label>
+        <label><input type="checkbox" id="simRoleChkPermission"> Permission Level</label>
+        <label><input type="checkbox" id="simRoleChkCritAction"> Critical Action</label>
+        <label><input type="checkbox" id="simRoleChkCritPerm"> Critical Permission</label>
+      </div>
+
+      <button class="go-btn block" id="simRoleBtn">Simulate</button>
+    </div>
+    <div class="result-area" id="simRoleResult"></div>
+  </div>
+</div>
+</section>
+
+<script>
+function escapeHtml(s) { var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+// ===== Tab switching =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(function(b,i){ b.classList.toggle('active', i===(tab==='user'?0:1)); });
+  document.getElementById('panel-user').classList.toggle('active', tab==='user');
+  document.getElementById('panel-role').classList.toggle('active', tab==='role');
+}
+
+// ===== Grid functions =====
+function addGridRow(gridId, placeholder) {
+  var tbody = document.getElementById(gridId).querySelector('tbody');
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><input type="text" class="grid-cell" placeholder="' + placeholder + '"></td><td><button class="grid-del-btn" onclick="this.closest(\'tr\').remove()">&times;</button></td>';
+  tbody.appendChild(tr);
+  var input = tr.querySelector('input');
+  input.addEventListener('input', function() {
+    var rows = tbody.querySelectorAll('tr');
+    var lastInput = rows[rows.length - 1].querySelector('input');
+    if (lastInput.value.trim() !== '') addGridRow(gridId, placeholder);
+  });
+}
+function clearGrid(gridId, placeholder) {
+  var tbody = document.getElementById(gridId).querySelector('tbody');
+  tbody.innerHTML = '';
+  for (var i = 0; i < 5; i++) addGridRow(gridId, placeholder);
+}
+function getGridValues(gridId) {
+  var vals = [];
+  document.getElementById(gridId).querySelectorAll('tbody input.grid-cell').forEach(function(inp) {
+    var v = inp.value.trim();
+    if (v) vals.push(v);
+  });
+  return vals;
+}
+
+// ===== Initialize grids =====
+(function() {
+  for (var i = 0; i < 5; i++) {
+    addGridRow('userRolesGrid', 'e.g. Z_AP_ACCOUNTANT');
+    addGridRow('roleTcodesGrid', 'e.g. F110');
+  }
+})();
+
+// ===== Checkbox validation =====
+function showWarning(msg) {
+  var existing = document.querySelector('.chk-warning');
+  if (existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.className = 'chk-warning';
+  toast.innerHTML = '<svg width="20" height="20" fill="none" stroke="#FFC000" stroke-width="2"><circle cx="10" cy="10" r="9"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r="0.5" fill="#FFC000"/></svg><span>' + msg + '</span>';
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.style.opacity='0'; toast.style.transition='opacity .3s'; setTimeout(function(){ toast.remove(); }, 300); }, 3000);
+}
+
+// ===== Filter violations by checkbox =====
+function filterViolations(violations, chkAction, chkPerm, chkCritAction, chkCritPerm) {
+  var types = [];
+  if (chkAction) types.push('Action Level');
+  if (chkPerm) types.push('Permission Level');
+  if (chkCritAction) types.push('Critical Action');
+  if (chkCritPerm) types.push('Critical Permission');
+  return violations.filter(function(v) { return types.indexOf(v.riskType) !== -1; });
+}
+
+// ===== Render violations =====
+function renderViolations(violations) {
+  if (!violations.length) return '<div class="clean-box">&#x2705; No SoD violations found for this simulation.</div>';
+  var html = '';
+  for (var i = 0; i < violations.length; i++) {
+    var v = violations[i];
+    var isNew = v.simulationFlag === 'NEW';
+    var cardClass = isNew ? 'violation-card new-violation' : 'violation-card existing-violation';
+    var levelClass = (v.riskLevel || '').toLowerCase() === 'high' ? 'badge-high' : (v.riskLevel || '').toLowerCase() === 'medium' ? 'badge-medium' : 'badge-low';
+    html += '<div class="' + cardClass + '">';
+    html += '<div class="violation-header">';
+    html += '<div><div class="risk-meta">' + escapeHtml(v.riskId || '') + ' &middot; ' + escapeHtml(v.businessProcess || '') + '</div>';
+    html += '<div class="risk-name">' + escapeHtml(v.riskName || '') + '</div></div>';
+    html += '<div class="violation-badges">';
+    html += '<span class="badge ' + (isNew ? 'badge-new' : 'badge-existing') + '">' + (isNew ? 'NEW' : 'EXISTING') + '</span>';
+    html += '<span class="badge risktype-badge">' + escapeHtml(v.riskType || '') + '</span>';
+    html += '<span class="badge ' + levelClass + '">' + escapeHtml(v.riskLevel || 'N/A') + '</span>';
+    html += '</div></div>';
+
+    // Render functions or auth object details
+    if (v.matchedFunctions) {
+      for (var j = 0; j < v.matchedFunctions.length; j++) {
+        var f = v.matchedFunctions[j];
+        html += '<div class="function-row"><b>' + escapeHtml(f.functionId) + '</b> — ' + escapeHtml(f.functionDescription || '');
+        if (f.matchedTcodes) {
+          html += '<br/>';
+          for (var k = 0; k < f.matchedTcodes.length; k++) {
+            var tc = f.matchedTcodes[k]; var srcRoles = (window._tcodeRoleMap && window._tcodeRoleMap[tc]) ? window._tcodeRoleMap[tc].join(', ') : ''; html += '<span class="tcode-chip">' + escapeHtml(tc) + (srcRoles ? '<span style="color:#E65100;font-size:10px;margin-left:4px;">(' + escapeHtml(srcRoles) + ')</span>' : '') + '</span>';
+          }
+        }
+        html += '</div>';
+      }
+    } else if (v.authObject) {
+      var aoRoles = (window._authObjectRoleMap && window._authObjectRoleMap[v.authObject]) ? window._authObjectRoleMap[v.authObject].join(', ') : ''; html += '<div class="function-row"><b>' + escapeHtml(v.authObject) + '</b>' + (aoRoles ? ' <span style="color:#E65100;font-size:10px;">(' + escapeHtml(aoRoles) + ')</span>' : '') + ' — Activities: ' + (v.matchedActivities || []).map(function(a){ return '<span class="tcode-chip">' + escapeHtml(a) + '</span>'; }).join('') + '<br/>Source: ' + (v.sourceFunctions || []).join(', ') + '</div>';
+    }
+    html += '</div>';
+  }
+  return html;
+}
+
+// ===== USER SIMULATION =====
+document.getElementById('simUserBtn').addEventListener('click', async function() {
+  var username = document.getElementById('simUsername').value.trim();
+  var proposedRoles = getGridValues('userRolesGrid');
+  if (!username) { showWarning('Enter a SAP username'); return; }
+  if (!proposedRoles.length) { showWarning('Enter at least one proposed role'); return; }
+
+  var anyChecked = document.getElementById('simUserChkAction').checked || document.getElementById('simUserChkPermission').checked || document.getElementById('simUserChkCritAction').checked || document.getElementById('simUserChkCritPerm').checked;
+  if (!anyChecked) { showWarning('Select at least one risk type'); return; }
+
+  var btn = this;
+  var resultArea = document.getElementById('simUserResult');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Validating...';
+  resultArea.innerHTML = '';
+  try { var uchk = await fetch('/api/sap-user-check/' + encodeURIComponent(username)); var uchkD = await uchk.json();
+    if (!uchkD.exists) { resultArea.innerHTML = '<div class="error-box">SAP User ' + escapeHtml(username) + ' not found in SAP system.</div>'; btn.disabled = false; btn.textContent = 'Simulate'; return; }
+  } catch (valErr) { resultArea.innerHTML = '<div class="error-box">SAP validation failed: ' + escapeHtml(valErr.message) + '</div>'; btn.disabled = false; btn.textContent = 'Simulate'; return; }
+
+  try {
+  btn.innerHTML = '<span class="spinner"></span> Validating roles...';
+  var badRoles = [];
+  for (var ri = 0; ri < proposedRoles.length; ri++) {
+    try { var rc = await fetch('/api/sap-role-check/' + encodeURIComponent(proposedRoles[ri])); var rd = await rc.json(); if (!rd.exists) badRoles.push(proposedRoles[ri]); } catch(e) { badRoles.push(proposedRoles[ri]); }
+  }
+  if (badRoles.length) { resultArea.innerHTML = '<div class="error-box">Role(s) not found in SAP: ' + badRoles.map(function(r){return escapeHtml(r);}).join(', ') + '</div>'; btn.disabled = false; btn.textContent = 'Simulate'; return; }
+  btn.innerHTML = '<span class="spinner"></span> Simulating...';
+    var resp = await fetch('/api/simulation/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username, proposedRoles: proposedRoles })
+    });
+    var data = await resp.json();
+    window._tcodeRoleMap = data.tcodeRoleMap || {};
+    window._authObjectRoleMap = data.authObjectRoleMap || {};
+    if (data.error) { resultArea.innerHTML = '<div class="error-box">' + escapeHtml(data.error) + '</div>'; return; }
+
+    var filtered = filterViolations(data.violations || [],
+      document.getElementById('simUserChkAction').checked,
+      document.getElementById('simUserChkPermission').checked,
+      document.getElementById('simUserChkCritAction').checked,
+      document.getElementById('simUserChkCritPerm').checked
+    );
+
+    var newCount = filtered.filter(function(v){ return v.simulationFlag === 'NEW'; }).length;
+    var existCount = filtered.filter(function(v){ return v.simulationFlag === 'EXISTING'; }).length;
+
+    var html = '';
+    // Roles info
+    html += '<div class="roles-info"><strong>Existing Roles:</strong> ';
+    (data.existingRoles || []).forEach(function(r){ html += '<span class="role-chip">' + escapeHtml(r) + '</span>'; });
+    html += '<br/><strong>Proposed Roles:</strong> ';
+    (data.proposedRoles || []).forEach(function(r){ html += '<span class="role-chip proposed">' + escapeHtml(r) + '</span>'; });
+    html += '</div>';
+
+    // Summary cards
+    html += '<div class="summary-cards">';
+    html += '<div class="summary-card"><div class="num">' + (data.existingRoles || []).length + '</div><div class="lbl">Existing Roles</div></div>';
+    html += '<div class="summary-card"><div class="num">' + (data.proposedRoles || []).length + '</div><div class="lbl">Proposed Roles</div></div>';
+    html += '<div class="summary-card"><div class="num green">' + existCount + '</div><div class="lbl">Existing Violations</div></div>';
+    html += '<div class="summary-card"><div class="num red">' + newCount + '</div><div class="lbl">New Violations</div></div>';
+    html += '</div>';
+
+    if (newCount > 0) {
+      html += '<h3 style="font-family:var(--font-display);color:var(--red);margin:24px 0 12px;">&#x26A0; New Violations (from proposed roles)</h3>';
+      html += renderViolations(filtered.filter(function(v){ return v.simulationFlag === 'NEW'; }));
+    }
+    if (existCount > 0) {
+      html += '<h3 style="font-family:var(--font-display);color:var(--ink-soft);margin:24px 0 12px;">Existing Violations</h3>';
+      html += renderViolations(filtered.filter(function(v){ return v.simulationFlag === 'EXISTING'; }));
+    }
+    if (newCount === 0 && existCount === 0) {
+      html += '<div class="clean-box">&#x2705; No violations found for the selected risk types.</div>';
+    }
+
+    resultArea.innerHTML = html;
+  } catch (e) {
+    resultArea.innerHTML = '<div class="error-box">Error: ' + escapeHtml(e.message) + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Simulate';
+  }
+});
+
+// ===== ROLE SIMULATION =====
+document.getElementById('simRoleBtn').addEventListener('click', async function() {
+  var roleName = document.getElementById('simRoleName').value.trim();
+  var proposedTcodes = getGridValues('roleTcodesGrid');
+  if (!roleName) { showWarning('Enter a SAP role name'); return; }
+  if (!proposedTcodes.length) { showWarning('Enter at least one proposed T-code'); return; }
+
+  var anyChecked = document.getElementById('simRoleChkAction').checked || document.getElementById('simRoleChkPermission').checked || document.getElementById('simRoleChkCritAction').checked || document.getElementById('simRoleChkCritPerm').checked;
+  if (!anyChecked) { showWarning('Select at least one risk type'); return; }
+
+  var btn = this;
+  var resultArea = document.getElementById('simRoleResult');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Validating...';
+  resultArea.innerHTML = '';
+  try { var rchk = await fetch('/api/sap-role-check/' + encodeURIComponent(roleName)); var rchkD = await rchk.json();
+    if (!rchkD.exists) { resultArea.innerHTML = '<div class="error-box">Role ' + escapeHtml(roleName) + ' not found in SAP system.</div>'; btn.disabled = false; btn.textContent = 'Simulate'; return; }
+  } catch (valErr) { resultArea.innerHTML = '<div class="error-box">SAP validation failed: ' + escapeHtml(valErr.message) + '</div>'; btn.disabled = false; btn.textContent = 'Simulate'; return; }
+
+  try {
+    var resp = await fetch('/api/simulation/role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roleName: roleName, proposedTcodes: proposedTcodes })
+    });
+    var data = await resp.json();
+    if (data.error) { resultArea.innerHTML = '<div class="error-box">' + escapeHtml(data.error) + '</div>'; return; }
+
+    var filtered = filterViolations(data.violations || [],
+      document.getElementById('simRoleChkAction').checked,
+      document.getElementById('simRoleChkPermission').checked,
+      document.getElementById('simRoleChkCritAction').checked,
+      document.getElementById('simRoleChkCritPerm').checked
+    );
+
+    var newCount = filtered.filter(function(v){ return v.simulationFlag === 'NEW'; }).length;
+    var existCount = filtered.filter(function(v){ return v.simulationFlag === 'EXISTING'; }).length;
+
+    var html = '';
+    // T-code info
+    html += '<div class="roles-info"><strong>Existing T-Codes:</strong> ' + data.existingTcodeCount + ' &nbsp;|&nbsp; <strong>Proposed:</strong> ';
+    (data.proposedTcodes || []).forEach(function(t){ html += '<span class="tcode-chip" style="background:#FFF3E0;border-color:#FFB74D;color:#E65100;">' + escapeHtml(t) + '</span>'; });
+    html += ' &nbsp;|&nbsp; <strong>Combined:</strong> ' + data.combinedTcodeCount;
+    html += '</div>';
+
+    // Summary cards
+    html += '<div class="summary-cards">';
+    html += '<div class="summary-card"><div class="num">' + data.existingTcodeCount + '</div><div class="lbl">Existing T-Codes</div></div>';
+    html += '<div class="summary-card"><div class="num amber">' + (data.proposedTcodes || []).length + '</div><div class="lbl">Proposed T-Codes</div></div>';
+    html += '<div class="summary-card"><div class="num green">' + existCount + '</div><div class="lbl">Existing Violations</div></div>';
+    html += '<div class="summary-card"><div class="num red">' + newCount + '</div><div class="lbl">New Violations</div></div>';
+    html += '</div>';
+
+    if (newCount > 0) {
+      html += '<h3 style="font-family:var(--font-display);color:var(--red);margin:24px 0 12px;">&#x26A0; New Violations (from proposed T-codes)</h3>';
+      html += renderViolations(filtered.filter(function(v){ return v.simulationFlag === 'NEW'; }));
+    }
+    if (existCount > 0) {
+      html += '<h3 style="font-family:var(--font-display);color:var(--ink-soft);margin:24px 0 12px;">Existing Violations</h3>';
+      html += renderViolations(filtered.filter(function(v){ return v.simulationFlag === 'EXISTING'; }));
+    }
+    if (newCount === 0 && existCount === 0) {
+      html += '<div class="clean-box">&#x2705; No violations found for the selected risk types.</div>';
+    }
+
+    resultArea.innerHTML = html;
+  } catch (e) {
+    resultArea.innerHTML = '<div class="error-box">Error: ' + escapeHtml(e.message) + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Simulate';
+  }
+});
+
+// Nav user display
+fetch('/api/my-profile').then(function(r){return r.json();}).then(function(u){var n=document.getElementById('navUser');if(n)n.textContent=u.displayName||u.username;}).catch(function(){});
+</script>
+</body>
+</html>

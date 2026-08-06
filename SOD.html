@@ -825,6 +825,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return `<div class="error-box">No T-codes found for role "${escapeHtml(data.role || roleNameFallback)}". Check the role name and try again.</div>`;
     }
 
+    if (data.notFound) return '<div class="error-box">' + escapeHtml(data.message || 'Role not found in SAP system.') + '</div>';
     let html = `
       <div class="summary-row">
         <div class="summary-card">
@@ -860,8 +861,8 @@ document.addEventListener('DOMContentLoaded', function() {
         html += `
           <div class="function-row">
             <b>${escapeHtml(f.functionId)}</b> — ${escapeHtml(f.functionDescription)}<br/>
-            ${f.matchedTcodes ? f.matchedTcodes.map(tc => `<span class="tcode-chip">${escapeHtml(tc)}</span>`).join('') : ''}
-            ${f.authDetails && f.authDetails.length ? `<div class="authdetail-box">${f.authDetails.map(ad => `<div class="authdetail-row"><span class="ad-obj">${ad.objects.map(o => escapeHtml(o)).join(', ')}</span><span class="ad-val">${ad.actvt ? 'ACTVT: ' + escapeHtml(ad.actvt) : (ad.otherFields && ad.otherFields.length ? ad.otherFields.map(of => escapeHtml(of.field) + ': ' + escapeHtml(of.value)).join(', ') : '')}</span></div>`).join('')}</div>` : ''}
+            ${f.matchedTcodes ? f.matchedTcodes.map(tc => { var _r = (window._tcodeRoleMap && window._tcodeRoleMap[tc]) ? window._tcodeRoleMap[tc].join(', ') : ''; return `<span class="tcode-chip">${escapeHtml(tc)}${_r ? `<span style="color:#E65100;font-size:10px;margin-left:4px;">(${escapeHtml(_r)})</span>` : ''}</span>`; }).join('') : ''}
+            ${f.authDetails && f.authDetails.length ? `<div class="authdetail-box">${f.authDetails.map(ad => `<div class="authdetail-row"><span class="ad-obj">${ad.objects.map(o => { var _ar = (window._authObjectRoleMap && window._authObjectRoleMap[o.toUpperCase()]) ? window._authObjectRoleMap[o.toUpperCase()].join(', ') : ''; return escapeHtml(o) + (_ar ? ' <span style="color:#E65100;font-size:10px;">(' + escapeHtml(_ar) + ')</span>' : ''); }).join(', ')}</span><span class="ad-val">${ad.actvt ? 'ACTVT: ' + escapeHtml(ad.actvt) : (ad.otherFields && ad.otherFields.length ? ad.otherFields.map(of => escapeHtml(of.field) + ': ' + escapeHtml(of.value)).join(', ') : '')}</span></div>`).join('')}</div>` : ''}
           </div>
         `;
       }
@@ -882,6 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return `<div class="error-box">No roles found for user "${escapeHtml(data.username || usernameFallback)}". Check the username and try again.</div>`;
     }
 
+    if (data.notFound) return '<div class="error-box">' + escapeHtml(data.message || 'User not found in SAP system.') + '</div>';
     let html = `
       <div class="summary-row">
         <div class="summary-card">
@@ -924,8 +926,8 @@ document.addEventListener('DOMContentLoaded', function() {
         html += `
           <div class="function-row">
             <b>${escapeHtml(f.functionId)}</b> — ${escapeHtml(f.functionDescription)}<br/>
-            ${f.matchedTcodes ? f.matchedTcodes.map(tc => `<span class="tcode-chip">${escapeHtml(tc)}</span>`).join('') : ''}
-            ${f.authDetails && f.authDetails.length ? `<div class="authdetail-box">${f.authDetails.map(ad => `<div class="authdetail-row"><span class="ad-obj">${ad.objects.map(o => escapeHtml(o)).join(', ')}</span><span class="ad-val">${ad.actvt ? 'ACTVT: ' + escapeHtml(ad.actvt) : (ad.otherFields && ad.otherFields.length ? ad.otherFields.map(of => escapeHtml(of.field) + ': ' + escapeHtml(of.value)).join(', ') : '')}</span></div>`).join('')}</div>` : ''}
+            ${f.matchedTcodes ? f.matchedTcodes.map(tc => { var _r = (window._tcodeRoleMap && window._tcodeRoleMap[tc]) ? window._tcodeRoleMap[tc].join(', ') : ''; return `<span class="tcode-chip">${escapeHtml(tc)}${_r ? `<span style="color:#E65100;font-size:10px;margin-left:4px;">(${escapeHtml(_r)})</span>` : ''}</span>`; }).join('') : ''}
+            ${f.authDetails && f.authDetails.length ? `<div class="authdetail-box">${f.authDetails.map(ad => `<div class="authdetail-row"><span class="ad-obj">${ad.objects.map(o => { var _ar = (window._authObjectRoleMap && window._authObjectRoleMap[o.toUpperCase()]) ? window._authObjectRoleMap[o.toUpperCase()].join(', ') : ''; return escapeHtml(o) + (_ar ? ' <span style="color:#E65100;font-size:10px;">(' + escapeHtml(_ar) + ')</span>' : ''); }).join(', ')}</span><span class="ad-val">${ad.actvt ? 'ACTVT: ' + escapeHtml(ad.actvt) : (ad.otherFields && ad.otherFields.length ? ad.otherFields.map(of => escapeHtml(of.field) + ': ' + escapeHtml(of.value)).join(', ') : '')}</span></div>`).join('')}</div>` : ''}
           </div>
         `;
       }
@@ -954,6 +956,11 @@ document.addEventListener('DOMContentLoaded', function() {
       showCheckboxWarning(); return;
     }
     analyzeSingleBtn.disabled = true;
+    analyzeSingleBtn.textContent = 'Validating...';
+    singleResultArea.innerHTML = '<div class="loading-box">Validating role in SAP...</div>';
+    try { var chkR = await fetch('/api/sap-role-check/' + encodeURIComponent(roleName)); var chkD = await chkR.json();
+      if (!chkD.exists) { singleResultArea.innerHTML = '<div class="error-box">Role ' + escapeHtml(roleName) + ' not found in SAP system.</div>'; analyzeSingleBtn.disabled = false; analyzeSingleBtn.textContent = 'Analyze'; return; }
+    } catch (valErr) { singleResultArea.innerHTML = '<div class="error-box">SAP validation failed: ' + escapeHtml(valErr.message) + '</div>'; analyzeSingleBtn.disabled = false; analyzeSingleBtn.textContent = 'Analyze'; return; }
     analyzeSingleBtn.textContent = 'Analyzing…';
     singleResultArea.innerHTML = '<div class="loading-box">Fetching role T-codes from SAP and checking against ruleset…</div>';
 
@@ -1061,12 +1068,12 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
 
       for (const r of results) {
-        const vClass = r.error ? 'err' : ((r.violationCount || 0) > 0 ? 'some' : 'zero');
+        const vClass = (r.error || r.notFound) ? 'err' : ((r.violationCount || 0) > 0 ? 'some' : 'zero');
         html += `
           <tr>
             <td class="uname">${escapeHtml(r.role)}</td>
             <td>${typeof r.tcodeCount === 'number' ? r.tcodeCount : '—'}</td>
-            <td class="vcount ${vClass}">${r.error ? 'error' : (r.violationCount ?? '—')}</td>
+            <td class="vcount ${vClass}">${r.error ? 'error' : (r.notFound ? 'Not found in SAP' : r.violationCount ?? '—')}</td>
           </tr>
         `;
       }
@@ -1074,7 +1081,7 @@ document.addEventListener('DOMContentLoaded', function() {
       html += `</tbody></table>`;
 
       for (const r of results) {
-        if ((r.violationCount || 0) > 0 || r.error) {
+        if ((r.violationCount || 0) > 0 || r.error || r.notFound) {
           const metaBits = [];
           if (typeof r.tcodeCount === 'number') metaBits.push(`${r.tcodeCount} T-codes`);
           if (typeof r.violationCount === 'number') metaBits.push(`${r.violationCount} violation(s)`);
@@ -1120,12 +1127,18 @@ document.addEventListener('DOMContentLoaded', function() {
       showCheckboxWarning(); return;
     }
     analyzeSingleUserBtn.disabled = true;
+    analyzeSingleUserBtn.textContent = 'Validating...';
+    singleUserResultArea.innerHTML = '<div class="loading-box">Validating user in SAP...</div>';
+    try { var uchkR = await fetch('/api/sap-user-check/' + encodeURIComponent(username)); var uchkD = await uchkR.json();
+      if (!uchkD.exists) { singleUserResultArea.innerHTML = '<div class="error-box">SAP User ' + escapeHtml(username) + ' not found in SAP system.</div>'; analyzeSingleUserBtn.disabled = false; analyzeSingleUserBtn.textContent = 'Analyze'; return; }
+    } catch (valErr) { singleUserResultArea.innerHTML = '<div class="error-box">SAP validation failed: ' + escapeHtml(valErr.message) + '</div>'; analyzeSingleUserBtn.disabled = false; analyzeSingleUserBtn.textContent = 'Analyze'; return; }
     analyzeSingleUserBtn.textContent = 'Analyzing…';
     singleUserResultArea.innerHTML = '<div class="loading-box">Fetching user roles from SAP and checking combined T-codes against ruleset…</div>';
 
     try {
       const res = await fetch(`/api/risk-analysis/user/${encodeURIComponent(username)}`);
       const data = await res.json();
+      window._tcodeRoleMap = data.tcodeRoleMap || {}; window._authObjectRoleMap = data.authObjectRoleMap || {};
       if (!res.ok) {
         singleUserResultArea.innerHTML = `<div class="error-box">${escapeHtml(data.error || 'Analysis failed.')}</div>`;
       } else {
@@ -1177,6 +1190,7 @@ document.addEventListener('DOMContentLoaded', function() {
         body: JSON.stringify({ usernames })
       });
       const data = await res.json();
+      if(data.results){var _tm={},_am={};data.results.forEach(function(r){if(r.tcodeRoleMap)Object.assign(_tm,r.tcodeRoleMap);if(r.authObjectRoleMap)Object.assign(_am,r.authObjectRoleMap);});window._tcodeRoleMap=_tm;window._authObjectRoleMap=_am;}
       if (!res.ok) {
         bulkUserResultArea.innerHTML = `<div class="error-box">${escapeHtml(data.error || 'Analysis failed.')}</div>`;
         return;
@@ -1221,13 +1235,13 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
 
       for (const r of results) {
-        const vClass = r.error ? 'err' : ((r.violationCount || 0) > 0 ? 'some' : 'zero');
+        const vClass = (r.error || r.notFound) ? 'err' : ((r.violationCount || 0) > 0 ? 'some' : 'zero');
         html += `
           <tr>
             <td class="uname">${escapeHtml(r.username)}</td>
             <td>${typeof r.roleCount === 'number' ? r.roleCount : '—'}</td>
             <td>${typeof r.tcodeCount === 'number' ? r.tcodeCount : '—'}</td>
-            <td class="vcount ${vClass}">${r.error ? 'error' : (r.violationCount ?? '—')}</td>
+            <td class="vcount ${vClass}">${r.error ? 'error' : (r.notFound ? 'Not found in SAP' : r.violationCount ?? '—')}</td>
           </tr>
         `;
       }
@@ -1236,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Detailed violation breakdown below the table — only for users with issues or errors
       for (const r of results) {
-        if ((r.violationCount || 0) > 0 || r.error) {
+        if ((r.violationCount || 0) > 0 || r.error || r.notFound) {
           const metaBits = [];
           if (typeof r.roleCount === 'number') metaBits.push(`${r.roleCount} role(s)`);
           if (typeof r.tcodeCount === 'number') metaBits.push(`${r.tcodeCount} T-codes`);

@@ -315,17 +315,21 @@ app.get('/api/risk-analysis/user/:username', async (req, res) => {
   try {
     const roles = await getUserRolesFromSAP(username);
     if (!roles.length) {
-      return res.json({ username, roleCount: 0, roles: [], violations: [], message: 'No roles found for this user.' });
+      return res.json({ username, roleCount: 0, roles: [], violations: [], message: 'User not found in SAP system.', notFound: true });
     }
 
     let allTcodes = [];
     let allAuthObjects = [];
+    const tcodeRoleMap = {};
+    const authObjectRoleMap = {};
     for (const role of roles) {
       const roleTcodes = await getRoleTcodesFromSAP(role);
       allTcodes = allTcodes.concat(roleTcodes);
+      roleTcodes.forEach(t => { if (!tcodeRoleMap[t]) tcodeRoleMap[t] = []; if (!tcodeRoleMap[t].includes(role)) tcodeRoleMap[t].push(role); });
       try {
         const roleAuthObjects = await getRoleAuthObjects(role);
         allAuthObjects = allAuthObjects.concat(roleAuthObjects);
+        roleAuthObjects.forEach(a => { var key = (a.object||'').toUpperCase(); if (!authObjectRoleMap[key]) authObjectRoleMap[key] = []; if (!authObjectRoleMap[key].includes(role)) authObjectRoleMap[key].push(role); });
       } catch (permErr) {
         console.log('Permission-level fetch skipped for role', role, ':', permErr.message);
       }
@@ -343,6 +347,8 @@ app.get('/api/risk-analysis/user/:username', async (req, res) => {
       tcodeCount: allTcodes.length,
       authObjectCount: allAuthObjects.length,
       violationCount: violations.length,
+      tcodeRoleMap,
+      authObjectRoleMap,
       violations
     });
   } catch (error) {
@@ -364,19 +370,23 @@ app.post('/api/risk-analysis/users-bulk', async (req, res) => {
     try {
       const roles = await getUserRolesFromSAP(username);
       if (!roles.length) {
-        results.push({ username, roleCount: 0, roles: [], tcodeCount: 0, violationCount: 0, violations: [], message: 'No roles found.' });
+        results.push({ username, roleCount: 0, roles: [], tcodeCount: 0, violationCount: 0, violations: [], message: 'User not found in SAP system.', notFound: true });
         continue;
       }
+      const tcodeRoleMap = {};
+      const authObjectRoleMap = {};
       let allTcodes = [];
       for (const role of roles) {
         const roleTcodes = await getRoleTcodesFromSAP(role);
         allTcodes = allTcodes.concat(roleTcodes);
+          roleTcodes.forEach(t => { if (!tcodeRoleMap[t]) tcodeRoleMap[t] = []; if (!tcodeRoleMap[t].includes(role)) tcodeRoleMap[t].push(role); });
       }
       let allAuthObjects = [];
       for (const role of roles) {
         try {
           const roleAuthObjects = await getRoleAuthObjects(role);
           allAuthObjects = allAuthObjects.concat(roleAuthObjects);
+            roleAuthObjects.forEach(a => { var key = (a.object||'').toUpperCase(); if (!authObjectRoleMap[key]) authObjectRoleMap[key] = []; if (!authObjectRoleMap[key].includes(role)) authObjectRoleMap[key].push(role); });
         } catch (permErr) { console.log('Permission-level fetch skipped for role', role, ':', permErr.message); }
       }
       const actionViolations = analyzeRoleLevelSoD(allTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
@@ -384,7 +394,7 @@ app.post('/api/risk-analysis/users-bulk', async (req, res) => {
       const criticalActionViolations = allTcodes.length ? checkCriticalActionRisks(allTcodes).map(v => ({ ...v, riskType: 'Critical Action' })) : [];
       const criticalPermissionViolations = allAuthObjects.length ? checkCriticalPermissions(allAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' })) : [];
       const violations = [...actionViolations, ...permissionViolations, ...criticalActionViolations, ...criticalPermissionViolations];
-      results.push({ username, roleCount: roles.length, roles, tcodeCount: allTcodes.length, violationCount: violations.length, violations });
+      results.push({ username, roleCount: roles.length, roles, tcodeCount: allTcodes.length, violationCount: violations.length, tcodeRoleMap, authObjectRoleMap, violations });
     } catch (error) {
       results.push({ username, error: error.message });
     }
@@ -525,7 +535,7 @@ app.post('/api/risk-analysis/roles-bulk', async (req, res) => {
     try {
       const roleTcodes = await getRoleTcodesFromSAP(roleName);
       if (!roleTcodes.length) {
-        results.push({ role: roleName, tcodeCount: 0, violationCount: 0, violations: [], message: 'No T-codes found.' });
+        results.push({ role: roleName, tcodeCount: 0, violationCount: 0, violations: [], message: 'Role not found in SAP system.', notFound: true });
         continue;
       }
       const actionViolations = analyzeRoleLevelSoD(roleTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
@@ -979,6 +989,110 @@ app.get('/api/debug-permission-summary/:roleName', async (req, res) => {
 
 // ── IKAegis Approval Workflow Routes ──
 app.assignSapRole = assignSapRoleInSAP; require('./routes/approval-routes')(app);
+
+app.post('/api/simulation/user', async (req, res) => {
+  const { username, proposedRoles } = req.body;
+  if (!username || !Array.isArray(proposedRoles) || !proposedRoles.length) {
+    return res.status(400).json({ error: 'Username and proposedRoles array required.' });
+  }
+
+  const user = username.trim().toUpperCase();
+  const proposed = [...new Set(proposedRoles.map(r => (r || '').trim().toUpperCase()))].filter(Boolean);
+
+  try {
+    const existingRoles = await getUserRolesFromSAP(user);
+    const combinedRoles = [...new Set([...existingRoles, ...proposed])];
+
+    const tcodeRoleMap = {};
+    const authObjectRoleMap = {};
+    let existingTcodes = [];
+    let existingAuthObjects = [];
+    for (const role of existingRoles) {
+      const tc = await getRoleTcodesFromSAP(role);
+      existingTcodes = existingTcodes.concat(tc);
+      tc.forEach(t => { if (!tcodeRoleMap[t]) tcodeRoleMap[t] = []; if (!tcodeRoleMap[t].includes(role)) tcodeRoleMap[t].push(role); });
+      try {
+        const ao = await getRoleAuthObjects(role);
+        existingAuthObjects = existingAuthObjects.concat(ao);
+        ao.forEach(a => { var key = (a.object||"").toUpperCase(); if (!authObjectRoleMap[key]) authObjectRoleMap[key] = []; if (!authObjectRoleMap[key].includes(role)) authObjectRoleMap[key].push(role); });
+      } catch (e) {}
+    }
+
+    const existingViolations = [
+      ...analyzeRoleLevelSoD(existingTcodes).map(v => ({ ...v, riskType: 'Action Level' })),
+      ...checkObjectLevelSoD(existingAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' })),
+      ...checkCriticalActionRisks(existingTcodes).map(v => ({ ...v, riskType: 'Critical Action' })),
+      ...checkCriticalPermissions(existingAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' }))
+    ];
+    const existingRiskIds = new Set(existingViolations.map(v => v.riskId));
+
+    let combinedTcodes = [...existingTcodes];
+    let combinedAuthObjects = [...existingAuthObjects];
+    for (const role of proposed.filter(r => !existingRoles.includes(r))) {
+      const tc = await getRoleTcodesFromSAP(role);
+      combinedTcodes = combinedTcodes.concat(tc);
+      tc.forEach(t => { if (!tcodeRoleMap[t]) tcodeRoleMap[t] = []; if (!tcodeRoleMap[t].includes(role)) tcodeRoleMap[t].push(role); });
+      try {
+        const ao = await getRoleAuthObjects(role);
+        combinedAuthObjects = combinedAuthObjects.concat(ao);
+        ao.forEach(a => { var key = (a.object||"").toUpperCase(); if (!authObjectRoleMap[key]) authObjectRoleMap[key] = []; if (!authObjectRoleMap[key].includes(role)) authObjectRoleMap[key].push(role); });
+      } catch (e) {}
+    }
+
+    const combinedViolations = [
+      ...analyzeRoleLevelSoD(combinedTcodes).map(v => ({ ...v, riskType: 'Action Level' })),
+      ...checkObjectLevelSoD(combinedAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' })),
+      ...checkCriticalActionRisks(combinedTcodes).map(v => ({ ...v, riskType: 'Critical Action' })),
+      ...checkCriticalPermissions(combinedAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' }))
+    ];
+
+    const newViolations = combinedViolations.filter(v => !existingRiskIds.has(v.riskId)).map(v => ({ ...v, simulationFlag: 'NEW' }));
+    const existingTagged = combinedViolations.filter(v => existingRiskIds.has(v.riskId)).map(v => ({ ...v, simulationFlag: 'EXISTING' }));
+
+    res.json({
+      username: user,
+      existingRoles,
+      proposedRoles: proposed,
+      combinedRoles,
+      tcodeRoleMap,
+        authObjectRoleMap,
+      existingViolationCount: existingViolations.length,
+      newViolationCount: newViolations.length,
+      totalViolationCount: combinedViolations.length,
+      violations: [...existingTagged, ...newViolations]
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: 'Simulation failed: ' + error.message });
+  }
+});
+
+app.post('/api/simulation/role', async (req, res) => {
+  const { roleName, proposedTcodes } = req.body;
+  if (!roleName || !Array.isArray(proposedTcodes) || !proposedTcodes.length) {
+    return res.status(400).json({ error: 'roleName and proposedTcodes array required.' });
+  }
+  const role = roleName.trim().toUpperCase();
+  const proposed = [...new Set(proposedTcodes.map(t => (t || '').trim().toUpperCase()))].filter(Boolean);
+  try {
+    const existingTcodes = await getRoleTcodesFromSAP(role);
+    let existingAuthObjects = [];
+    try {
+      existingAuthObjects = await getRoleAuthObjects(role);
+    } catch (e) {}
+    const existingViolations = [...analyzeRoleLevelSoD(existingTcodes).map(v => ({ ...v, riskType: 'Action Level' })), ...checkObjectLevelSoD(existingAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' })), ...checkCriticalActionRisks(existingTcodes).map(v => ({ ...v, riskType: 'Critical Action' })), ...checkCriticalPermissions(existingAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' }))];
+    const existingRiskIds = new Set(existingViolations.map(v => v.riskId));
+    const combinedTcodes = [...new Set([...existingTcodes, ...proposed])];
+    const combinedActionViolations = analyzeRoleLevelSoD(combinedTcodes).map(v => ({ ...v, riskType: 'Action Level' }));
+    const combinedCriticalActions = checkCriticalActionRisks(combinedTcodes).map(v => ({ ...v, riskType: 'Critical Action' }));
+    const combinedViolations = [...combinedActionViolations, ...checkObjectLevelSoD(existingAuthObjects).map(v => ({ ...v, riskType: 'Permission Level' })), ...combinedCriticalActions, ...checkCriticalPermissions(existingAuthObjects).map(v => ({ ...v, riskType: 'Critical Permission' }))];
+    const newViolations = combinedViolations.filter(v => !existingRiskIds.has(v.riskId)).map(v => ({ ...v, simulationFlag: 'NEW' }));
+    const existingTagged = combinedViolations.filter(v => existingRiskIds.has(v.riskId)).map(v => ({ ...v, simulationFlag: 'EXISTING' }));
+    res.json({ role, existingTcodeCount: existingTcodes.length, proposedTcodes: proposed, combinedTcodeCount: combinedTcodes.length, existingViolationCount: existingViolations.length, newViolationCount: newViolations.length, totalViolationCount: combinedViolations.length, violations: [...existingTagged, ...newViolations] });
+  } catch (error) {
+    res.status(500).json({ error: 'Role simulation failed: ' + error.message });
+  }
+});
 
 app.listen(3000, () => console.log('Running on http://localhost:3000'));
 
