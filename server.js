@@ -1,4 +1,4 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const https = require('https');
@@ -277,6 +277,50 @@ function checkObjectLevelSoD(roleAuthObjects) {
   return violations;
 }
 
+function checkSapUserExists(username) {
+  return new Promise((resolve, reject) => {
+    const tokenOpts = {
+      hostname: SAP_CONFIG.hostname, port: SAP_CONFIG.port,
+      path: '/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/?sap-client=' + SAP_CONFIG.client,
+      method: 'GET', auth: SAP_CONFIG.username + ':' + SAP_CONFIG.password,
+      headers: { 'X-CSRF-Token': 'Fetch' }, rejectUnauthorized: false
+    };
+    const tokenReq = https.request(tokenOpts, (tokenRes) => {
+      let b = '';
+      tokenRes.on('data', c => b += c);
+      tokenRes.on('end', () => {
+        const csrf = tokenRes.headers['x-csrf-token'];
+        const cookies = (tokenRes.headers['set-cookie'] || []).map(c => c.split(';')[0]).join('; ');
+        const payload = JSON.stringify({ TableName: 'USR02', Fields: 'BNAME', WhereClause: "BNAME = '" + username + "'", MaxRows: '1', ResultData: '' });
+        const postOpts = {
+          hostname: SAP_CONFIG.hostname, port: SAP_CONFIG.port,
+          path: '/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/GenericTableReadSet?sap-client=' + SAP_CONFIG.client,
+          method: 'POST', auth: SAP_CONFIG.username + ':' + SAP_CONFIG.password,
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': csrf, 'Cookie': cookies },
+          rejectUnauthorized: false
+        };
+        const postReq = https.request(postOpts, (postRes) => {
+          let d = '';
+          postRes.on('data', c => d += c);
+          postRes.on('end', () => {
+            try {
+              const parsed = JSON.parse(d);
+              const rd = parsed.d && (parsed.d.ResultData || parsed.d.resultdata) || '[]';
+              const rows = JSON.parse(rd);
+              resolve(rows.length > 0);
+            } catch(e) { resolve(false); }
+          });
+        });
+        postReq.on('error', () => resolve(false));
+        postReq.write(payload);
+        postReq.end();
+      });
+    });
+    tokenReq.on('error', () => resolve(false));
+    tokenReq.end();
+  });
+}
+
 function getUserRolesFromSAP(username) {
   return new Promise((resolve, reject) => {
     const filter = encodeURIComponent(`Username eq '${username}'`);
@@ -315,7 +359,11 @@ app.get('/api/risk-analysis/user/:username', async (req, res) => {
   try {
     const roles = await getUserRolesFromSAP(username);
     if (!roles.length) {
-      return res.json({ username, roleCount: 0, roles: [], violations: [], message: 'User not found in SAP system.', notFound: true });
+      const userExists = await checkSapUserExists(username);
+      if (!userExists) {
+        return res.json({ username, roleCount: 0, roles: [], violations: [], message: 'User not found in SAP system.', notFound: true });
+      }
+      return res.json({ username, roleCount: 0, roles: [], violations: [], message: 'User exists but has no roles assigned.' });
     }
 
     let allTcodes = [];
@@ -370,7 +418,12 @@ app.post('/api/risk-analysis/users-bulk', async (req, res) => {
     try {
       const roles = await getUserRolesFromSAP(username);
       if (!roles.length) {
-        results.push({ username, roleCount: 0, roles: [], tcodeCount: 0, violationCount: 0, violations: [], message: 'User not found in SAP system.', notFound: true });
+        const userExists = await checkSapUserExists(username);
+        if (!userExists) {
+          results.push({ username, roleCount: 0, roles: [], tcodeCount: 0, violationCount: 0, violations: [], message: 'User not found in SAP system.', notFound: true });
+          continue;
+        }
+        results.push({ username, roleCount: 0, roles: [], tcodeCount: 0, violationCount: 0, violations: [], message: 'User exists but has no roles assigned.' });
         continue;
       }
       const tcodeRoleMap = {};
@@ -678,7 +731,7 @@ function getDevAccessUsersFromSAP() {
   });
 }
 
-app.get('/api/sap-user-check/:userId', async (req, res) => { try { const userId = req.params.userId.toUpperCase(); const roles = await getUserRolesFromSAP(userId); if (roles && roles.length > 0) { res.json({ exists: true, userId: userId, roleCount: roles.length }); } else { res.json({ exists: false, userId: userId }); } } catch (err) { res.json({ exists: false, userId: req.params.userId.toUpperCase(), error: err.message }); } });
+app.get('/api/sap-user-check/:userId', async (req, res) => { try { const userId = req.params.userId.toUpperCase(); const exists = await checkSapUserExists(userId); if (exists) { res.json({ exists: true, userId: userId }); } else { res.json({ exists: false, userId: userId }); } } catch (err) { res.json({ exists: false, userId: req.params.userId.toUpperCase(), error: err.message }); } });
 app.get('/api/sap-role-check/:roleName', async (req, res) => { try { const roleName = req.params.roleName.toUpperCase(); const tcodes = await getRoleTcodesFromSAP(roleName); if (tcodes && tcodes.length > 0) { res.json({ exists: true, roleName: roleName, tcodeCount: tcodes.length }); } else { res.json({ exists: false, roleName: roleName }); } } catch (err) { res.json({ exists: false, roleName: req.params.roleName.toUpperCase(), error: err.message }); } });
 app.get('/api/sap-data', async (req, res) => {
   try {
@@ -987,8 +1040,10 @@ app.get('/api/debug-permission-summary/:roleName', async (req, res) => {
   }
 });
 
-// ── IKAegis Approval Workflow Routes ──
+// â”€â”€ IKAegis Approval Workflow Routes â”€â”€
 app.assignSapRole = assignSapRoleInSAP; require('./routes/approval-routes')(app);
+app.use('/api/rfc', require('./routes/rfc-routes'));
+app.use('/api/ai', require('./routes/ai-routes'));
 
 app.post('/api/simulation/user', async (req, res) => {
   const { username, proposedRoles } = req.body;
@@ -1095,4 +1150,5 @@ app.post('/api/simulation/role', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Running on http://localhost:3000'));
+
 

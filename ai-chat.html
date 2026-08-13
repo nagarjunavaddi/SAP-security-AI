@@ -1,0 +1,213 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Assistant â€” IKAegis</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #F5F7FA; color: #5A6A85; height: 100vh; display: flex; flex-direction: column; }
+
+    .page-head { background: linear-gradient(135deg, #15263F 0%, #1F497D 100%); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .page-head-inner { display: flex; align-items: center; gap: 14px; }
+    .page-head h2 { color: #fff; font-size: 20px; font-weight: 600; }
+    .page-head .back-link { color: #DCE5F0; text-decoration: none; font-size: 13px; opacity: 0.85; }
+    .page-head .back-link:hover { opacity: 1; }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right span { color: #DCE5F0; font-size: 13px; }
+    .nav-right a { color: #DCE5F0; text-decoration: none; font-size: 13px; }
+
+    .chat-container { flex: 1; display: flex; flex-direction: column; max-width: 900px; width: 100%; margin: 0 auto; padding: 16px; overflow: hidden; }
+
+    .messages-area { flex: 1; overflow-y: auto; padding: 8px 0; display: flex; flex-direction: column; gap: 12px; }
+
+    .welcome-msg { text-align: center; padding: 60px 20px; }
+    .welcome-msg h3 { color: #1F497D; font-size: 22px; margin-bottom: 8px; }
+    .welcome-msg p { color: #5A6A85; font-size: 14px; margin-bottom: 20px; }
+    .quick-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .quick-btn { background: #fff; border: 1px solid #DCE5F0; border-radius: 20px; padding: 8px 16px; font-size: 13px; color: #1F497D; cursor: pointer; transition: all 0.2s; }
+    .quick-btn:hover { background: #EDF2F8; border-color: #1F497D; }
+
+    .msg { display: flex; gap: 10px; max-width: 85%; animation: fadeIn 0.3s ease; }
+    .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+    .msg.ai { align-self: flex-start; }
+
+    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+    .msg.user .msg-avatar { background: #1F497D; color: #fff; }
+    .msg.ai .msg-avatar { background: #C33438; color: #fff; }
+
+    .msg-bubble { padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+    .msg.user .msg-bubble { background: #1F497D; color: #fff; border-bottom-right-radius: 4px; }
+    .msg.ai .msg-bubble { background: #fff; color: #333; border: 1px solid #DCE5F0; border-bottom-left-radius: 4px; }
+    .msg.ai .msg-bubble strong { color: #1F497D; }
+
+    .msg-tools { margin-top: 8px; padding: 6px 10px; background: #F5F7FA; border-radius: 6px; font-size: 11px; color: #5A6A85; }
+    .msg-tools span { color: #1F497D; font-weight: 600; }
+
+    .typing-indicator { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+    .typing-dots { display: flex; gap: 4px; }
+    .typing-dots span { width: 8px; height: 8px; background: #1F497D; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    .input-area { padding: 12px 0; border-top: 1px solid #DCE5F0; display: flex; gap: 10px; }
+    .input-area input { flex: 1; padding: 14px 18px; border: 1px solid #DCE5F0; border-radius: 12px; font-size: 14px; outline: none; background: #fff; transition: border 0.2s; }
+    .input-area input:focus { border-color: #1F497D; }
+    .input-area button { padding: 14px 24px; background: #1F497D; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .input-area button:hover { background: #15263F; }
+    .input-area button:disabled { background: #DCE5F0; cursor: not-allowed; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+    .msg.ai .msg-bubble ul { margin: 6px 0 6px 18px; }
+    .msg.ai .msg-bubble li { margin-bottom: 3px; }
+    .msg.ai .msg-bubble code { background: #EDF2F8; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="page-head">
+    <div class="page-head-inner">
+      <a href="index.html" class="back-link">&#8592; Back to dashboard</a>
+      <h2>AI Assistant</h2>
+    </div>
+    <div class="nav-right">
+      <span id="navUser"></span>
+      <a href="#" onclick="sessionStorage.clear();location.href='login.html'">Sign Out</a>
+    </div>
+  </div>
+
+  <div class="chat-container">
+    <div class="messages-area" id="messagesArea">
+      <div class="welcome-msg" id="welcomeMsg">
+        <h3>IKAegis AI Assistant</h3>
+        <p>Ask me anything about your SAP security â€” users, roles, locks, authorizations.</p>
+        
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="chatInput" placeholder="Ask about SAP security..." onkeydown="if(event.key==='Enter')sendMessage()" />
+      <button id="sendBtn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const messagesArea = document.getElementById('messagesArea');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const welcomeMsg = document.getElementById('welcomeMsg');
+    let chatHistory = [];
+
+    // Nav user
+    try {
+      const sess = JSON.parse(sessionStorage.getItem('user') || '{}');
+      if (sess.displayName) document.getElementById('navUser').textContent = sess.displayName;
+    } catch(e) {}
+
+    function askQuick(btn) {
+      chatInput.value = btn.textContent;
+      sendMessage();
+    }
+
+    function addMessage(role, content, tools) {
+      if (welcomeMsg) welcomeMsg.style.display = 'none';
+
+      const div = document.createElement('div');
+      div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar';
+      avatar.textContent = role === 'user' ? 'U' : 'AI';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble';
+      bubble.innerHTML = formatMarkdown(content);
+
+      div.appendChild(avatar);
+      const contentWrap = document.createElement('div');
+      contentWrap.appendChild(bubble);
+
+      if (tools && tools.length > 0) {
+        const toolDiv = document.createElement('div');
+        toolDiv.className = 'msg-tools';
+        toolDiv.innerHTML = 'SAP Call: <span>' + tools.map(t => t.tool).join(', ') + '</span>';
+        contentWrap.appendChild(toolDiv);
+      }
+
+      div.appendChild(contentWrap);
+      messagesArea.appendChild(div);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function showTyping() {
+      const div = document.createElement('div');
+      div.className = 'typing-indicator';
+      div.id = 'typingIndicator';
+      div.innerHTML = '<div class="msg-avatar" style="background:#C33438;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;">AI</div><div class="typing-dots"><span></span><span></span><span></span></div>';
+      messagesArea.appendChild(div);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function hideTyping() {
+      const el = document.getElementById('typingIndicator');
+      if (el) el.remove();
+    }
+
+    function formatMarkdown(text) {
+      if (!text) return '';
+      let html = text
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code>$1</code>')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n\* /g, '\n<li>')
+        .replace(/\n- /g, '\n<li>');
+
+      if (html.includes('<li>')) {
+        html = html.replace(/(<li>.*?)(?=<li>|<br>|$)/gs, '<ul>$1</ul>');
+      }
+      html = html.replace(/<\/ul>\s*<ul>/g, '');
+      return html;
+    }
+
+    async function sendMessage() {
+      const msg = chatInput.value.trim();
+      if (!msg) return;
+
+      chatInput.value = '';
+      sendBtn.disabled = true;
+      addMessage('user', msg);
+      chatHistory.push({ role: 'user', content: msg });
+
+      showTyping();
+
+      try {
+        const resp = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg, history: chatHistory })
+        });
+
+        const data = await resp.json();
+        hideTyping();
+
+        if (data.success) {
+          addMessage('ai', data.answer, data.sapCalls);
+          chatHistory.push({ role: 'assistant', content: data.answer });
+        } else {
+          addMessage('ai', 'Error: ' + (data.error || 'Something went wrong'));
+        }
+      } catch (err) {
+        hideTyping();
+        addMessage('ai', 'Connection error: ' + err.message);
+      }
+
+      sendBtn.disabled = false;
+      chatInput.focus();
+    }
+  </script>
+</body>
+</html>
+

@@ -219,7 +219,7 @@ async function loadLogs() {
 
     body.innerHTML = logs.map(log => {
       const details = log.details || {};
-      const detailStr = typeof details === 'string' ? details : JSON.stringify(details, null, 2);
+      const detailStr = formatDetails(details);
       const hasDetails = detailStr && detailStr !== '{}' && detailStr !== 'null';
       return `<tr>
         <td>${formatTime(log.created_at)}</td>
@@ -236,6 +236,31 @@ async function loadLogs() {
   }
 }
 
+function prettyKey(k) {
+  return String(k)
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+}
+
+function formatDetails(details) {
+  if (details == null) return '';
+  var obj = details;
+  if (typeof details === 'string') {
+    var s = details.trim();
+    if (!s || s === '{}' || s === 'null') return '';
+    try { obj = JSON.parse(s); } catch (e) { return s; }
+  }
+  if (typeof obj !== 'object') return String(obj);
+  var keys = Object.keys(obj);
+  if (keys.length === 0) return '';
+  return keys.map(function(k) {
+    var v = obj[k];
+    if (v && typeof v === 'object') v = JSON.stringify(v);
+    return prettyKey(k) + ': ' + v;
+  }).join('\n');
+}
+
 function clearFilters() {
   document.getElementById('filterAction').value = '';
   document.getElementById('filterUser').value = '';
@@ -249,7 +274,7 @@ function downloadCSV() {
   const headers = ['Timestamp','Action','Performed By','Target User','Target Role','Request ID','Details'];
   const rows = allLogsCache.map(function(log) {
     var details = log.details || {};
-    var detailStr = typeof details === 'string' ? details : JSON.stringify(details);
+    var detailStr = formatDetails(details).replace(/\n/g, '; ');
     return [
       log.created_at || '',
       log.action || '',

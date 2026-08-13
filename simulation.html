@@ -172,7 +172,7 @@
   <div class="tab-panel active" id="panel-user">
     <div class="inquiry-box">
       <label class="input-label">SAP Username</label>
-      <input type="text" class="sim-input" id="simUsername" placeholder="e.g. NAG" autocomplete="off">
+      <input type="text" class="sim-input" id="simUsername" placeholder="" autocomplete="off">
 
       <label class="grid-label">Proposed Roles to Add</label>
       <table class="spreadsheet-grid" id="userRolesGrid">
@@ -200,7 +200,7 @@
   <div class="tab-panel" id="panel-role">
     <div class="inquiry-box">
       <label class="input-label">SAP Role Name</label>
-      <input type="text" class="sim-input" id="simRoleName" placeholder="e.g. Z_SOD_TEST" autocomplete="off">
+      <input type="text" class="sim-input" id="simRoleName" placeholder="" autocomplete="off">
 
       <label class="grid-label">Proposed T-Codes to Add</label>
       <table class="spreadsheet-grid" id="roleTcodesGrid">
@@ -240,7 +240,7 @@ function switchTab(tab) {
 function addGridRow(gridId, placeholder) {
   var tbody = document.getElementById(gridId).querySelector('tbody');
   var tr = document.createElement('tr');
-  tr.innerHTML = '<td><input type="text" class="grid-cell" placeholder="' + placeholder + '"></td><td><button class="grid-del-btn" onclick="this.closest(\'tr\').remove()">&times;</button></td>';
+  tr.innerHTML = '<td><input type="text" class="grid-cell" placeholder=""></td><td><button class="grid-del-btn" onclick="this.closest(\'tr\').remove()">&times;</button></td>';
   tbody.appendChild(tr);
   var input = tr.querySelector('input');
   input.addEventListener('input', function() {

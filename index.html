@@ -26,7 +26,7 @@
   }
   ::selection{ background:var(--navy-corp); color:#fff; }
 
-  /* ══════ NAV ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â NAV â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .ik-nav{
     background:var(--navy); border-top:3px solid var(--gold);
     padding:0 32px; position:sticky; top:0; z-index:100;
@@ -49,7 +49,7 @@
   }
   .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
 
-  /* ══════ HERO BANNER (compact) ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â HERO BANNER (compact) â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .hero{
     background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%);
     color:#EEF1F6; padding:28px 32px 24px;
@@ -62,10 +62,10 @@
   .hero-left h1 .ik-gold{ color:var(--gold); }
   .hero-left p{ font-family:var(--font-mono); font-size:11.5px; color:#8FA3C4; letter-spacing:1px; text-transform:uppercase; }
 
-  /* ══════ MAIN CONTENT ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â MAIN CONTENT â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .main{ max-width:1240px; margin:0 auto; padding:32px; }
 
-  /* ══════ STAT CARDS ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â STAT CARDS â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .stat-row{
     display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:36px;
   }
@@ -92,7 +92,7 @@
     font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.5px;
   }
 
-  /* ══════ SECTION HEADERS ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â SECTION HEADERS â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .section-header{
     display:flex; align-items:baseline; gap:12px; margin-bottom:20px;
   }
@@ -104,9 +104,9 @@
     flex:1; height:1px; background:var(--ice-3);
   }
 
-  /* ══════ ACTION CARDS (horizontal layout) ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â ACTION CARDS (horizontal layout) â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .action-grid{
-    display:grid; grid-template-columns:repeat(5, 1fr);
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
     gap:14px; margin-bottom:40px;
   }
   .action-card{
@@ -138,7 +138,7 @@
     font-size:12.5px; color:var(--slate); line-height:1.45;
   }
 
-  /* ══════ INQUIRY BOX ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â INQUIRY BOX â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .inquiry-section{ margin-bottom:40px; }
   .inquiry-box{
     background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
@@ -168,7 +168,7 @@
   .response-log .line{ padding:4px 0 4px 14px; border-left:2px solid var(--ice-3); margin-bottom:6px; }
   .response-log .line.q{ color:var(--navy-corp); font-weight:600; border-left-color:var(--gold); }
 
-  /* ══════ DATA PANELS ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â DATA PANELS â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .panel{
     background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
     overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:20px;
@@ -205,7 +205,7 @@
   .risk-tag.high{ background:rgba(195,52,56,0.1); color:var(--crimson); }
   .risk-tag.medium{ background:rgba(193,129,30,0.1); color:var(--amber); }
 
-  /* ══════ SUB-VIEWS (Locked, DevAccess) ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â SUB-VIEWS (Locked, DevAccess) â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .page-view{ display:none; }
   .page-view.active{ display:block; }
   .page-head{
@@ -227,7 +227,7 @@
   section.sub-section{ padding:32px; }
   section.sub-section .section-inner{ max-width:1240px; margin:0 auto; }
 
-  /* ══════ FOOTER ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â FOOTER â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   footer{
     background:var(--navy); color:#8FA3C4; padding:20px 32px;
     font-family:var(--font-mono); font-size:11px;
@@ -241,7 +241,7 @@
     font-family:var(--font-display); font-weight:700; font-size:14px; color:#EEF1F6;
   }
 
-  /* ══════ SIGN OUT ROW ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â SIGN OUT ROW â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   .signout-row{
     display:flex; align-items:center; gap:12px; margin-bottom:32px;
   }
@@ -252,7 +252,7 @@
   }
   .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
 
-  /* ══════ RESPONSIVE ══════ */
+  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â RESPONSIVE â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   @media (max-width:900px){
     .stat-row{ grid-template-columns:repeat(2,1fr); }
     .hero-inner{ flex-direction:column; text-align:center; }
@@ -269,7 +269,7 @@
 </head>
 <body>
 
-<!-- ══════ NAV ══════ -->
+<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â NAV â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
 <nav class="ik-nav">
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
@@ -282,7 +282,7 @@
   </div>
 </nav>
 
-<!-- ══════ DASHBOARD VIEW ══════ -->
+<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â DASHBOARD VIEW â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
 <div id="view-dashboard" class="page-view active">
 
 <!-- Hero Banner (compact) -->
@@ -335,13 +335,13 @@
     </button>
     <button class="action-card" data-nav="devaccess">
       <div class="action-icon amber-bg">
-        <svg width="22" height="22" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-3"/><path d="M7 12l3 3 7-7"/></svg>
+        <svg width="22" height="22" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
       </div>
       <div class="action-title">Developer Access</div>
     </button>
     <a class="action-card" href="SOD.html">
       <div class="action-icon navy-bg">
-        <svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/><path d="M3 20h18" stroke-width="1.5"/></svg>
       </div>
       <div class="action-title">Risk Analytics</div>
     </a>
@@ -351,7 +351,7 @@
       </div>
       <div class="action-title">User Creation</div>
     </a>
-    <a class="action-card" href="simulation.html"><div class="action-icon" style="background:#FFF3E0;"><svg width="22" height="22" fill="none" stroke="#E65100" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/><path d="M3 12h13"/><circle cx="19" cy="12" r="2"/></svg></div><div class="action-title">Access Simulation</div></a>
+    <a class="action-card" href="simulation.html"><div class="action-icon" style="background:#FFF3E0;"><svg width="22" height="22" fill="none" stroke="#E65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 8a1 1 0 00.86 1.5h10.28A1 1 0 0017 17l-5-8V3"/><path d="M8.5 14h7" stroke-dasharray="2 2"/></svg></div><div class="action-title">Access Simulation</div></a>
     <a class="action-card" id="workflowCard" href="new-request.html">
       <div class="action-icon gold-bg">
         <svg width="22" height="22" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
@@ -378,14 +378,16 @@
     </div>
   </div>
 
+
+  <div style="text-align:center;padding:20px 0 10px;font-family:var(--font-mono);font-size:10.5px;color:var(--slate-light);letter-spacing:0.5px;">&copy; 2026 Infokrafts &middot; IKAegis v1.0</div>
 </div>
 </div>
 
-<!-- ══════ LOCKED USERS VIEW ══════ -->
+<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â LOCKED USERS VIEW â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
 <div id="view-locked" class="page-view">
   <div class="page-head">
     <div class="page-head-inner">
-      <button class="back-link" data-nav="dashboard">← Back to dashboard</button>
+      <button class="back-link" data-nav="dashboard">â†Â Back to dashboard</button>
       <h2>Locked Users</h2>
       <p>Every account currently locked in SAP, ordered by user ID.</p>
     </div>
@@ -404,11 +406,11 @@
   </section>
 </div>
 
-<!-- ══════ S_DEVELOP VIEW ══════ -->
+<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â S_DEVELOP VIEW â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
 <div id="view-devaccess" class="page-view">
   <div class="page-head">
     <div class="page-head-inner">
-      <button class="back-link" data-nav="dashboard">← Back to dashboard</button>
+      <button class="back-link" data-nav="dashboard">â†Â Back to dashboard</button>
       <h2>S_DEVELOP Access Check</h2>
       <p>Users holding S_DEVELOP authorization to create or change programs.</p>
     </div>
@@ -427,7 +429,7 @@
   </section>
 </div>
 
-<!-- ══════ FOOTER ══════ -->
+<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â FOOTER â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
 <footer>
   <div class="footer-inner">
     <span class="footer-brand"><span class="ik-gold">IK</span>Aegis</span>
@@ -536,16 +538,16 @@
     qLine.className = 'line q'; qLine.textContent = '> ' + q;
     log.appendChild(qLine);
     const aLine = document.createElement('div');
-    aLine.className = 'line'; aLine.textContent = 'Submitting to /api/chat…';
+    aLine.className = 'line'; aLine.textContent = 'Submitting to /api/ai/chatâ€¦';
     log.appendChild(aLine);
     log.scrollTop = log.scrollHeight;
 
-    fetch('/api/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ question:q })
+    fetch('/api/ai/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message:q })
     })
       .then(res => { if(!res.ok) throw new Error('bad'); return res.json(); })
       .then(data => { aLine.textContent = data.answer || 'No answer field in response.'; })
-      .catch(() => { aLine.textContent = 'Not connected — /api/chat unreachable.'; });
+      .catch(() => { aLine.textContent = 'Not connected — /api/ai/chat unreachable.'; });
 
     input.value = '';
   }
@@ -587,4 +589,5 @@ document.addEventListener('auth-ready', function(e){
 
 </body>
 </html>
+
 

@@ -18,7 +18,7 @@ try {
   });
 } catch (e) { /* .env not found — skip */ }
 
-const USERS_FILE = path.join(__dirname, 'data', 'ikaegis-users.json');
+const db = require('./db');
 
 // Create transporter (reusable)
 let transporter = null;
@@ -43,12 +43,9 @@ function getTransporter() {
 }
 
 // Lookup user email from ikaegis-users.json
-function getUserEmail(username) {
+async function getUserEmail(username) {
   try {
-    const data = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
-    const user = data.users.find(function(u) {
-      return u.username.toUpperCase() === username.toUpperCase();
-    });
+    const user = await db.getUserByUsername(username.toUpperCase());
     return user && user.email ? user.email : null;
   } catch (e) { return null; }
 }
@@ -80,9 +77,9 @@ function sendMail(to, subject, htmlBody) {
 // =============================================
 
 // 1. Request submitted — notify requester + manager
-function notifyRequestSubmitted(request) {
-  var requesterEmail = getUserEmail(request.requestedBy);
-  var managerEmail = getUserEmail(request.approver);
+async function notifyRequestSubmitted(request) {
+  var requesterEmail = await getUserEmail(request.requestedBy);
+  var managerEmail = await getUserEmail(request.approver);
 
   var subjectReq = 'IKAegis — Your access request ' + request.id + ' submitted';
   var bodyReq = '<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;">'
@@ -127,8 +124,8 @@ function notifyRequestSubmitted(request) {
 }
 
 // 2. Manager approved — notify role owner
-function notifyManagerApproved(request) {
-  var roleOwnerEmail = getUserEmail(request.roleOwner);
+async function notifyManagerApproved(request) {
+  var roleOwnerEmail = await getUserEmail(request.roleOwner);
 
   var subject = 'IKAegis — Request ' + request.id + ' pending your approval (Level 2)';
   var body = '<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;">'
@@ -154,8 +151,8 @@ function notifyManagerApproved(request) {
 }
 
 // 3. Final decision — notify requester
-function notifyFinalDecision(request) {
-  var requesterEmail = getUserEmail(request.requestedBy);
+async function notifyFinalDecision(request) {
+  var requesterEmail = await getUserEmail(request.requestedBy);
   var isApproved = request.status === 'approved';
 
   var subject = 'IKAegis — Request ' + request.id + ' ' + (isApproved ? 'APPROVED' : 'REJECTED');
@@ -186,7 +183,7 @@ function notifyFinalDecision(request) {
 }
 
 // 4. Rejection at any stage — notify requester
-function notifyRejection(request) {
+async function notifyRejection(request) {
   notifyFinalDecision(request);
 }
 

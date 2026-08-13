@@ -358,7 +358,7 @@ module.exports = function(app) {
           try {
             const result = await app.assignSapRole(sapUser, request.role);
             await db.updateRequest(requestId, {
-              sapSyncStatus: result.success ? 'success' : 'failed',
+              sapSyncStatus: (!result || /(error|fail|invalid|not authorized|must)/i.test(String((result && (result.Message || result.message)) || ''))) ? 'failed' : 'success',
               sapSyncMessage: result.message || ''
             });
           } catch (sapErr) {

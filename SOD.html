@@ -548,7 +548,7 @@
       <div class="mode-panel" id="modeSingle" style="display:none">
         <div class="inquiry-box">
           <div class="inquiry-row">
-            <input type="text" id="roleNameInput" placeholder="Enter SAP Role Name (e.g. Z_AP_ACCOUNTANT)">
+            <input type="text" id="roleNameInput" placeholder="Enter SAP Role Name">
             <button type="button" class="upload-inline-btn" onclick="document.getElementById('xlFileSingleRole').click()">Upload Excel</button>
             <input type="file" id="xlFileSingleRole" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleSingleUpload(this,'roleNameInput')">
             <button class="go-btn" id="analyzeSingleBtn">Analyze</button>
@@ -606,7 +606,7 @@
       <div class="mode-panel" id="userModeSingle" style="display:none">
         <div class="inquiry-box">
           <div class="inquiry-row">
-            <input type="text" id="userNameInput" placeholder="Enter SAP Username (e.g. S4GRC1)">
+            <input type="text" id="userNameInput" placeholder="Enter SAP Username">
             <button type="button" class="upload-inline-btn" onclick="document.getElementById('xlFileSingleUser').click()">Upload Excel</button>
             <input type="file" id="xlFileSingleUser" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleSingleUpload(this,'userNameInput')">
             <button class="go-btn" id="analyzeSingleUserBtn">Analyze</button>
@@ -659,7 +659,7 @@
 function addGridRow(tbodyId, placeholder, value) {
   var tbody = document.getElementById(tbodyId);
   var tr = document.createElement('tr');
-  tr.innerHTML = '<td><input type="text" class="grid-cell" placeholder="' + placeholder + '" value="' + (value || '') + '"></td>'
+  tr.innerHTML = '<td><input type="text" class="grid-cell" placeholder="" value="' + (value || '') + '"></td>'
     + '<td style="width:36px;text-align:center"><button type="button" class="grid-del-btn" title="Remove" onclick="removeGridRow(this,\'' + tbodyId + '\')">&times;</button></td>';
   tbody.appendChild(tr);
   var input = tr.querySelector('input.grid-cell');
