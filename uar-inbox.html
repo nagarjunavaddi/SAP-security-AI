@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKAegis - Access Review Inbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --ice-1:#F5F7FA; --ice-2:#EDF2F8; --ice-3:#DCE5F0;
+    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
+    --navy:#15263F; --navy-corp:#1F497D; --navy-dark:#002060;
+    --crimson:#C33438; --green:#00B050; --gold:#FFC000; --amber:#C1811E;
+    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --shadow-sm:0 1px 3px rgba(21,38,63,0.06);
+    --shadow-md:0 4px 16px rgba(21,38,63,0.08);
+    --shadow-lg:0 12px 40px rgba(21,38,63,0.12);
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--ice-1); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--navy-corp); color:#fff; }
+
+  .ik-nav{ background:var(--navy); border-top:3px solid var(--gold); padding:0 32px; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(21,38,63,0.3); }
+  .ik-nav-inner{ max-width:1240px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:56px; }
+  .ik-brand{ font-family:var(--font-display); font-weight:800; font-size:22px; color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px; }
+  .ik-gold{ color:var(--gold); }
+  .ik-nav-links{ display:flex; gap:10px; align-items:center; }
+  .ik-nav-links a{ font-family:var(--font-body); font-size:13px; font-weight:500; color:#8FA3C4; text-decoration:none; padding:8px 16px; border-radius:6px; transition:all .15s ease; }
+  .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
+  #navUser{ font-family:var(--font-mono); font-size:12px; color:#8FA3C4; }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; margin-left:8px; }
+  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
+
+  .page-head{ background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%); color:#EEF1F6; padding:32px; }
+  .page-head-inner{ max-width:1240px; margin:0 auto; }
+  .page-head h2{ font-family:var(--font-display); font-weight:800; font-size:24px; margin:0 0 6px; }
+  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; max-width:560px; line-height:1.5; }
+
+  .main{ max-width:1240px; margin:0 auto; padding:32px; }
+
+  .stat-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:36px; }
+  .stat-card{ background:#fff; border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow-sm); border-left:4px solid var(--ice-3); transition:box-shadow .2s; }
+  .stat-card:hover{ box-shadow:var(--shadow-md); }
+  .stat-card.navy{ border-left-color:var(--navy-corp); }
+  .stat-card.red{ border-left-color:var(--crimson); }
+  .stat-card.amber{ border-left-color:var(--amber); }
+  .stat-card.green{ border-left-color:var(--green); }
+  .stat-card .stat-value{ font-family:var(--font-display); font-weight:800; font-size:36px; line-height:1; letter-spacing:-1px; }
+  .stat-card.navy .stat-value{ color:var(--navy-corp); }
+  .stat-card.red .stat-value{ color:var(--crimson); }
+  .stat-card.amber .stat-value{ color:var(--amber); }
+  .stat-card.green .stat-value{ color:var(--green); }
+  .stat-card .stat-label{ font-size:12px; color:var(--slate); margin-top:8px; line-height:1.4; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.5px; }
+
+  .section-header{ display:flex; align-items:baseline; gap:12px; margin-bottom:20px; }
+  .section-header h2{ font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--navy); letter-spacing:-0.2px; }
+  .section-header .section-line{ flex:1; height:1px; background:var(--ice-3); }
+
+  .card{ background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
+  table{ width:100%; border-collapse:collapse; }
+  th{ background:var(--ice-2); font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--slate); text-align:left; padding:12px 16px; border-bottom:1px solid var(--ice-3); }
+  td{ padding:14px 16px; border-bottom:1px solid var(--ice-2); font-size:13px; vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  .mono{ font-family:var(--font-mono); }
+
+  .badge{ display:inline-block; padding:3px 10px; border-radius:20px; font-family:var(--font-mono); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; }
+  .badge.pending{ background:#FCF3E3; color:var(--amber); }
+  .badge.keep{ background:#E3F5EA; color:var(--green); }
+  .badge.revoke{ background:#FBE9E9; color:var(--crimson); }
+
+  .comment-input{ width:100%; min-width:150px; padding:7px 10px; border:1px solid var(--ice-3); border-radius:6px; font-family:var(--font-body); font-size:12px; color:var(--ink); }
+  .comment-input:focus{ outline:none; border-color:var(--navy-corp); }
+
+  .btn{ font-family:var(--font-body); font-size:12px; font-weight:600; padding:7px 14px; border-radius:6px; border:1px solid transparent; cursor:pointer; transition:all .15s; }
+  .btn-keep{ background:var(--green); color:#fff; }
+  .btn-revoke{ background:var(--crimson); color:#fff; }
+  .btn.ghost{ background:#fff; }
+  .btn-keep.ghost{ color:var(--green); border-color:var(--green); }
+  .btn-revoke.ghost{ color:var(--crimson); border-color:var(--crimson); }
+  .btn:hover{ filter:brightness(.96); }
+  .btn-group{ display:flex; gap:8px; }
+
+  .notice{ background:#fff; border-radius:var(--radius); padding:44px; text-align:center; box-shadow:var(--shadow-sm); color:var(--slate); font-size:14px; }
+  .notice a{ color:var(--navy-corp); font-weight:600; text-decoration:none; }
+  .notice a:hover{ text-decoration:underline; }
+  .empty{ background:#fff; border-radius:var(--radius); padding:60px 20px; text-align:center; color:var(--slate); font-size:14px; box-shadow:var(--shadow-sm); }
+
+  /* ---- drill-down additions ---- */
+  .crumb{ font-family:var(--font-mono); font-size:12px; color:var(--slate); margin-bottom:16px; }
+  .crumb a{ color:var(--navy-corp); text-decoration:none; cursor:pointer; }
+  .crumb a:hover{ text-decoration:underline; }
+
+  .camp-row{ cursor:pointer; }
+  .camp-row:hover td{ background:var(--ice-1); }
+  .progress-wrap{ display:flex; align-items:center; gap:10px; min-width:160px; }
+  .progress-bar{ flex:1; height:8px; background:var(--ice-3); border-radius:20px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--green); border-radius:20px; }
+  .progress-text{ font-family:var(--font-mono); font-size:11px; color:var(--slate); white-space:nowrap; }
+  .mini-badges{ display:flex; gap:6px; font-family:var(--font-mono); font-size:11px; }
+  .mini-badges span{ padding:2px 9px; border-radius:20px; white-space:nowrap; }
+  .mb-pending{ background:#FCF3E3; color:var(--amber); }
+  .mb-keep{ background:#E3F5EA; color:var(--green); }
+  .mb-revoke{ background:#FBE9E9; color:var(--crimson); }
+  .link-btn{ background:var(--navy-corp); color:#fff; border:none; padding:7px 16px; border-radius:6px; font-family:var(--font-body); font-size:12px; font-weight:600; cursor:pointer; transition:filter .15s; }
+  .link-btn:hover{ filter:brightness(1.1); }
+
+  .toggle-wrap{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .toggle-label{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--slate); }
+  .toggle-group{ display:inline-flex; border:1px solid var(--ice-3); border-radius:8px; overflow:hidden; }
+  .toggle-group button{ background:#fff; border:none; padding:8px 20px; font-family:var(--font-body); font-size:13px; font-weight:600; color:var(--slate); cursor:pointer; transition:all .12s; }
+  .toggle-group button:hover{ background:var(--ice-1); }
+  .toggle-group button.active{ background:var(--navy-corp); color:#fff; }
+  .toggle-group button.active:hover{ background:var(--navy-corp); }
+
+  .group-block{ background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-sm); margin-bottom:12px; overflow:hidden; }
+  .group-head{ display:flex; align-items:center; gap:14px; padding:16px 20px; cursor:pointer; user-select:none; transition:background .12s; }
+  .group-head:hover{ background:var(--ice-1); }
+  .chevron{ font-family:var(--font-mono); color:var(--slate); transition:transform .15s; font-size:11px; width:12px; display:inline-block; }
+  .chevron.open{ transform:rotate(90deg); }
+  .group-title{ font-family:var(--font-mono); font-weight:600; font-size:14px; color:var(--navy); flex:1; }
+  .group-count{ font-family:var(--font-mono); font-size:11px; color:var(--slate-light); white-space:nowrap; }
+  .group-sub{ border-top:1px solid var(--ice-2); }
+
+  .btn-sm{ padding:5px 11px; font-size:11px; }
+  .sod-pill{ font-family:var(--font-mono); font-size:11px; padding:5px 12px; border-radius:20px; margin-left:auto; }
+  .sod-pill.loading{ background:var(--ice-2); color:var(--slate); }
+  .sod-pill.ok{ background:#E3F5EA; color:var(--green); }
+  .sod-pill.warn{ background:#FBE9E9; color:var(--crimson); }
+  .sod-pill.err{ background:#FCF3E3; color:var(--amber); }
+  .sod-badge{ display:inline-block; font-family:var(--font-mono); font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:#FBE9E9; color:var(--crimson); vertical-align:middle; margin-left:8px; }
+  .sod-flag{ display:inline-block; font-family:var(--font-mono); font-size:10px; font-weight:600; padding:1px 7px; border-radius:20px; background:#FBE9E9; color:var(--crimson); cursor:help; margin-left:8px; }
+
+  #toast{ position:fixed; bottom:24px; right:24px; background:var(--navy); color:#fff; padding:14px 20px; border-radius:8px; font-size:13px; box-shadow:var(--shadow-lg); opacity:0; transform:translateY(10px); transition:all .25s; pointer-events:none; z-index:200; border-left:3px solid var(--gold); }
+  #toast.show{ opacity:1; transform:translateY(0); }
+  #toast.err{ border-left-color:var(--crimson); }
+</style>
+</head>
+<body>
+  <nav class="ik-nav">
+    <div class="ik-nav-inner">
+      <a href="index.html" class="ik-brand">IK<span class="ik-gold">Aegis</span></a>
+      <div class="ik-nav-links">
+        <a href="index.html">Dashboard</a>
+        <span id="navUser"></span>
+        <button class="signout-btn" onclick="signOut()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head">
+    <div class="page-head-inner">
+      <a href='index.html' style='color:#8FA3C4;font-family:var(--font-mono);font-size:13px;text-decoration:none;display:inline-block;margin-bottom:8px;'>&larr; Back to dashboard</a>
+      <h2>Access Review Inbox</h2>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="stat-row">
+      <div class="stat-card amber"><div class="stat-value" id="s-pending">0</div><div class="stat-label">Pending</div></div>
+      <div class="stat-card green"><div class="stat-value" id="s-keep">0</div><div class="stat-label">Keep</div></div>
+      <div class="stat-card red"><div class="stat-value" id="s-revoke">0</div><div class="stat-label">Revoke</div></div>
+      <div class="stat-card navy"><div class="stat-value" id="s-total">0</div><div class="stat-label">Total</div></div>
+    </div>
+
+    <div class="section-header">
+      <h2 id="secTitle">My Review Campaigns</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div id="content"><div class="notice">Loading...</div></div>
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+  var byId = function(id){ return document.getElementById(id); };
+
+  // ---- state ----
+  var campaigns = [];        // L1 list
+  var currentCampaign = null;
+  var campaignItems = [];    // L2/L3 flat items for the open campaign
+  var groupBy = 'user';      // 'user' | 'role'
+  var expanded = {};         // group index -> bool
+
+  // ---- helpers (unchanged behaviour) ----
+  function showToast(msg, isErr){
+    var t = byId('toast');
+    t.textContent = msg;
+    t.className = isErr ? 'show err' : 'show';
+    setTimeout(function(){ t.className = t.className.replace('show','').trim(); }, 2600);
+  }
+
+  function signOut(){
+    fetch('/api/logout', { method:'POST', credentials:'same-origin' })
+      .catch(function(){})
+      .finally(function(){ window.location.href = 'login.html'; });
+  }
+
+  function esc(s){
+    return (s == null ? '' : String(s)).replace(/[&<>"]/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c];
+    });
+  }
+
+  function fmtDate(d){
+    if(!d) return '-';
+    try{
+      var dt = new Date(d);
+      return dt.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+    }catch(e){ return '-'; }
+  }
+
+  function badge(decision){
+    var d = decision || 'pending';
+    return '<span class="badge ' + d + '">' + d + '</span>';
+  }
+
+  function renderStats(s){
+    byId('s-pending').textContent = s.pending || 0;
+    byId('s-keep').textContent    = s.keep    || 0;
+    byId('s-revoke').textContent  = s.revoke  || 0;
+    byId('s-total').textContent   = s.total   || 0;
+  }
+
+  function statsFromItems(arr){
+    var s = { total: arr.length, pending:0, keep:0, revoke:0 };
+    arr.forEach(function(it){ var d = it.decision || 'pending'; s[d] = (s[d]||0) + 1; });
+    return s;
+  }
+
+  function statsFromCampaigns(){
+    var s = { total:0, pending:0, keep:0, revoke:0 };
+    campaigns.forEach(function(c){
+      s.total += c.total||0; s.pending += c.pending||0; s.keep += c.keep||0; s.revoke += c.revoke||0;
+    });
+    return s;
+  }
+
+  // ---- L1: campaigns ----
+  async function loadCampaigns(){
+    try{
+      var res = await fetch('/api/uar/my-campaigns', { credentials:'same-origin' });
+      if(res.status === 401){
+        byId('content').innerHTML = '<div class="notice">You are not signed in. Please <a href="login.html">log in</a> to see your reviews.</div>';
+        return;
+      }
+      if(res.status === 403){
+        byId('content').innerHTML = '<div class="notice">Your role does not have access to reviews. Reviews are available to admins and role owners.</div>';
+        return;
+      }
+      if(!res.ok){ throw new Error('HTTP ' + res.status); }
+
+      var data = await res.json();
+      campaigns = data.campaigns || [];
+      if(data.reviewer){ byId('navUser').textContent = data.reviewer; }
+      renderCampaigns();
+    }catch(err){
+      byId('content').innerHTML = '<div class="notice">Failed to load campaigns. ' + esc(err.message) + '</div>';
+    }
+  }
+
+  function renderCampaigns(){
+    byId('secTitle').textContent = 'My Review Campaigns';
+    renderStats(statsFromCampaigns());
+
+    if(!campaigns.length){
+      byId('content').innerHTML = '<div class="empty">No review campaigns are assigned to you right now.</div>';
+      return;
+    }
+
+    var rows = '';
+    campaigns.forEach(function(c){
+      var reviewed = (c.keep||0) + (c.revoke||0);
+      var pct = c.total ? Math.round(reviewed / c.total * 100) : 0;
+      rows += '<tr class="camp-row" onclick="openCampaign(' + c.id + ')">'
+        + '<td style="font-weight:600;color:var(--navy);">' + esc(c.campaignName) + '</td>'
+        + '<td>' + fmtDate(c.dueDate) + '</td>'
+        + '<td><div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><span class="progress-text">' + reviewed + '/' + c.total + '</span></div></td>'
+        + '<td><div class="mini-badges"><span class="mb-pending">' + (c.pending||0) + ' pending</span><span class="mb-keep">' + (c.keep||0) + ' keep</span><span class="mb-revoke">' + (c.revoke||0) + ' revoke</span></div></td>'
+        + '<td style="text-align:right;"><button class="link-btn" onclick="event.stopPropagation();openCampaign(' + c.id + ')">Review &rarr;</button></td>'
+        + '</tr>';
+    });
+
+    byId('content').innerHTML =
+      '<div class="card"><table><thead><tr>'
+      + '<th>Campaign</th><th>Due</th><th>Progress</th><th>Status</th><th></th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  // ---- L2 / L3: one campaign, grouped, expandable ----
+  async function openCampaign(id){
+    var c = campaigns.find(function(x){ return x.id === id; });
+    currentCampaign = c || { id:id, campaignName:'Campaign' };
+    byId('content').innerHTML = '<div class="notice">Loading...</div>';
+    try{
+      var res = await fetch('/api/uar/campaign/' + id + '/items', { credentials:'same-origin' });
+      if(!res.ok){ throw new Error('HTTP ' + res.status); }
+      var data = await res.json();
+      campaignItems = data.items || [];
+      expanded = {};
+      sodByUser = {}; sodStatus = 'idle';
+      renderCampaign();
+      loadSod();
+    }catch(err){
+      byId('content').innerHTML = '<div class="notice">Failed to load campaign items. ' + esc(err.message) + '</div>';
+    }
+  }
+
+  function backToCampaigns(){
+    // refetch so L1 counts reflect any decisions just made
+    loadCampaigns();
+  }
+
+  function setGroup(g){
+    if(groupBy === g) return;
+    groupBy = g;
+    expanded = {};
+    renderCampaign();
+  }
+
+  function toggleGroup(i){
+    expanded[i] = !expanded[i];
+    renderCampaign();
+  }
+
+  function groupItems(){
+    var keyField = (groupBy === 'user') ? 'username' : 'roleName';
+    var map = {}, order = [];
+    campaignItems.forEach(function(it){
+      var k = it[keyField] || '-';
+      if(!map[k]){ map[k] = { key:k, items:[], pending:0, keep:0, revoke:0 }; order.push(k); }
+      map[k].items.push(it);
+      var d = it.decision || 'pending';
+      map[k][d] = (map[k][d]||0) + 1;
+    });
+    return order.map(function(k){ return map[k]; });
+  }
+
+  function renderCampaign(){
+    renderStats(statsFromItems(campaignItems));
+    byId('secTitle').textContent = currentCampaign.campaignName;
+
+    var subLabel = (groupBy === 'user') ? 'Role' : 'User';
+    var childWord = (groupBy === 'user') ? 'role' : 'user';
+
+    var html = '';
+    html += '<div class="crumb"><a onclick="backToCampaigns()">My Review Campaigns</a> &nbsp;/&nbsp; ' + esc(currentCampaign.campaignName) + '</div>';
+    html += '<div class="toggle-wrap"><span class="toggle-label">Group by</span><div class="toggle-group">'
+      + '<button class="' + (groupBy==='user'?'active':'') + '" onclick="setGroup(\'user\')">User</button>'
+      + '<button class="' + (groupBy==='role'?'active':'') + '" onclick="setGroup(\'role\')">Role</button>'
+      + '</div>' + sodStatusPill() + '</div>';
+
+    var groups = groupItems();
+    if(!groups.length){
+      html += '<div class="empty">No items in this campaign.</div>';
+      byId('content').innerHTML = html;
+      return;
+    }
+
+    groups.forEach(function(g, idx){
+      var isOpen = !!expanded[idx];
+      var total = g.items.length;
+      var bulkBtns = '';
+      if(g.pending > 0){
+        bulkBtns = '<div class="btn-group" onclick="event.stopPropagation();">'
+          + '<button class="btn btn-keep ghost btn-sm" onclick="bulkKeep(' + idx + ')">Keep all (' + g.pending + ')</button>'
+          + '<button class="btn btn-revoke ghost btn-sm" onclick="bulkRevoke(' + idx + ')">Revoke all (' + g.pending + ')</button>'
+          + '</div>';
+      }
+
+      html += '<div class="group-block">';
+      html += '<div class="group-head" onclick="toggleGroup(' + idx + ')">'
+        + '<span class="chevron' + (isOpen?' open':'') + '">&#9654;</span>'
+        + '<span class="group-title">' + esc(g.key) + sodHeadBadge(g) + '</span>'
+        + '<div class="mini-badges"><span class="mb-pending">' + g.pending + ' pending</span><span class="mb-keep">' + g.keep + ' keep</span><span class="mb-revoke">' + g.revoke + ' revoke</span></div>'
+        + '<span class="group-count">' + total + ' ' + childWord + (total===1?'':'s') + '</span>'
+        + bulkBtns
+        + '</div>';
+
+      if(isOpen){
+        var sub = '';
+        g.items.forEach(function(it){
+          var keepGhost   = it.decision === 'keep'   ? '' : ' ghost';
+          var revokeGhost = it.decision === 'revoke' ? '' : ' ghost';
+          var subVal = (groupBy === 'user') ? it.roleName : it.username;
+          sub += '<tr>'
+            + '<td class="mono">' + esc(subVal) + sodRowFlag(it) + '</td>'
+            + '<td id="badge-' + it.itemId + '">' + badge(it.decision) + '</td>'
+            + '<td><input class="comment-input" id="cmt-' + it.itemId + '" placeholder="Optional comment" value="' + esc(it.comment) + '"></td>'
+            + '<td><div class="btn-group">'
+              + '<button class="btn btn-keep' + keepGhost + '" onclick="decide(' + it.itemId + ',\'keep\')">Keep</button>'
+              + '<button class="btn btn-revoke' + revokeGhost + '" onclick="decide(' + it.itemId + ',\'revoke\')">Revoke</button>'
+            + '</div></td>'
+            + '</tr>';
+        });
+        html += '<div class="group-sub"><table><thead><tr>'
+          + '<th>' + subLabel + '</th><th>Decision</th><th>Comment</th><th>Action</th>'
+          + '</tr></thead><tbody>' + sub + '</tbody></table></div>';
+      }
+
+      html += '</div>';
+    });
+
+    byId('content').innerHTML = html;
+  }
+
+  // ===== SoD (Segregation of Duties) overlay =====
+  var sodByUser = {};      // UPPER(username) -> { violationCount, roleConflicts:{ UPPER(role):[risk,...] } }
+  var sodStatus = 'idle';  // idle | loading | done | error
+
+  function upperMap(m){
+    var out = {};
+    if(!m) return out;
+    Object.keys(m).forEach(function(k){ out[String(k).toUpperCase()] = m[k]; });
+    return out;
+  }
+
+  function contributingRoles(v, tMap, aMap){
+    var roles = {};
+    var add = function(r){ if(r) roles[String(r).toUpperCase()] = true; };
+    if(v.matchedFunctions){
+      v.matchedFunctions.forEach(function(f){
+        (f.matchedTcodes || []).forEach(function(t){ (tMap[String(t).toUpperCase()] || []).forEach(add); });
+        (f.authDetails || []).forEach(function(ad){ (ad.objects || []).forEach(function(o){ (aMap[String(o).toUpperCase()] || []).forEach(add); }); });
+      });
+    }
+    if(v.authObject){ (aMap[String(v.authObject).toUpperCase()] || []).forEach(add); }
+    return Object.keys(roles);
+  }
+
+  async function loadSod(){
+    var names = {};
+    campaignItems.forEach(function(it){ if(it.username) names[String(it.username).toUpperCase()] = true; });
+    var usernames = Object.keys(names);
+    if(!usernames.length){ sodStatus = 'done'; renderCampaign(); return; }
+
+    sodStatus = 'loading';
+    renderCampaign();
+    try{
+      var res = await fetch('/api/risk-analysis/users-bulk', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        credentials:'same-origin',
+        body: JSON.stringify({ usernames: usernames })
+      });
+      if(!res.ok){ throw new Error('HTTP ' + res.status); }
+      var data = await res.json();
+      var map = {};
+      var SOD_TYPES = { 'Action Level':1, 'Critical Action':1 };
+      (data.results || []).forEach(function(r){
+        var uname = String(r.username || '').toUpperCase();
+        var tMap = upperMap(r.tcodeRoleMap);
+        var aMap = upperMap(r.authObjectRoleMap);
+        var viols = (r.violations || []).filter(function(v){ return SOD_TYPES[v.riskType]; });
+        var roleConflicts = {};
+        viols.forEach(function(v){
+          contributingRoles(v, tMap, aMap).forEach(function(rk){
+            if(!roleConflicts[rk]) roleConflicts[rk] = [];
+            roleConflicts[rk].push({ riskId:v.riskId, riskName:v.riskName, riskLevel:v.riskLevel, riskType:v.riskType });
+          });
+        });
+        map[uname] = { violationCount: viols.length, roleConflicts: roleConflicts };
+      });
+      sodByUser = map;
+      sodStatus = 'done';
+    }catch(err){
+      sodStatus = 'error';
+    }
+    renderCampaign();
+  }
+
+  function userSod(username){ return sodByUser[String(username||'').toUpperCase()] || null; }
+
+  function pairConflicts(username, roleName){
+    var s = userSod(username);
+    if(!s) return [];
+    return s.roleConflicts[String(roleName||'').toUpperCase()] || [];
+  }
+
+  function sodStatusPill(){
+    if(sodStatus === 'loading') return '<span class="sod-pill loading">Analyzing SoD...</span>';
+    if(sodStatus === 'error')   return '<span class="sod-pill err">SoD check unavailable</span>';
+    if(sodStatus === 'done'){
+      var users = 0;
+      Object.keys(sodByUser).forEach(function(u){ if(sodByUser[u].violationCount > 0) users++; });
+      if(users === 0) return '<span class="sod-pill ok">No SoD conflicts</span>';
+      return '<span class="sod-pill warn">SoD: ' + users + ' user' + (users===1?'':'s') + ' with conflicts</span>';
+    }
+    return '';
+  }
+
+  function sodHeadBadge(g){
+    if(sodStatus !== 'done') return '';
+    if(groupBy === 'user'){
+      var s = sodByUser[String(g.key).toUpperCase()];
+      if(s && s.violationCount > 0){
+        return '<span class="sod-badge" title="' + s.violationCount + ' SoD violations across this user roles">&#9888; ' + s.violationCount + ' SoD</span>';
+      }
+      return '';
+    }
+    var n = 0;
+    g.items.forEach(function(it){ if(pairConflicts(it.username, it.roleName).length) n++; });
+    if(n > 0){ return '<span class="sod-badge" title="' + n + ' user(s) have an SoD conflict involving this role">&#9888; ' + n + '</span>'; }
+    return '';
+  }
+
+  function sodRowFlag(it){
+    if(sodStatus !== 'done') return '';
+    var c = pairConflicts(it.username, it.roleName);
+    if(!c.length) return '';
+    var names = c.slice(0,6).map(function(x){ return x.riskName || x.riskId; }).join(', ');
+    if(c.length > 6) names += ', ...';
+    return '<span class="sod-flag" title="' + esc(names) + '">&#9888; ' + c.length + '</span>';
+  }
+
+  async function bulkDecide(groupIdx, decision){
+    var groups = groupItems();
+    var g = groups[groupIdx];
+    if(!g) return;
+    var targets = g.items.filter(function(it){ return (it.decision||'pending') === 'pending'; });
+    if(!targets.length){ showToast('Nothing pending in this group', false); return; }
+    if(decision === 'revoke'){
+      if(!window.confirm('Revoke ' + targets.length + ' role(s) for "' + g.key + '"? This removes them from SAP immediately.')) return;
+    }
+    var ok = 0, fail = 0;
+    for(var i=0;i<targets.length;i++){
+      var it = targets[i];
+      try{
+        var res = await fetch('/api/uar/decision', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          credentials:'same-origin',
+          body: JSON.stringify({ itemId: it.itemId, decision: decision, comment: '' })
+        });
+        var data = await res.json();
+        if(res.ok){ it.decision = decision; ok++; }
+        else { fail++; }
+      }catch(e){ fail++; }
+    }
+    renderCampaign();
+    showToast('Bulk ' + (decision==='keep'?'Keep':'Revoke') + ': ' + ok + ' done' + (fail ? ', ' + fail + ' failed' : ''), fail>0);
+  }
+
+  function bulkKeep(idx){ return bulkDecide(idx, 'keep'); }
+  function bulkRevoke(idx){ return bulkDecide(idx, 'revoke'); }
+
+  // ---- decision (same API + behaviour as before) ----
+  async function decide(itemId, decision){
+    var cmtEl = byId('cmt-' + itemId);
+    var comment = cmtEl ? cmtEl.value : '';
+    try{
+      var res = await fetch('/api/uar/decision', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        credentials:'same-origin',
+        body: JSON.stringify({ itemId: itemId, decision: decision, comment: comment })
+      });
+      var data = await res.json();
+      if(!res.ok){ showToast(data.error || 'Save failed', true); return; }
+
+      var it = campaignItems.find(function(x){ return x.itemId === itemId; });
+      if(it){ it.decision = decision; it.comment = comment; }
+      renderCampaign();
+      showToast(decision === 'keep' ? 'Marked Keep' : 'Marked Revoke', false);
+    }catch(err){
+      showToast('Save failed: ' + err.message, true);
+    }
+  }
+
+  loadCampaigns();
+</script>
+</body>
+</html>

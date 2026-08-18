@@ -1044,6 +1044,7 @@ app.get('/api/debug-permission-summary/:roleName', async (req, res) => {
 app.assignSapRole = assignSapRoleInSAP; require('./routes/approval-routes')(app);
 app.use('/api/rfc', require('./routes/rfc-routes'));
 app.use('/api/ai', require('./routes/ai-routes'));
+app.use('/api/uar', require('./routes/uar-routes'));
 
 app.post('/api/simulation/user', async (req, res) => {
   const { username, proposedRoles } = req.body;
