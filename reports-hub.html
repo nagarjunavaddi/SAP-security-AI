@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports & Monitoring - IKAegis</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --ice-1:#F5F7FA; --ice-2:#EDF2F8; --ice-3:#DCE5F0;
+    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
+    --navy:#15263F; --navy-corp:#1F497D; --navy-dark:#002060;
+    --crimson:#C33438; --green:#00B050; --gold:#FFC000; --amber:#C1811E;
+    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --shadow-sm:0 1px 3px rgba(21,38,63,0.06);
+    --shadow-md:0 4px 16px rgba(21,38,63,0.08);
+    --shadow-lg:0 12px 40px rgba(21,38,63,0.12);
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--ice-1); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--navy-corp); color:#fff; }
+
+  .ik-nav{ background:var(--navy); border-top:3px solid var(--gold); padding:0 32px; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(21,38,63,0.3); }
+  .ik-nav-inner{ max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:56px; }
+  .ik-brand{ font-family:var(--font-display); font-weight:800; font-size:22px; color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px; }
+  .ik-gold{ color:var(--gold); }
+  .ik-nav-links{ display:flex; gap:10px; align-items:center; }
+  .ik-nav-links a{ font-family:var(--font-body); font-size:13px; font-weight:500; color:#8FA3C4; text-decoration:none; padding:8px 16px; border-radius:6px; transition:all .15s ease; }
+  .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
+  #navUser{ font-family:var(--font-mono); font-size:12px; color:#8FA3C4; }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; margin-left:8px; }
+  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
+
+  .page-head{ background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%); color:#EEF1F6; padding:32px; }
+  .page-head-inner{ max-width:1100px; margin:0 auto; }
+  .page-head h2{ font-family:var(--font-display); font-weight:800; font-size:24px; margin:0; }
+  .back-link{ color:#8FA3C4; font-family:var(--font-mono); font-size:13px; text-decoration:none; display:inline-block; margin-bottom:8px; }
+  .back-link:hover{ color:var(--gold); }
+
+  .main{ max-width:1100px; margin:0 auto; padding:32px; }
+
+  .hub-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:20px; }
+  .hub-card{ background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-sm); padding:26px; text-decoration:none; color:inherit; display:flex; align-items:center; gap:16px; transition:box-shadow .15s, transform .15s; border:1px solid var(--ice-2); }
+  .hub-card:hover{ box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:var(--ice-3); }
+  .hub-card.gated{ display:none; }
+  .hub-icon{ width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .hub-title{ font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--navy); }
+
+  .notice{ background:#fff; border-radius:var(--radius); padding:40px; text-align:center; box-shadow:var(--shadow-sm); color:var(--slate); font-size:14px; }
+  .notice a{ color:var(--navy-corp); font-weight:600; text-decoration:none; }
+</style>
+</head>
+<body>
+  <nav class="ik-nav">
+    <div class="ik-nav-inner">
+      <a href="index.html" class="ik-brand">IK<span class="ik-gold">Aegis</span></a>
+      <div class="ik-nav-links">
+        <a href="index.html">Dashboard</a>
+        <span id="navUser"></span>
+        <button class="signout-btn" onclick="signOut()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head">
+    <div class="page-head-inner">
+      <a href="index.html" class="back-link">&larr; Back to dashboard</a>
+      <h2>Reports &amp; Monitoring</h2>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="hub-grid">
+
+      <a class="hub-card" href="index.html#locked">
+        <div class="hub-icon" style="background:#FBE9E9;">
+          <svg width="24" height="24" fill="none" stroke="#C33438" stroke-width="2" stroke-linecap="round"><rect x="3" y="10" width="16" height="10" rx="2"/><path d="M7 10V6a4 4 0 118 0v4"/></svg>
+        </div>
+        <div class="hub-title">Locked Users</div>
+      </a>
+
+      <a class="hub-card" href="index.html#devaccess">
+        <div class="hub-icon" style="background:#FCF3E3;">
+          <svg width="24" height="24" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div class="hub-title">Developer Access</div>
+      </a>
+
+      <a class="hub-card" id="hubAudit" data-role="admin" href="audit-log.html">
+        <div class="hub-icon" style="background:#F3E8FF;">
+          <svg width="24" height="24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="hub-title">Audit Log</div>
+      </a>
+
+    </div>
+  </div>
+
+<script>
+  (function(){
+    fetch('/api/my-profile')
+      .then(function(r){ if(!r.ok) throw new Error('401'); return r.json(); })
+      .then(function(p){
+        var nu=document.getElementById('navUser');
+        if(nu && p && p.displayName) nu.textContent=p.displayName;
+        // Audit Log: admin only — hide for non-admins
+        if(p.role!=='admin'){
+          var au=document.getElementById('hubAudit'); if(au) au.classList.add('gated');
+        }
+      })
+      .catch(function(){
+        document.querySelector('.main').innerHTML='<div class="notice">Please <a href="login.html">sign in</a> to view Reports.</div>';
+      });
+  })();
+
+  function signOut(){
+    fetch('/api/logout',{method:'POST'}).finally(function(){ window.location.href='login.html'; });
+  }
+</script>
+</body>
+</html>

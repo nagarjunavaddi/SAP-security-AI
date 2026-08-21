@@ -327,45 +327,37 @@
     <div class="section-line"></div>
   </div>
   <div class="action-grid">
-    <button class="action-card" data-nav="locked">
-      <div class="action-icon crimson-bg">
-        <svg width="22" height="22" fill="none" stroke="#C33438" stroke-width="2" stroke-linecap="round"><rect x="3" y="10" width="16" height="10" rx="2"/><path d="M7 10V6a4 4 0 118 0v4"/></svg>
-      </div>
-      <div class="action-title">Locked Users</div>
-    </button>
-    <button class="action-card" data-nav="devaccess">
-      <div class="action-icon amber-bg">
-        <svg width="22" height="22" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-      </div>
-      <div class="action-title">Developer Access</div>
-    </button>
-    <a class="action-card" href="SOD.html">
+    <a class="action-card" href="risk-hub.html">
       <div class="action-icon navy-bg">
         <svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/><path d="M3 20h18" stroke-width="1.5"/></svg>
       </div>
-      <div class="action-title">Risk Analytics</div>
+      <div class="action-title">Risk Analysis</div>
     </a>
-    <a class="action-card" href="create-user.html">
-      <div class="action-icon green-bg">
-        <svg width="22" height="22" fill="none" stroke="#00B050" stroke-width="2" stroke-linecap="round"><path d="M16 18v-2a4 4 0 00-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
-      </div>
-      <div class="action-title">User Creation</div>
-    </a>
-    <a class="action-card" href="simulation.html"><div class="action-icon" style="background:#FFF3E0;"><svg width="22" height="22" fill="none" stroke="#E65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 8a1 1 0 00.86 1.5h10.28A1 1 0 0017 17l-5-8V3"/><path d="M8.5 14h7" stroke-dasharray="2 2"/></svg></div><div class="action-title">Access Simulation</div></a>
-      <a class="action-card" href="uar-inbox.html"><div class="action-icon" style="background:#EDF2F8;"><svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1z"/><path d="M8 6H6a1 1 0 00-1 1v13a1 1 0 001 1h12a1 1 0 001-1V7a1 1 0 00-1-1h-2"/><path d="M9 14l2 2 4-4"/></svg></div><div class="action-title">Access Reviews</div></a>
-      <a class="action-card" id="uarCard" href="uar-admin.html" style="display:none;"><div class="action-icon" style="background:#EDF2F8;"><svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1z"/><path d="M8 6H6a1 1 0 00-1 1v13a1 1 0 001 1h12a1 1 0 001-1V7a1 1 0 00-1-1h-2"/><path d="M12 11v6M9 14h6"/></svg></div><div class="action-title">Create Review</div></a>
-    <a class="action-card" id="workflowCard" href="new-request.html">
+    <a class="action-card" href="requests-hub.html">
       <div class="action-icon gold-bg">
         <svg width="22" height="22" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
       </div>
-      <div>
-        <div class="action-title" id="workflowCardTitle">Access Requests</div>
-      </div>
+      <div class="action-title">Access Requests</div>
     </a>
-    <a class='action-card' id='inboxCard' href='approvals.html' style='display:none;position:relative;'><div class='action-icon crimson-bg'><svg width='22' height='22' fill='none' stroke='#C33438' stroke-width='2' stroke-linecap='round'><path d='M22 12h-6l-2 3H10l-2-3H2'/><path d='M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z'/></svg></div><div><div class='action-title'>Approval Inbox</div><span id='inboxBadge' style='position:absolute;top:10px;right:10px;background:#C33438;color:#fff;font-family:Sora,sans-serif;font-weight:800;font-size:11px;min-width:22px;height:22px;border-radius:11px;display:none;align-items:center;justify-content:center;padding:0 6px;'>0</span></div></a>
-    <a class="action-card" id="configCard" href="approval-config.html" style="display:none;"><div class="action-icon" style="background:#EAF1FE;"><svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="action-title">Approval Config</div></a>
-    <a class="action-card" id="auditCard" href="audit-log.html" style="display:none;"><div class="action-icon" style="background:#F3E8FF;"><svg width="22" height="22" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div class="action-title">Audit Log</div></a>
-</div><span id="heroWho" style="display:none;"></span>
+    <a class="action-card" href="reviews-hub.html">
+      <div class="action-icon" style="background:#EDF2F8;">
+        <svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1z"/><path d="M8 6H6a1 1 0 00-1 1v13a1 1 0 001 1h12a1 1 0 001-1V7a1 1 0 00-1-1h-2"/><path d="M9 14l2 2 4-4"/></svg>
+      </div>
+      <div class="action-title">Access Reviews</div>
+    </a>
+    <a class="action-card" href="reports-hub.html">
+      <div class="action-icon crimson-bg">
+        <svg width="22" height="22" fill="none" stroke="#C33438" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>
+      </div>
+      <div class="action-title">Reports &amp; Monitoring</div>
+    </a>
+    <a class="action-card" href="su53-inbox.html">
+      <div class="action-icon crimson-bg">
+        <svg width="22" height="22" fill="none" stroke="#C33438" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <div class="action-title">SU53 Agent</div>
+    </a>
+  </div><span id="heroWho" style="display:none;"></span>
   <div class="inquiry-section">
     <div class="section-header">
       <h2>Security Query</h2>

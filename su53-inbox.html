@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SU53 Inbox — IK° Kontrol</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;450;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0C2438; --navy-2:#14344F;
+    --ink:#1B2A38; --slate:#5E7186; --slate-light:#8A99A8;
+    --line:#E4E9EC; --paper:#FAFBFC; --paper-2:#F1F4F6; --card:#FFFFFF;
+    --brass:#B0894F; --blue:#2563A8;
+    --green:#1E7A46; --green-bg:#E4F3EA;
+    --red:#B23A3A; --red-bg:#F8E7E7;
+    --amber:#9A6B1E; --amber-bg:#FBF1DF;
+    --font-display:'Fraunces',serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --radius:14px; --shadow:0 1px 2px rgba(12,36,56,0.05), 0 8px 24px rgba(12,36,56,0.06);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--paper); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; line-height:1.5; }
+  ::selection{ background:var(--navy); color:#fff; }
+
+  .corp-bar{ background:#fff; border-bottom:1px solid var(--line); padding:0 40px; }
+  .corp-inner{ max-width:1120px; margin:0 auto; height:50px; display:flex; align-items:center; justify-content:space-between; }
+  .logo-fallback{ font-weight:700; font-size:16px; color:var(--navy); letter-spacing:-0.3px; }
+  .logo-fallback .k{ color:var(--blue); }
+  .corp-values{ display:flex; align-items:center; gap:14px; }
+  .corp-values span{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--brass); }
+  .corp-values .cv-dot{ width:3px; height:3px; border-radius:50%; background:var(--brass); }
+
+  .nav{ background:var(--navy); padding:0 40px; position:sticky; top:0; z-index:100; }
+  .nav-inner{ max-width:1120px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:62px; }
+  .brand{ font-family:var(--font-display); font-weight:500; font-size:21px; color:#fff; text-decoration:none; letter-spacing:0.3px; display:flex; align-items:baseline; gap:1px; }
+  .brand .deg{ color:var(--brass); font-size:15px; position:relative; top:-3px; margin:0 1px; }
+  .brand .name{ font-weight:400; letter-spacing:0.8px; }
+  .nav-right{ display:flex; align-items:center; gap:20px; }
+  .nav-user{ font-family:var(--font-mono); font-size:12px; color:#B4C3D2; }
+  .nav-signout{ font-family:var(--font-mono); font-size:11px; color:#B4C3D2; background:none; border:1px solid rgba(255,255,255,0.22); padding:7px 15px; border-radius:7px; cursor:pointer; }
+  .nav-signout:hover{ border-color:var(--brass); color:var(--brass); }
+
+  .head{ max-width:1120px; margin:0 auto; padding:44px 40px 8px; }
+  .eyebrow{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--brass); margin-bottom:14px; }
+  .head h1{ font-family:var(--font-display); font-weight:400; font-size:38px; line-height:1.08; color:var(--navy); letter-spacing:-0.8px; }
+  .head .sub{ color:var(--slate); font-size:14px; margin-top:10px; max-width:640px; }
+  .head .back{ color:var(--slate); font-family:var(--font-mono); font-size:12px; text-decoration:none; display:inline-block; margin-bottom:14px; }
+  .head .back:hover{ color:var(--brass); }
+
+  .main{ max-width:1120px; margin:0 auto; padding:24px 40px 80px; }
+
+  /* stat row */
+  .stats{ display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap; }
+  .stat{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 22px; min-width:130px; }
+  .stat .n{ font-family:var(--font-display); font-weight:500; font-size:28px; color:var(--navy); line-height:1; }
+  .stat .l{ font-family:var(--font-mono); font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--slate); margin-top:8px; }
+  .stat.red .n{ color:var(--red); }
+  .stat.green .n{ color:var(--green); }
+
+  .toolbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .toolbar .status{ font-family:var(--font-mono); font-size:11px; color:var(--slate-light); }
+  .refresh{ font-family:var(--font-mono); font-size:11px; color:var(--slate); background:none; border:1px solid var(--line); padding:7px 15px; border-radius:7px; cursor:pointer; }
+  .refresh:hover{ border-color:var(--brass); color:var(--brass); }
+
+  /* table */
+  .tbl-wrap{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+  table{ width:100%; border-collapse:collapse; }
+  thead th{ text-align:left; font-family:var(--font-mono); font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--slate); padding:14px 20px; border-bottom:1px solid var(--line); background:var(--paper-2); }
+  tbody tr.item-row{ cursor:pointer; border-bottom:1px solid var(--line); }
+  tbody tr.item-row:hover{ background:var(--paper-2); }
+  tbody tr.item-row:last-child{ border-bottom:none; }
+  td{ padding:15px 20px; font-size:13px; vertical-align:middle; }
+  td.mono{ font-family:var(--font-mono); font-size:13px; color:var(--ink); }
+  td .u{ font-family:var(--font-mono); font-weight:500; color:var(--navy); }
+  td .auth{ font-family:var(--font-mono); font-size:12px; color:var(--ink); }
+  td .auth .f{ color:var(--slate); }
+  td .time{ font-family:var(--font-mono); font-size:12px; color:var(--slate); }
+  .caret{ display:inline-block; width:14px; color:var(--slate-light); transition:transform .15s; font-size:11px; }
+  tr.open .caret{ transform:rotate(90deg); color:var(--brass); }
+
+  .pill{ display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono); font-size:10px; letter-spacing:0.5px; text-transform:uppercase; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+  .pill.clean{ background:var(--green-bg); color:var(--green); }
+  .pill.sod{ background:var(--red-bg); color:var(--red); }
+  .pill.none{ background:var(--paper-2); color:var(--slate-light); }
+
+  /* expanded detail */
+  tr.detail-row td{ padding:0; background:var(--paper-2); }
+  .detail{ padding:22px 26px 26px; border-top:1px solid var(--line); }
+  .expl{ background:var(--card); border-left:3px solid var(--brass); border-radius:8px; padding:14px 16px; font-size:13.5px; color:var(--ink); margin-bottom:18px; line-height:1.55; }
+  .sec-label{ font-family:var(--font-mono); font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--slate); margin-bottom:12px; }
+
+  .role{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:15px 18px; margin-bottom:10px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  .role.clean{ border-left:3px solid var(--green); }
+  .role.sod{ border-left:3px solid var(--red); }
+  .role-name{ font-family:var(--font-mono); font-size:13.5px; font-weight:500; color:var(--navy); }
+  .role-meta{ font-family:var(--font-mono); font-size:11px; color:var(--slate); margin-top:6px; }
+  .role-tag{ display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono); font-size:10px; letter-spacing:0.5px; text-transform:uppercase; padding:3px 9px; border-radius:20px; margin-top:9px; }
+  .role-tag.clean{ background:var(--green-bg); color:var(--green); }
+  .role-tag.sod{ background:var(--red-bg); color:var(--red); }
+  .role-risk{ font-size:12px; color:var(--red); margin-top:8px; max-width:520px; line-height:1.5; }
+  .role-reasons{ font-size:12px; color:var(--slate); margin-top:7px; max-width:520px; line-height:1.5; }
+  .role-action{ background:var(--brass); color:var(--navy); border:none; border-radius:8px; padding:8px 15px; font-weight:600; font-size:12px; cursor:pointer; white-space:nowrap; text-decoration:none; display:inline-block; }
+  .role-action:hover{ filter:brightness(1.08); }
+  .role-action.disabled{ background:var(--paper-2); color:var(--slate-light); cursor:not-allowed; pointer-events:none; }
+  .no-roles{ font-size:13px; color:var(--slate); font-family:var(--font-mono); padding:6px 0; }
+
+  .empty{ background:var(--card); border:1px dashed var(--line); border-radius:var(--radius); padding:60px 30px; text-align:center; color:var(--slate-light); font-size:14px; }
+  .login-notice{ background:var(--amber-bg); border:1px solid #EAD7A8; color:var(--amber); border-radius:var(--radius); padding:18px 22px; font-size:13.5px; }
+  .login-notice a{ color:var(--blue); }
+</style>
+</head>
+<body>
+
+  <div class="corp-bar">
+    <div class="corp-inner">
+      <div class="logo-fallback">Info<span class="k">Krafts</span></div>
+      <div class="corp-values">
+        <span>Trust</span><span class="cv-dot"></span>
+        <span>Quality</span><span class="cv-dot"></span>
+        <span>Performance</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/index.html" class="brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
+      <div class="nav-right">
+        <span class="nav-user" id="navUser">&nbsp;</span>
+        <button class="nav-signout" onclick="signOut()">Sign out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="head">
+    <a href="/index.html" class="back">&larr; Dashboard</a>
+    <div class="eyebrow">Access Intelligence</div>
+    <h1>SU53 Inbox</h1>
+  </div>
+
+  <div class="main" id="main">
+    <div class="stats" id="stats" style="display:none;">
+      <div class="stat"><div class="n" id="stTotal">0</div><div class="l">Total errors</div></div>
+      <div class="stat red"><div class="n" id="stSod">0</div><div class="l">SoD-flagged</div></div>
+      <div class="stat green"><div class="n" id="stClean">0</div><div class="l">Clean fix ready</div></div>
+      <div class="stat"><div class="n" id="stUsers">0</div><div class="l">Users affected</div></div>
+    </div>
+
+    <div class="toolbar" id="toolbar" style="display:none;">
+      <span class="status" id="status"></span>
+      <button class="refresh" onclick="load()">Refresh</button>
+    </div>
+
+    <div id="content">
+      <div class="empty">Loading…</div>
+    </div>
+  </div>
+
+<script>
+  // ---- helpers ----
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtTime(ts){
+    if(!ts) return '—';
+    const d = new Date(ts);
+    if(isNaN(d)) return esc(ts);
+    return d.toLocaleString(undefined,{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  }
+  function sodInfo(s){
+    // one suggestion object -> {isSod, risks[]}
+    // Authoritative flag is s.clean (mirrors su53-agent.html). s.sod is an
+    // object {newCount, details:[...]}, NOT an array -- never truth-test directly.
+    const isSod = !s.clean;
+    let risks = [];
+    if(s.sod && Array.isArray(s.sod.details)){
+      risks = s.sod.details.map(r => r && (r.riskName || r.desc || r.riskType || r.risk || r.name || r.riskId || r.id)).filter(Boolean);
+    } else if(Array.isArray(s.sod)){
+      risks = s.sod.map(r => r && (r.riskName || r.risk || r.name || r.riskId || r.id)).filter(Boolean);
+    }
+    return { isSod, risks };
+  }
+
+  // ---- auth (self-contained; same pattern as su53-agent.html) ----
+  async function loadUser(){
+    try{
+      const r = await fetch('/api/my-profile');
+      if(!r.ok) return null;
+      const p = await r.json();
+      const name = p.displayName || p.username || p.name || '';
+      document.getElementById('navUser').textContent = name ? name : '';
+      return p;
+    }catch(e){ return null; }
+  }
+  function signOut(){
+    fetch('/api/logout',{method:'POST'}).finally(()=>{ location.href='/login.html'; });
+  }
+
+  // ---- render ----
+  let ITEMS = [];
+
+  function renderStats(){
+    const total = ITEMS.length;
+    let sod=0, clean=0; const users=new Set();
+    ITEMS.forEach(it=>{
+      const ctx = it.context||{};
+      users.add((ctx.user||'').toUpperCase());
+      const sugg = it.suggestions||[];
+      const anyClean = sugg.some(s => s.clean===true);
+      const anySod   = sugg.some(s => sodInfo(s).isSod);
+      if(anyClean) clean++;
+      else if(anySod) sod++;
+    });
+    document.getElementById('stTotal').textContent = total;
+    document.getElementById('stSod').textContent   = sod;
+    document.getElementById('stClean').textContent = clean;
+    document.getElementById('stUsers').textContent = users.size;
+    document.getElementById('stats').style.display = total ? 'flex' : 'none';
+    document.getElementById('toolbar').style.display = 'flex';
+    document.getElementById('status').textContent = total ? (total+' error'+(total>1?'s':'')+' — newest first') : 'No errors pushed yet';
+  }
+
+  function suggBadge(it){
+    const sugg = it.suggestions||[];
+    if(!sugg.length) return '<span class="pill none">No match</span>';
+    const anyClean = sugg.some(s => s.clean===true);
+    if(anyClean) return '<span class="pill clean">Fix ready</span>';
+    return '<span class="pill sod">SoD only</span>';
+  }
+
+  function roleCard(s){
+    const info = sodInfo(s);
+    const cls = info.isSod ? 'sod' : 'clean';
+    const tag = info.isSod
+      ? '<span class="role-tag sod">SoD conflict</span>'
+      : '<span class="role-tag clean">No SoD conflict</span>';
+    const meta = [];
+    if(s.module) meta.push(esc(s.module));
+    if(typeof s.tcodeCount==='number') meta.push(s.tcodeCount+' tcodes');
+    if(s.isCustom) meta.push('custom');
+    const metaLine = meta.length ? '<div class="role-meta">'+meta.join(' · ')+'</div>' : '';
+    const reasons = Array.isArray(s.reasons)&&s.reasons.length
+      ? '<div class="role-reasons">'+esc(s.reasons.join(' · '))+'</div>' : '';
+    const risk = info.isSod && info.risks.length
+      ? '<div class="role-risk">Introduces: '+esc(info.risks.join(', '))+'</div>' : '';
+    const action = info.isSod
+      ? '<span class="role-action disabled">SoD — review</span>'
+      : '<a class="role-action" href="/new-request.html?role='+encodeURIComponent(s.role||'')+'">Raise Request</a>';
+    return '<div class="role '+cls+'">'
+      + '<div class="role-left">'
+      +   '<div class="role-name">'+esc(s.role||'—')+'</div>'
+      +   metaLine + tag + risk + reasons
+      + '</div>'
+      + '<div>'+action+'</div>'
+      + '</div>';
+  }
+
+  function detailHtml(it){
+    const sugg = it.suggestions||[];
+    let cards;
+    if(!sugg.length){
+      cards = '<div class="no-roles">No role currently grants this authorization. A new role or role change may be required.</div>';
+    } else {
+      cards = sugg.map(roleCard).join('');
+    }
+    const expl = it.explanation ? '<div class="expl">'+esc(it.explanation)+'</div>' : '';
+    return '<div class="detail">'
+      + expl
+      + '<div class="sec-label">Suggested roles ('+sugg.length+')</div>'
+      + cards
+      + '</div>';
+  }
+
+  function render(){
+    if(!ITEMS.length){
+      document.getElementById('content').innerHTML = '<div class="empty">No authorization errors have been pushed from SAP yet.<br>When a user hits an SU53 failure and runs the ZKONTROL transaction, it will appear here.</div>';
+      return;
+    }
+    let rows = '';
+    ITEMS.forEach((it, i)=>{
+      const ctx = it.context||{};
+      const auth = esc(ctx.authObject||'—')
+        + (ctx.field ? ' <span class="f">'+esc(ctx.field)+'</span>' : '')
+        + (ctx.value ? '=' + esc(ctx.value) : '');
+      rows += '<tr class="item-row" data-i="'+i+'" onclick="toggle('+i+')">'
+        +   '<td><span class="caret">&#9654;</span></td>'
+        +   '<td class="mono"><span class="u">'+esc(ctx.user||'—')+'</span></td>'
+        +   '<td class="mono">'+esc(ctx.tcode||'—')+'</td>'
+        +   '<td><span class="auth">'+auth+'</span></td>'
+        +   '<td><span class="time">'+fmtTime(ctx.timestamp||it.generatedAt)+'</span></td>'
+        +   '<td>'+suggBadge(it)+'</td>'
+        + '</tr>'
+        + '<tr class="detail-row" data-detail="'+i+'" style="display:none;"><td colspan="6"></td></tr>';
+    });
+    document.getElementById('content').innerHTML =
+      '<div class="tbl-wrap"><table>'
+      + '<thead><tr><th></th><th>User</th><th>T-code</th><th>Auth object</th><th>Time</th><th>Status</th></tr></thead>'
+      + '<tbody>'+rows+'</tbody>'
+      + '</table></div>';
+  }
+
+  function toggle(i){
+    const detailRow = document.querySelector('tr[data-detail="'+i+'"]');
+    const itemRow   = document.querySelector('tr.item-row[data-i="'+i+'"]');
+    if(!detailRow) return;
+    const open = detailRow.style.display !== 'none';
+    if(open){
+      detailRow.style.display='none';
+      itemRow.classList.remove('open');
+    } else {
+      detailRow.querySelector('td').innerHTML = detailHtml(ITEMS[i]);
+      detailRow.style.display='table-row';
+      itemRow.classList.add('open');
+    }
+  }
+
+  async function load(){
+    document.getElementById('content').innerHTML = '<div class="empty">Loading…</div>';
+    try{
+      const r = await fetch('/api/su53/recent');
+      if(r.status===401){
+        document.getElementById('content').innerHTML =
+          '<div class="login-notice">You are not signed in. Please <a href="/login.html">sign in</a> to view the SU53 inbox.</div>';
+        return;
+      }
+      const data = await r.json();
+      ITEMS = (data && data.items) || [];
+      renderStats();
+      render();
+    }catch(e){
+      document.getElementById('content').innerHTML = '<div class="empty">Could not load inbox: '+esc(e.message||e)+'</div>';
+    }
+  }
+
+  (async function init(){
+    await loadUser();
+    await load();
+  })();
+</script>
+</body>
+</html>
