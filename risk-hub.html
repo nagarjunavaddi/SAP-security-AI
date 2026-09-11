@@ -3,86 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Risk Analysis - IKAegis</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>Risk Analysis - IK° Kontrol</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;450;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FFFFFF;
-    --ice-1:#F5F7FA; --ice-2:#EDF2F8; --ice-3:#DCE5F0;
-    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
-    --navy:#15263F; --navy-corp:#1F497D; --navy-dark:#002060;
-    --crimson:#C33438; --green:#00B050; --gold:#FFC000; --amber:#C1811E;
-    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
-    --shadow-sm:0 1px 3px rgba(21,38,63,0.06);
-    --shadow-md:0 4px 16px rgba(21,38,63,0.08);
-    --shadow-lg:0 12px 40px rgba(21,38,63,0.12);
-    --radius:10px;
+    --navy:#0C2438; --navy-2:#14344F;
+    --ink:#1B2A38; --slate:#5E7186; --slate-light:#8A99A8;
+    --line:#E4E9EC; --paper:#FAFBFC; --paper-2:#F1F4F6; --card:#FFFFFF;
+    --brass:#B0894F; --blue:#2563A8;
+    --green:#1E7A46; --green-bg:#E4F3EA;
+    --red:#B23A3A; --red-bg:#F8E7E7;
+    --amber:#9A6B1E; --amber-bg:#FBF1DF;
+    --font-display:'Fraunces',serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --radius:14px; --shadow:0 1px 2px rgba(12,36,56,0.05), 0 8px 24px rgba(12,36,56,0.06);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  body{ background:var(--ice-1); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
-  ::selection{ background:var(--navy-corp); color:#fff; }
+  body{ background:var(--paper); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; line-height:1.5; }
+  ::selection{ background:var(--navy); color:#fff; }
 
-  .ik-nav{ background:var(--navy); border-top:3px solid var(--gold); padding:0 32px; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(21,38,63,0.3); }
-  .ik-nav-inner{ max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:56px; }
-  .ik-brand{ font-family:var(--font-display); font-weight:800; font-size:22px; color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px; }
-  .ik-gold{ color:var(--gold); }
-  .ik-nav-links{ display:flex; gap:10px; align-items:center; }
-  .ik-nav-links a{ font-family:var(--font-body); font-size:13px; font-weight:500; color:#8FA3C4; text-decoration:none; padding:8px 16px; border-radius:6px; transition:all .15s ease; }
-  .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
-  #navUser{ font-family:var(--font-mono); font-size:12px; color:#8FA3C4; }
-  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; margin-left:8px; }
-  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
+  .corp-bar{ background:#fff; border-bottom:1px solid var(--line); padding:0 40px; }
+  .corp-inner{ max-width:1120px; margin:0 auto; height:50px; display:flex; align-items:center; justify-content:space-between; }
+  .logo-fallback{ font-weight:700; font-size:16px; color:var(--navy); letter-spacing:-0.3px; }
+  .logo-fallback .k{ color:var(--blue); }
+  .corp-values{ display:flex; align-items:center; gap:14px; }
+  .corp-values span{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--brass); }
+  .corp-values .cv-dot{ width:3px; height:3px; border-radius:50%; background:var(--brass); }
 
-  .page-head{ background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%); color:#EEF1F6; padding:32px; }
-  .page-head-inner{ max-width:1100px; margin:0 auto; }
-  .page-head h2{ font-family:var(--font-display); font-weight:800; font-size:24px; margin:0; }
-  .back-link{ color:#8FA3C4; font-family:var(--font-mono); font-size:13px; text-decoration:none; display:inline-block; margin-bottom:8px; }
-  .back-link:hover{ color:var(--gold); }
+  .nav{ background:var(--navy); padding:0 40px; position:sticky; top:0; z-index:100; }
+  .nav-inner{ max-width:1120px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:62px; }
+  .brand{ font-family:var(--font-display); font-weight:500; font-size:21px; color:#fff; text-decoration:none; letter-spacing:0.3px; display:flex; align-items:baseline; gap:1px; }
+  .brand .deg{ color:var(--brass); font-size:15px; position:relative; top:-3px; margin:0 1px; }
+  .brand .name{ font-weight:400; letter-spacing:0.8px; }
+  .nav-right{ display:flex; align-items:center; gap:20px; }
+  .nav-links a{ font-family:var(--font-mono); font-size:12px; color:#B4C3D2; text-decoration:none; letter-spacing:0.3px; }
+  .nav-links a:hover{ color:var(--brass); }
+  .nav-user{ font-family:var(--font-mono); font-size:12px; color:#B4C3D2; }
+  .nav-signout{ font-family:var(--font-mono); font-size:11px; color:#B4C3D2; background:none; border:1px solid rgba(255,255,255,0.22); padding:7px 15px; border-radius:7px; cursor:pointer; }
+  .nav-signout:hover{ border-color:var(--brass); color:var(--brass); }
 
-  .main{ max-width:1100px; margin:0 auto; padding:32px; }
+  .head{ max-width:1120px; margin:0 auto; padding:44px 40px 8px; }
+  .eyebrow{ font-family:var(--font-mono); font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--brass); margin-bottom:14px; }
+  .head h1{ font-family:var(--font-display); font-weight:400; font-size:38px; line-height:1.08; color:var(--navy); letter-spacing:-0.8px; }
+  .head .back{ color:var(--slate); font-family:var(--font-mono); font-size:12px; text-decoration:none; display:inline-block; margin-bottom:14px; }
+  .head .back:hover{ color:var(--brass); }
 
-  .hub-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:20px; }
-  .hub-card{ background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-sm); padding:26px; text-decoration:none; color:inherit; display:flex; align-items:center; gap:16px; transition:box-shadow .15s, transform .15s; border:1px solid var(--ice-2); }
-  .hub-card:hover{ box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:var(--ice-3); }
+  .main{ max-width:1120px; margin:0 auto; padding:24px 40px 80px; }
+
+  .hub-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
+  .hub-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:24px; text-decoration:none; color:inherit; display:flex; align-items:center; gap:16px; transition:box-shadow .15s, transform .15s, border-color .15s; position:relative; }
+  .hub-card:hover{ box-shadow:0 12px 32px rgba(12,36,56,0.10); transform:translateY(-2px); border-color:var(--brass); }
+  .hub-card.gated{ display:none; }
   .hub-icon{ width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .hub-title{ font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--navy); }
+  .hub-title{ font-family:var(--font-display); font-weight:500; font-size:17px; color:var(--navy); }
+  .hub-badge{ position:absolute; top:14px; right:14px; background:var(--red); color:#fff; font-family:var(--font-mono); font-weight:600; font-size:11px; min-width:22px; height:22px; border-radius:11px; display:none; align-items:center; justify-content:center; padding:0 6px; }
 
-  .notice{ background:#fff; border-radius:var(--radius); padding:40px; text-align:center; box-shadow:var(--shadow-sm); color:var(--slate); font-size:14px; }
-  .notice a{ color:var(--navy-corp); font-weight:600; text-decoration:none; }
+  .notice{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:40px; text-align:center; box-shadow:var(--shadow); color:var(--slate); font-size:14px; }
+  .notice a{ color:var(--blue); font-weight:600; text-decoration:none; }
 </style>
 </head>
 <body>
-  <nav class="ik-nav">
-    <div class="ik-nav-inner">
-      <a href="index.html" class="ik-brand">IK<span class="ik-gold">Aegis</span></a>
-      <div class="ik-nav-links">
-        <a href="index.html">Dashboard</a>
-        <span id="navUser"></span>
-        <button class="signout-btn" onclick="signOut()">Sign Out</button>
+
+  <div class="corp-bar">
+    <div class="corp-inner">
+      <div class="logo-fallback">Info<span class="k">Krafts</span></div>
+      <div class="corp-values">
+        <span>Trust</span><span class="cv-dot"></span>
+        <span>Quality</span><span class="cv-dot"></span>
+        <span>Performance</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">IK<span class="deg">&#176;</span><span class="name">Kontrol</span></a>
+      <div class="nav-right">
+        <div class="nav-links"><a href="index.html">Dashboard</a></div>
+        <span class="nav-user" id="navUser"></span>
+        <button class="nav-signout" onclick="signOut()">Sign out</button>
       </div>
     </div>
   </nav>
 
-  <div class="page-head">
-    <div class="page-head-inner">
-      <a href="index.html" class="back-link">&larr; Back to dashboard</a>
-      <h2>Risk Analysis</h2>
-    </div>
+  <div class="head">
+    <a href="index.html" class="back">&larr; Dashboard</a>
+    <div class="eyebrow">Risk Analysis</div>
+    <h1>Risk</h1>
   </div>
 
   <div class="main">
     <div class="hub-grid">
 
       <a class="hub-card" href="SOD.html">
-        <div class="hub-icon" style="background:#EDF2F8;">
-          <svg width="24" height="24" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/><path d="M3 20h18" stroke-width="1.5"/></svg>
+        <div class="hub-icon" style="background:var(--paper-2);">
+          <svg width="24" height="24" fill="none" stroke="#2563A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/><path d="M3 20h18" stroke-width="1.5"/></svg>
         </div>
         <div class="hub-title">Risk Analytics</div>
       </a>
 
       <a class="hub-card" href="simulation.html">
-        <div class="hub-icon" style="background:#FFF3E0;">
-          <svg width="24" height="24" fill="none" stroke="#E65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 8a1 1 0 00.86 1.5h10.28A1 1 0 0017 17l-5-8V3"/><path d="M8.5 14h7" stroke-dasharray="2 2"/></svg>
+        <div class="hub-icon" style="background:var(--amber-bg);">
+          <svg width="24" height="24" fill="none" stroke="#9A6B1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 8a1 1 0 00.86 1.5h10.28A1 1 0 0017 17l-5-8V3"/><path d="M8.5 14h7" stroke-dasharray="2 2"/></svg>
         </div>
         <div class="hub-title">Access Simulation</div>
       </a>

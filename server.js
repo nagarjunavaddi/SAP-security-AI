@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const https = require('https');
@@ -1040,12 +1040,13 @@ app.get('/api/debug-permission-summary/:roleName', async (req, res) => {
   }
 });
 
-// â”€â”€ IKAegis Approval Workflow Routes â”€â”€
-app.assignSapRole = assignSapRoleInSAP; require('./routes/approval-routes')(app);
+// ── IKAegis Approval Workflow Routes ──
+app.assignSapRole = assignSapRoleInSAP; app.createSapUser = createSapUser; require('./routes/approval-routes')(app); require('./routes/user-create-requests')(app); app.getRoleTcodes = getRoleTcodesFromSAP; require('./routes/composite-routes')(app); /* IK-COMPOSITE */
 app.use('/api/rfc', require('./routes/rfc-routes'));
 app.use('/api/ai', require('./routes/ai-routes'));
 app.use('/api/uar', require('./routes/uar-routes'));
 app.use('/api/su53', require('./routes/su53-routes'));
+app.use('/api/dashboard', require('./routes/dashboard-routes'));
 
 app.post('/api/simulation/user', async (req, res) => {
   const { username, proposedRoles } = req.body;

@@ -11,3 +11,11 @@ backup-json/
 *.bak
 timestamp
 probe-metadata.js
+
+# extra backup patterns added 2026-09-11
+*.rebrand-bak
+*.v3skin-bak
+*.brandmark-bak
+*.dashroute-bak
+*.backup-*
+*-bak

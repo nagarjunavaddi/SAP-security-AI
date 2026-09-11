@@ -99,6 +99,23 @@ function valueMatches(req, low) {
 // --- Step 4: enrich + score one candidate ---
 function privScore(n){ if(n==null)return 0; if(n<=5)return 3; if(n<=20)return 2; if(n<=100)return 1; return 0; }
 
+// --- wildcard-activity risk (ACTVT='*' = full authorization) ---
+async function checkWildcardActivity(role) {
+  // cap-safe WHERE (<=72 chars): only this role's ACTVT rows; filter LOW='*' in JS
+  try {
+    const safe = String(role).replace(/'/g,"''");
+    const rr = await apiPost('/api/rfc/table-read', {
+      tableName:'AGR_1251', fields:'AGR_NAME,OBJECT,FIELD,LOW',
+      whereClause:"AGR_NAME = '" + safe + "' AND FIELD = 'ACTVT'", maxRows:200
+    });
+    const objs = new Set();
+    for (const r of ((rr && rr.data) || [])) {
+      if (String(r.LOW||'').trim() === '*') objs.add(String(r.OBJECT||'').toUpperCase());
+    }
+    return { has: objs.size > 0, objects: Array.from(objs) };
+  } catch(e) { return { has:false, objects:[], error:e.message }; }
+}
+
 async function scoreRole(role, ctx, uc) {
   const mod = roleModule(role);
   const groupMatch = !!(uc.module && mod && uc.module === mod);
@@ -117,6 +134,9 @@ async function scoreRole(role, ctx, uc) {
             details: nv.map(v=>({riskType:v.riskType, riskId:v.riskId, desc:v.riskDescription||v.description||v.riskId})) };
   } catch(e){ sod = { newCount:null, details:[], error:e.message }; }
 
+  // wildcard-activity risk: role grants ACTVT='*' (full authorization) on some object
+  const wildcard = await checkWildcardActivity(role);
+
   // familiarity: how many existing user roles share this module
   const familiar = mod ? uc.existingModules.filter(m=>m===mod).length : 0;
 
@@ -130,12 +150,20 @@ async function scoreRole(role, ctx, uc) {
   const fam = Math.min(familiar,2); score += fam;
   if (familiar>0) reasons.push('You already hold '+familiar+' '+mod+' role(s)');
   if (isCustom && PREFER_CUSTOM) { score += 1; reasons.push('Custom (Z) role'); }
+  // fold wildcard-activity into the risk picture (ACTVT='*' = full access = risk)
+  if (wildcard.has) {
+    score -= 4; // over-privileged: rank below least-privilege roles
+    const shown = wildcard.objects.slice(0,3).join(', ') + (wildcard.objects.length>3 ? ' +'+(wildcard.objects.length-3) : '');
+    sod.details = (sod.details||[]).concat([{ riskType:'Critical Permission', riskId:'WILDCARD-ACTVT', desc:'Full activity (ACTVT=*) on '+shown }]);
+    if (sod.newCount == null) sod.newCount = 0;
+    sod.newCount += 1;
+  }
   const clean = sod.newCount === 0;
   if (clean) reasons.push('No new SoD conflict');
-  else if (sod.newCount==null) reasons.push('SoD not verified');
-  else reasons.push(sod.newCount+' new SoD violation(s)');
+  else if (sod.newCount != null) reasons.push(sod.newCount+' new risk(s)'+(wildcard.has?' incl. ACTVT=* full access':''));
+  else reasons.push('SoD not verified');
 
-  return { role, module:mod, groupMatch, isCustom, tcodeCount, familiar, sod, clean, score, reasons };
+  return { role, module:mod, groupMatch, isCustom, tcodeCount, familiar, sod, clean, wildcard, score, reasons };
 }
 
 // --- rank ---

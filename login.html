@@ -3,21 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IKAegis — Sign in</title>
+<title>IK° Kontrol — Sign in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;450;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#15263F; --navy-corp:#1F497D; --gold:#FFC000;
-    --ice-1:#F5F7FA; --ice-3:#DCE5F0;
-    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
-    --crimson:#C33438;
-    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --navy:#0C2438; --navy-2:#14344F;
+    --brass:#B0894F; --blue:#2563A8;
+    --ink:#1B2A38; --slate:#5E7186; --slate-light:#8A99A8;
+    --line:#E4E9EC; --paper:#FAFBFC; --paper-2:#F1F4F6;
+    --crimson:#B23A3A;
+    --font-display:'Fraunces',serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
   body{
-    background:linear-gradient(160deg, #15263F 0%, #1F497D 60%, #15263F 100%);
+    background:linear-gradient(160deg, #0C2438 0%, #14344F 60%, #0C2438 100%);
     color:var(--ink); font-family:var(--font-body);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     min-height:100vh; padding:20px;
@@ -25,14 +26,13 @@
   }
   .login-wrapper{ width:100%; max-width:400px; }
 
-  /* Gold accent line */
-  .gold-bar{ height:2px; background:var(--gold); border-radius:3px 3px 0 0; }
+  .gold-bar{ height:2px; background:var(--brass); border-radius:3px 3px 0 0; }
 
   .logo{
-    font-family:var(--font-display); font-size:42px; font-weight:800;
-    text-align:center; margin-bottom:32px; color:#EEF1F6; letter-spacing:-1px;
+    font-family:var(--font-display); font-size:42px; font-weight:500;
+    text-align:center; margin-bottom:32px; color:#EEF1F6; letter-spacing:0.3px;
   }
-  .logo .ik-gold{ color:var(--gold); }
+  .logo .ik-gold{ color:var(--brass); font-size:30px; position:relative; top:-6px; margin:0 2px; }
   .logo-sub{
     text-align:center; font-family:var(--font-mono); font-size:11px;
     text-transform:uppercase; letter-spacing:2.5px; color:#8FA3C4; margin-top:-20px; margin-bottom:28px;
@@ -42,7 +42,7 @@
     background:#fff; border-radius:0 0 12px 12px; padding:36px 32px 32px;
     box-shadow:0 20px 60px rgba(0,0,0,0.3);
   }
-  h1{ font-family:var(--font-display); font-weight:700; font-size:20px; margin:0 0 6px; color:var(--navy); }
+  h1{ font-family:var(--font-display); font-weight:500; font-size:22px; margin:0 0 6px; color:var(--navy); }
   .sub{ font-size:13px; color:var(--slate); margin:0 0 28px; }
   .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
   .field label{
@@ -50,18 +50,18 @@
     letter-spacing:1px; color:var(--slate);
   }
   .field input{
-    font-family:var(--font-body); font-size:14px; background:var(--ice-1);
-    border:1px solid var(--ice-3); border-radius:8px; padding:12px 14px;
+    font-family:var(--font-body); font-size:14px; background:var(--paper);
+    border:1px solid var(--line); border-radius:8px; padding:12px 14px;
     color:var(--ink); outline:none; transition:border-color .15s ease;
   }
-  .field input:focus-visible{ border-color:var(--navy-corp); outline:2px solid var(--navy-corp); outline-offset:1px; }
+  .field input:focus-visible{ border-color:var(--brass); outline:2px solid var(--brass); outline-offset:1px; }
   .go-btn{
-    width:100%; font-family:var(--font-display); font-weight:700; font-size:14px;
-    background:var(--navy-corp); color:#fff; border:none; border-radius:8px;
+    width:100%; font-family:var(--font-body); font-weight:600; font-size:14px;
+    background:var(--brass); color:var(--navy); border:none; border-radius:8px;
     padding:13px; cursor:pointer; margin-top:4px;
-    transition:all .15s ease; box-shadow:0 2px 8px rgba(31,73,125,0.25);
+    transition:all .15s ease; box-shadow:0 2px 8px rgba(176,137,79,0.25);
   }
-  .go-btn:hover{ background:var(--navy); box-shadow:0 6px 20px rgba(31,73,125,0.45); transform:translateY(-1px); }
+  .go-btn:hover{ filter:brightness(1.08); box-shadow:0 6px 20px rgba(176,137,79,0.4); transform:translateY(-1px); }
   .go-btn:disabled{ opacity:0.6; cursor:not-allowed; }
   .error{
     margin-top:16px; font-family:var(--font-mono); font-size:12px; color:var(--crimson);
@@ -69,32 +69,29 @@
   }
   .error.show{ display:block; }
   .hint{
-    margin-top:22px; padding-top:18px; border-top:1px dashed var(--ice-3);
+    margin-top:22px; padding-top:18px; border-top:1px dashed var(--line);
     font-family:var(--font-mono); font-size:11px; color:var(--slate-light); line-height:1.8;
   }
 
-  /* Shield icon */
   .shield-icon{ text-align:center; margin-bottom:8px; }
-  .shield-icon svg{ filter:drop-shadow(0 2px 8px rgba(255,192,0,0.3)); }
-  /* Forgot password */
+  .shield-icon svg{ filter:drop-shadow(0 2px 8px rgba(176,137,79,0.3)); }
   .forgot-link{ display:block; text-align:center; margin-top:14px; font-family:var(--font-mono); font-size:11px; color:var(--slate-light); text-decoration:none; transition:color .15s; }
-  .forgot-link:hover{ color:var(--navy-corp); }
-  /* Footer */
+  .forgot-link:hover{ color:var(--brass); }
   .login-footer{ text-align:center; margin-top:24px; font-family:var(--font-mono); font-size:10px; color:#5A7099; letter-spacing:0.5px; line-height:1.6; }
-  /* Subtle background circles */
-  body::before{ content:''; position:fixed; top:-200px; right:-200px; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle, rgba(31,73,125,0.15) 0%, transparent 70%); pointer-events:none; }
-  body::after{ content:''; position:fixed; bottom:-300px; left:-200px; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle, rgba(255,192,0,0.05) 0%, transparent 70%); pointer-events:none; }
+  .login-footer .ik-gold{ color:var(--brass); }
+  body::before{ content:''; position:fixed; top:-200px; right:-200px; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle, rgba(20,52,79,0.25) 0%, transparent 70%); pointer-events:none; }
+  body::after{ content:''; position:fixed; bottom:-300px; left:-200px; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle, rgba(176,137,79,0.06) 0%, transparent 70%); pointer-events:none; }
 
-  .forgot-msg{ display:none; text-align:center; margin-top:10px; font-family:var(--font-mono); font-size:11px; color:var(--gold); background:rgba(255,192,0,0.08); border:1px solid rgba(255,192,0,0.2); border-radius:6px; padding:10px 14px; line-height:1.5; }
+  .forgot-msg{ display:none; text-align:center; margin-top:10px; font-family:var(--font-mono); font-size:11px; color:var(--brass); background:rgba(176,137,79,0.08); border:1px solid rgba(176,137,79,0.2); border-radius:6px; padding:10px 14px; line-height:1.5; }
   .forgot-msg.show{ display:block; }
 </style>
 </head>
 <body>
 
 <div class="login-wrapper">
-  <div class="logo"><span class="ik-gold">IK</span>Aegis</div>
+  <div class="logo">IK<span class="ik-gold">°</span> Kontrol</div>
   <div class="logo-sub">SAP Access Governance</div>
-  <div class="shield-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFC000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" stroke="#8FA3C4" stroke-width="1.5"/></svg></div>
+  <div class="shield-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#B0894F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" stroke="#8FA3C4" stroke-width="1.5"/></svg></div>
   <div class="gold-bar"></div>
   <div class="card">
 
@@ -114,12 +111,12 @@
 
 
     <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
-    <div class="forgot-msg" id="forgotMsg">Contact your IKAegis administrator to reset your password.</div>
+    <div class="forgot-msg" id="forgotMsg">Contact your IK° Kontrol administrator to reset your password.</div>
   </div>
 </div>
 
 
-<div class="login-footer">&copy; 2026 Infokrafts &middot; IKAegis v1.0</div>
+<div class="login-footer">&copy; 2026 Infokrafts &middot; IK<span class="ik-gold">°</span> Kontrol v1.0</div>
 
 <script>
 document.getElementById('loginForm').addEventListener('submit', function(e){

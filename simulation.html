@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulation — IKAegis</title>
+<title>Simulation — IK° Kontrol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Righteous&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#FFFFFF;
@@ -15,14 +16,14 @@
     --ink-soft:#5A6A85;
     --ink-faint:#8A93A0;
     --line:#DCE5F0;
-    --navy:#15263F;
-    --navy-2:#1F497D;
+    --navy:#0C2438;
+    --navy-2:#123252;
     --blue:#1F497D;
+    --brass:#B0894F;
     --red:#C33438;
     --amber:#C1811E;
     --green:#00B050;
-    --gold:#FFC000;
-    --font-display:'Sora',sans-serif;
+    --font-display:'Fraunces',serif;
     --font-body:'Inter',sans-serif;
     --font-mono:'IBM Plex Mono',monospace;
   }
@@ -31,21 +32,27 @@
   body{ background:var(--bg); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
   ::selection{ background:var(--navy); color:#fff; }
 
-  /* ====== IKAegis Enterprise Design System ====== */
+  /* ====== Corp bar ====== */
+  .corp-bar{ background:#081A2A; height:32px; display:flex; align-items:center; padding:0 28px; }
+  .corp-bar-inner{ max-width:1180px; width:100%; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+  .corp-name{ font-family:var(--font-mono); font-size:11px; letter-spacing:1px; color:#8FA3C4; text-transform:uppercase; }
+  .corp-tag{ font-family:var(--font-mono); font-size:10px; letter-spacing:2px; color:#5C7392; text-transform:uppercase; }
+
+  /* ====== Nav ====== */
   .ik-nav{ background:var(--navy); padding:0 28px; height:52px; display:flex; align-items:center; }
   .ik-nav-inner{ max-width:1180px; width:100%; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
-  .ik-brand{ font-family:'Righteous',sans-serif; font-size:22px; color:#fff; text-decoration:none; letter-spacing:0.5px; }
-  .ik-gold{ color:var(--gold); }
+  .ik-brand{ font-family:var(--font-display); font-weight:700; font-size:22px; color:#fff; text-decoration:none; letter-spacing:0.2px; }
+  .ik-gold{ color:var(--brass); }
   .ik-nav-links{ display:flex; align-items:center; gap:18px; }
   .nav-user{ font-family:var(--font-mono); font-size:12px; color:#B9C2D6; }
   .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
-  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
+  .signout-btn:hover{ border-color:var(--brass); color:var(--brass); }
 
   .page-head{ background:var(--navy); color:#EEF1F6; padding:28px 28px; }
   .page-head-inner{ max-width:1180px; margin:0 auto; }
   .back-link{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:12px; color:#B9C2D6; text-decoration:none; margin-bottom:14px; cursor:pointer; background:none; border:none; padding:0; }
   .back-link:hover{ color:#fff; }
-  .page-head h2{ font-family:var(--font-display); font-weight:700; font-size:26px; margin:0 0 6px; }
+  .page-head h2{ font-family:var(--font-display); font-weight:700; font-size:30px; margin:0 0 6px; letter-spacing:0.2px; }
   .page-head p{ font-size:13.5px; color:#B9C2D6; margin:0; max-width:560px; line-height:1.5; }
 
   section{ padding:36px 28px 60px; }
@@ -53,28 +60,28 @@
 
   /* Tabs */
   .tab-row{ display:flex; gap:8px; border-bottom:1px solid var(--line); margin-bottom:28px; }
-  .tab-btn{ font-family:var(--font-display); font-weight:700; font-size:14.5px; background:none; border:none; padding:12px 4px; margin-right:22px; color:var(--ink-faint); cursor:pointer; position:relative; top:1px; border-bottom:2px solid transparent; }
-  .tab-btn.active{ color:var(--navy); border-bottom-color:var(--blue); }
+  .tab-btn{ font-family:var(--font-display); font-weight:600; font-size:15px; background:none; border:none; padding:12px 4px; margin-right:22px; color:var(--ink-faint); cursor:pointer; position:relative; top:1px; border-bottom:2px solid transparent; }
+  .tab-btn.active{ color:var(--navy); border-bottom-color:var(--brass); }
   .tab-panel{ display:none; }
   .tab-panel.active{ display:block; }
 
   /* Input box */
   .inquiry-box{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:24px; box-shadow:0 1px 3px rgba(18,24,31,0.04); max-width:720px; }
-  .input-label{ font-family:var(--font-display); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-soft); margin-bottom:8px; display:block; }
+  .input-label{ font-family:var(--font-mono); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--ink-soft); margin-bottom:8px; display:block; }
   .sim-input{ width:100%; font-family:var(--font-body); font-size:14.5px; background:var(--tint); border:1px solid var(--line); border-radius:7px; padding:13px 16px; color:var(--ink); outline:none; margin-bottom:18px; }
-  .sim-input:focus-visible{ outline:2px solid var(--blue); outline-offset:1px; }
+  .sim-input:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
   .sim-input::placeholder{ color:var(--ink-faint); }
 
   /* Spreadsheet Grid */
-  .grid-label{ font-family:var(--font-display); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-soft); margin-bottom:8px; display:block; }
+  .grid-label{ font-family:var(--font-mono); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--ink-soft); margin-bottom:8px; display:block; }
   .spreadsheet-grid{ width:100%; border-collapse:separate; border-spacing:0; font-family:var(--font-mono); font-size:13px; border:1px solid var(--line); border-radius:7px; overflow:hidden; margin-bottom:12px; }
-  .spreadsheet-grid thead th{ background:var(--blue); color:#fff; font-family:var(--font-display); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; padding:9px 12px; text-align:left; }
+  .spreadsheet-grid thead th{ background:var(--navy); color:#fff; font-family:var(--font-mono); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.8px; padding:9px 12px; text-align:left; }
   .spreadsheet-grid thead th:last-child{ width:36px; }
   .spreadsheet-grid tbody td{ padding:0; border-bottom:1px solid var(--line); background:var(--tint); }
   .spreadsheet-grid tbody td input.grid-cell{ width:100%; border:none; background:transparent; padding:8px 12px; font-family:var(--font-mono); font-size:13px; color:var(--ink); outline:none; box-sizing:border-box; }
-  .spreadsheet-grid tbody td input.grid-cell:focus{ background:rgba(31,73,125,.05); }
+  .spreadsheet-grid tbody td input.grid-cell:focus{ background:rgba(176,137,79,.08); }
   .spreadsheet-grid tbody td input.grid-cell::placeholder{ color:var(--ink-faint); }
-  .spreadsheet-grid tbody tr:hover td{ background:rgba(31,73,125,.03); }
+  .spreadsheet-grid tbody tr:hover td{ background:rgba(176,137,79,.04); }
   .grid-del-btn{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:15px; padding:6px; border-radius:4px; line-height:1; }
   .grid-del-btn:hover{ color:var(--red); background:rgba(195,52,56,.08); }
 
@@ -89,9 +96,10 @@
   /* Checkboxes */
   .chk-row{ display:flex; flex-wrap:wrap; gap:16px; margin-bottom:18px; font-family:var(--font-body); font-size:13.5px; color:var(--ink-soft); }
   .chk-row label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+  .chk-row input[type=checkbox]{ accent-color:var(--brass); }
 
   /* Go button */
-  .go-btn{ font-family:var(--font-display); font-weight:700; font-size:14px; letter-spacing:0.3px; background:var(--navy); color:#fff; border:none; border-radius:8px; padding:16px 32px; cursor:pointer; transition:all .15s; }
+  .go-btn{ font-family:var(--font-display); font-weight:600; font-size:15px; letter-spacing:0.2px; background:var(--navy); color:#fff; border:none; border-radius:8px; padding:16px 32px; cursor:pointer; transition:all .15s; }
   .go-btn:hover{ background:var(--navy-2); }
   .go-btn:disabled{ opacity:.5; cursor:not-allowed; }
   .go-btn.block{ display:block; width:100%; text-align:center; }
@@ -100,7 +108,7 @@
   .result-area{ margin-top:28px; }
   .summary-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px; }
   .summary-card{ background:var(--tint); border:1px solid var(--line); border-radius:10px; padding:22px; text-align:center; }
-  .summary-card .num{ font-family:var(--font-display); font-weight:800; font-size:36px; color:var(--navy); }
+  .summary-card .num{ font-family:var(--font-display); font-weight:700; font-size:36px; color:var(--navy); }
   .summary-card .num.red{ color:var(--red); }
   .summary-card .num.green{ color:var(--green); }
   .summary-card .num.amber{ color:var(--amber); }
@@ -112,7 +120,7 @@
   .violation-card.existing-violation{ border-left:4px solid var(--ink-faint); }
   .violation-header{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
   .violation-header .risk-meta{ font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); }
-  .violation-header .risk-name{ font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--ink); margin-top:2px; }
+  .violation-header .risk-name{ font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--ink); margin-top:2px; }
   .violation-badges{ display:flex; gap:6px; flex-wrap:wrap; }
   .badge{ font-family:var(--font-mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; padding:3px 10px; border-radius:10px; }
   .badge-new{ background:var(--red); color:#fff; }
@@ -131,7 +139,7 @@
 
   /* Roles list (for user simulation) */
   .roles-info{ background:var(--tint); border:1px solid var(--line); border-radius:8px; padding:14px 18px; margin-bottom:20px; font-size:13px; }
-  .roles-info strong{ font-family:var(--font-display); color:var(--navy); }
+  .roles-info strong{ font-family:var(--font-display); font-weight:600; color:var(--navy); }
   .role-chip{ display:inline-block; font-family:var(--font-mono); font-size:11px; background:var(--tint-2); border:1px solid var(--line); border-radius:4px; padding:3px 10px; margin:3px 4px 3px 0; color:var(--navy); }
   .role-chip.proposed{ background:#FFF3E0; border-color:#FFB74D; color:#E65100; }
 
@@ -144,9 +152,15 @@
 </style>
 </head>
 <body>
+<div class="corp-bar">
+  <div class="corp-bar-inner">
+    <span class="corp-name">InfoKrafts</span>
+    <span class="corp-tag">Trust &middot; Quality &middot; Performance</span>
+  </div>
+</div>
 <nav class="ik-nav">
   <div class="ik-nav-inner">
-    <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
+    <a href="index.html" class="ik-brand">IK<span class="ik-gold">°</span> Kontrol</a>
     <div class="ik-nav-links">
       <span class="nav-user" id="navUser"></span>
       <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">SIGN OUT</button>
@@ -157,7 +171,6 @@
   <div class="page-head-inner">
     <a class="back-link" href="index.html">&#8592; Back to dashboard</a>
     <h2>Access Simulation</h2>
-
   </div>
 </div>
 
@@ -277,7 +290,7 @@ function showWarning(msg) {
   if (existing) existing.remove();
   var toast = document.createElement('div');
   toast.className = 'chk-warning';
-  toast.innerHTML = '<svg width="20" height="20" fill="none" stroke="#FFC000" stroke-width="2"><circle cx="10" cy="10" r="9"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r="0.5" fill="#FFC000"/></svg><span>' + msg + '</span>';
+  toast.innerHTML = '<svg width="20" height="20" fill="none" stroke="#B0894F" stroke-width="2"><circle cx="10" cy="10" r="9"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r="0.5" fill="#B0894F"/></svg><span>' + msg + '</span>';
   document.body.appendChild(toast);
   setTimeout(function(){ toast.style.opacity='0'; toast.style.transition='opacity .3s'; setTimeout(function(){ toast.remove(); }, 300); }, 3000);
 }

@@ -3,585 +3,379 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IKAegis — SAP Access Governance</title>
+<title>Dashboard — IK° Kontrol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#FFFFFF;
-    --ice-1:#F5F7FA; --ice-2:#EDF2F8; --ice-3:#DCE5F0;
-    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
-    --navy:#15263F; --navy-corp:#1F497D; --navy-dark:#002060;
-    --crimson:#C33438; --green:#00B050; --gold:#FFC000; --amber:#C1811E;
-    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
-    --shadow-sm:0 1px 3px rgba(21,38,63,0.06);
-    --shadow-md:0 4px 16px rgba(21,38,63,0.08);
-    --shadow-lg:0 12px 40px rgba(21,38,63,0.12);
+    --tint:#F5F7FA;
+    --tint-2:#EDF2F8;
+    --ink:#12181F;
+    --ink-soft:#5A6A85;
+    --ink-faint:#8A93A0;
+    --line:#DCE5F0;
+    --navy:#0C2438;
+    --navy-2:#123252;
+    --blue:#1F497D;
+    --brass:#B0894F;
+    --red:#C33438;
+    --amber:#C1811E;
+    --green:#00B050;
+    --font-display:'Fraunces',serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+    --shadow-sm:0 1px 3px rgba(12,36,56,0.06);
+    --shadow-md:0 4px 16px rgba(12,36,56,0.08);
     --radius:10px;
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{
-    background:var(--ice-1); color:var(--ink); font-family:var(--font-body);
-    -webkit-font-smoothing:antialiased;
-  }
-  ::selection{ background:var(--navy-corp); color:#fff; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--tint); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--navy); color:#fff; }
+  a{ text-decoration:none; color:inherit; }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â NAV â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .ik-nav{
-    background:var(--navy); border-top:3px solid var(--gold);
-    padding:0 32px; position:sticky; top:0; z-index:100;
-    box-shadow:0 2px 16px rgba(21,38,63,0.3);
-  }
-  .ik-nav-inner{
-    max-width:1240px; margin:0 auto; display:flex; align-items:center;
-    justify-content:space-between; height:56px;
-  }
-  .ik-brand{
-    font-family:var(--font-display); font-weight:800; font-size:22px;
-    color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px;
-  }
-  .ik-gold{ color:var(--gold); }
-  .ik-nav-links{ display:flex; gap:4px; align-items:center; }
-  .ik-nav-links a{
-    font-family:var(--font-body); font-size:13px; font-weight:500;
-    color:#8FA3C4; text-decoration:none;
-    padding:8px 16px; border-radius:6px; transition:all .15s ease;
-  }
-  .ik-nav-links a:hover{ color:#fff; background:rgba(255,255,255,0.08); }
+  /* ====== Corp bar ====== */
+  .corp-bar{ background:#081A2A; height:32px; display:flex; align-items:center; padding:0 28px; }
+  .corp-bar-inner{ max-width:1180px; width:100%; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+  .corp-name{ font-family:var(--font-mono); font-size:11px; letter-spacing:1px; color:#8FA3C4; text-transform:uppercase; }
+  .corp-tag{ font-family:var(--font-mono); font-size:10px; letter-spacing:2px; color:#5C7392; text-transform:uppercase; }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â HERO BANNER (compact) â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .hero{
-    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%);
-    color:#EEF1F6; padding:28px 32px 24px;
-  }
-  .hero-inner{ max-width:1240px; margin:0 auto; text-align:center; }
-  .hero-left h1{
-    font-family:var(--font-display); font-weight:800; font-size:clamp(36px, 8vw, 72px);
-    letter-spacing:-1.5px; margin-bottom:6px; line-height:1;
-  }
-  .hero-left h1 .ik-gold{ color:var(--gold); }
-  .hero-left p{ font-family:var(--font-mono); font-size:11.5px; color:#8FA3C4; letter-spacing:1px; text-transform:uppercase; }
+  /* ====== Nav ====== */
+  .ik-nav{ background:var(--navy); padding:0 28px; height:52px; display:flex; align-items:center; }
+  .ik-nav-inner{ max-width:1180px; width:100%; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+  .ik-brand{ font-family:var(--font-display); font-weight:700; font-size:22px; color:#fff; letter-spacing:0.2px; }
+  .ik-gold{ color:var(--brass); }
+  .ik-nav-links{ display:flex; align-items:center; gap:18px; }
+  .nav-user{ font-family:var(--font-mono); font-size:12px; color:#B9C2D6; }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
+  .signout-btn:hover{ border-color:var(--brass); color:var(--brass); }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â MAIN CONTENT â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .main{ max-width:1240px; margin:0 auto; padding:32px; }
+  /* ====== Layout ====== */
+  section{ padding:32px 28px 60px; }
+  .section-inner{ max-width:1180px; margin:0 auto; }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â STAT CARDS â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .stat-row{
-    display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:36px;
-  }
-  .stat-card{
-    background:#fff; border-radius:var(--radius); padding:22px 24px;
-    box-shadow:var(--shadow-sm); border-left:4px solid var(--ice-3);
-    transition:box-shadow .2s;
-  }
-  .stat-card:hover{ box-shadow:var(--shadow-md); }
-  .stat-card.navy{ border-left-color:var(--navy-corp); }
-  .stat-card.red{ border-left-color:var(--crimson); }
-  .stat-card.amber{ border-left-color:var(--amber); }
-  .stat-card.green{ border-left-color:var(--green); }
-  .stat-card .stat-value{
-    font-family:var(--font-display); font-weight:800; font-size:36px;
-    line-height:1; letter-spacing:-1px;
-  }
-  .stat-card.navy .stat-value{ color:var(--navy-corp); }
-  .stat-card.red .stat-value{ color:var(--crimson); }
-  .stat-card.amber .stat-value{ color:var(--amber); }
-  .stat-card.green .stat-value{ color:var(--green); }
-  .stat-card .stat-label{
-    font-size:12px; color:var(--slate); margin-top:8px; line-height:1.4;
-    font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.5px;
-  }
+  /* ====== Welcome ====== */
+  .welcome{ margin-bottom:20px; }
+  .welcome h2{ font-family:var(--font-display); font-weight:700; font-size:28px; margin:0 0 4px; color:var(--ink); letter-spacing:0.2px; }
+  .welcome .sub{ font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â SECTION HEADERS â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .section-header{
-    display:flex; align-items:baseline; gap:12px; margin-bottom:20px;
+  /* ====== Smart insight bar ====== */
+  .insight-bar{
+    display:flex; align-items:center; gap:12px;
+    background:var(--navy); color:#fff; border-radius:var(--radius);
+    padding:14px 20px; margin-bottom:22px;
   }
-  .section-header h2{
-    font-family:var(--font-display); font-weight:700; font-size:18px;
-    color:var(--navy); letter-spacing:-0.2px;
-  }
-  .section-header .section-line{
-    flex:1; height:1px; background:var(--ice-3);
-  }
+  .insight-bar .ib-icon{ font-size:18px; color:var(--brass); flex-shrink:0; }
+  .insight-bar .ib-text{ font-size:13.5px; line-height:1.5; }
+  .insight-bar .ib-text b{ font-weight:600; color:#fff; }
+  .insight-bar .ib-jump{ margin-left:auto; font-family:var(--font-mono); font-size:12px; color:#B9C2D6; white-space:nowrap; }
+  .insight-bar .ib-jump:hover{ color:var(--brass); }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â ACTION CARDS (horizontal layout) â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .action-grid{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
-    gap:14px; margin-bottom:40px;
+  /* ====== KPI cards ====== */
+  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:26px; }
+  .kpi-card{
+    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px 22px; box-shadow:var(--shadow-sm);
   }
-  .action-card{
-    display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center;
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    padding:24px 16px; cursor:pointer; text-decoration:none; color:inherit;
-    box-shadow:var(--shadow-sm); transition:all .2s ease;
-  }
-  .action-card:hover{
-    border-color:var(--navy-corp); box-shadow:var(--shadow-md);
-    transform:translateY(-2px);
-  }
-  .action-card:active{ transform:translateY(0); }
-  .action-icon{
-    width:44px; height:44px; border-radius:10px; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    font-size:20px;
-  }
-  .action-icon.navy-bg{ background:rgba(31,73,125,0.1); }
-  .action-icon.crimson-bg{ background:rgba(195,52,56,0.1); }
-  .action-icon.green-bg{ background:rgba(0,176,80,0.1); }
-  .action-icon.amber-bg{ background:rgba(193,129,30,0.1); }
-  .action-icon.gold-bg{ background:rgba(255,192,0,0.15); }
-  .action-card .action-title{
-    font-family:var(--font-display); font-weight:700; font-size:14px;
-    color:var(--navy); margin-bottom:4px;
-  }
-  .action-card .action-desc{
-    font-size:12.5px; color:var(--slate); line-height:1.45;
-  }
+  .kpi-card .kpi-num{ font-family:var(--font-display); font-weight:700; font-size:32px; line-height:1; color:var(--navy); }
+  .kpi-card .kpi-num.red{ color:var(--red); }
+  .kpi-card .kpi-num.amber{ color:var(--amber); }
+  .kpi-card .kpi-num.blue{ color:var(--blue); }
+  .kpi-card .kpi-label{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:var(--ink-soft); margin-top:8px; }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â INQUIRY BOX â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .inquiry-section{ margin-bottom:40px; }
-  .inquiry-box{
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    padding:24px; box-shadow:var(--shadow-sm);
+  /* ====== Section heading ====== */
+  .block-label{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--ink-soft); margin:0 0 12px; }
+
+  /* ====== Quick actions ====== */
+  .qa-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:30px; }
+  .qa-card{
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:15px 18px; cursor:pointer; font-family:var(--font-body); font-size:13.5px; font-weight:500; color:var(--ink);
+    text-align:left; width:100%; transition:all .15s ease; box-shadow:var(--shadow-sm);
   }
-  .inquiry-row{ display:flex; gap:10px; }
-  .inquiry-row input{
+  .qa-card:hover{ border-color:var(--brass); box-shadow:var(--shadow-md); transform:translateY(-1px); }
+  .qa-card .qa-icon{ width:30px; height:30px; border-radius:7px; background:var(--tint-2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .qa-card .qa-icon svg{ width:16px; height:16px; stroke:var(--blue); }
+
+  /* ====== Security Query (inline AI) ====== */
+  .query-box{
+    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px 22px; box-shadow:var(--shadow-sm); margin-bottom:30px;
+  }
+  .query-row{ display:flex; gap:10px; }
+  .query-row input{
     flex:1; font-family:var(--font-body); font-size:14px;
-    background:var(--ice-1); border:1px solid var(--ice-3); border-radius:8px;
+    background:var(--tint); border:1px solid var(--line); border-radius:8px;
     padding:12px 16px; color:var(--ink); outline:none;
   }
-  .inquiry-row input:focus-visible{ outline:2px solid var(--navy-corp); outline-offset:1px; }
-  .inquiry-row input::placeholder{ color:var(--slate-light); }
-  .go-btn{
-    font-family:var(--font-display); font-weight:700; font-size:13px;
-    background:var(--navy-corp); color:#fff; border:none; border-radius:8px;
-    padding:0 24px; cursor:pointer; transition:all .15s ease;
-    box-shadow:0 2px 6px rgba(31,73,125,0.2);
+  .query-row input:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+  .query-row input::placeholder{ color:var(--ink-faint); }
+  .query-btn{
+    font-family:var(--font-display); font-weight:600; font-size:14px;
+    background:var(--navy); color:#fff; border:none; border-radius:8px;
+    padding:0 26px; cursor:pointer; transition:background .15s ease;
   }
-  .go-btn:hover{ background:var(--navy-dark); }
+  .query-btn:hover{ background:var(--navy-2); }
   .response-log{
-    margin-top:16px; border-top:1px solid var(--ice-3); padding-top:14px;
-    font-family:var(--font-mono); font-size:12px; color:var(--slate);
-    display:none; line-height:1.8; max-height:200px; overflow-y:auto;
+    margin-top:16px; border-top:1px solid var(--line); padding-top:14px;
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);
+    display:none; line-height:1.8; max-height:220px; overflow-y:auto;
   }
   .response-log.show{ display:block; }
-  .response-log .line{ padding:4px 0 4px 14px; border-left:2px solid var(--ice-3); margin-bottom:6px; }
-  .response-log .line.q{ color:var(--navy-corp); font-weight:600; border-left-color:var(--gold); }
+  .response-log .line{ padding:4px 0 4px 14px; border-left:2px solid var(--line); margin-bottom:6px; }
+  .response-log .line.q{ color:var(--navy); font-weight:600; border-left-color:var(--brass); }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â DATA PANELS â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .panel{
-    background:#fff; border:1px solid var(--ice-3); border-radius:var(--radius);
-    overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:20px;
+  /* ====== Module tiles ====== */
+  .mod-row{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+  .mod-tile{
+    position:relative;
+    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px 16px; text-align:center; cursor:pointer; transition:all .2s ease; box-shadow:var(--shadow-sm);
   }
-  .panel-head{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 24px; background:var(--ice-1); border-bottom:1px solid var(--ice-3);
-  }
-  .panel-head h3{
-    font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--navy);
-  }
-  .table-scroll{ overflow-x:auto; }
-  table.data{ width:100%; border-collapse:collapse; font-size:13px; }
-  table.data thead th{
-    text-align:left; padding:11px 22px; background:var(--navy-corp); color:#fff;
-    font-family:var(--font-mono); font-size:10px; text-transform:uppercase;
-    letter-spacing:1px; white-space:nowrap;
-  }
-  table.data tbody td{
-    padding:12px 22px; border-bottom:1px solid var(--ice-3);
-    font-family:var(--font-mono); font-size:12px; color:var(--slate);
-  }
-  table.data tbody tr:hover{ background:var(--ice-2); }
-  .user-id{ font-weight:600; color:var(--ink); font-family:var(--font-body); }
-  .utype{ display:inline-flex; align-items:center; gap:6px; font-size:12px; }
-  .utype .dot{ width:7px; height:7px; border-radius:50%; }
-  .utype.A .dot{ background:var(--crimson); }
-  .utype.S .dot{ background:var(--navy-corp); }
-  .utype.B .dot{ background:var(--amber); }
-  .risk-tag{
-    font-family:var(--font-mono); font-size:10px; text-transform:uppercase;
-    padding:4px 10px; border-radius:20px; font-weight:600; letter-spacing:0.5px;
-  }
-  .risk-tag.high{ background:rgba(195,52,56,0.1); color:var(--crimson); }
-  .risk-tag.medium{ background:rgba(193,129,30,0.1); color:var(--amber); }
-
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â SUB-VIEWS (Locked, DevAccess) â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .page-view{ display:none; }
-  .page-view.active{ display:block; }
-  .page-head{
-    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%);
-    color:#EEF1F6; padding:32px;
-  }
-  .page-head-inner{ max-width:1240px; margin:0 auto; }
-  .back-link{
-    display:inline-flex; align-items:center; gap:6px;
-    font-family:var(--font-mono); font-size:12px; color:#8FA3C4;
-    text-decoration:none; margin-bottom:14px; cursor:pointer; background:none; border:none; padding:0;
-    transition:color .15s;
-  }
-  .back-link:hover{ color:var(--gold); }
-  .page-head h2{
-    font-family:var(--font-display); font-weight:800; font-size:24px; margin:0 0 6px;
-  }
-  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; max-width:520px; line-height:1.5; }
-  section.sub-section{ padding:32px; }
-  section.sub-section .section-inner{ max-width:1240px; margin:0 auto; }
-
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â FOOTER â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  footer{
-    background:var(--navy); color:#8FA3C4; padding:20px 32px;
-    font-family:var(--font-mono); font-size:11px;
-    border-top:2px solid var(--gold);
-  }
-  .footer-inner{
-    max-width:1240px; margin:0 auto; display:flex; justify-content:space-between;
-    flex-wrap:wrap; gap:8px;
-  }
-  .footer-brand{
-    font-family:var(--font-display); font-weight:700; font-size:14px; color:#EEF1F6;
+  .mod-tile:hover{ border-color:var(--brass); box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .mod-tile .mod-icon{ width:42px; height:42px; margin:0 auto 12px; border-radius:10px; background:var(--tint-2); display:flex; align-items:center; justify-content:center; }
+  .mod-tile .mod-icon svg{ width:22px; height:22px; stroke:var(--navy); }
+  .mod-tile .mod-name{ font-family:var(--font-display); font-weight:600; font-size:15px; color:var(--ink); margin-bottom:4px; }
+  .mod-tile .mod-desc{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.3px; color:var(--ink-faint); }
+  .mod-badge{
+    position:absolute; top:12px; right:12px; min-width:20px; height:20px; padding:0 6px;
+    background:var(--red); color:#fff; border-radius:10px;
+    font-family:var(--font-mono); font-size:11px; font-weight:600;
+    display:none; align-items:center; justify-content:center;
   }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â SIGN OUT ROW â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
-  .signout-row{
-    display:flex; align-items:center; gap:12px; margin-bottom:32px;
-  }
-  .signout-btn{
-    font-family:var(--font-mono); font-size:11px; color:#8FA3C4;
-    background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px;
-    border-radius:6px; cursor:pointer; transition:all .15s; margin-left:8px;
-  }
-  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
+  /* ====== Toast ====== */
+  .toast{ position:fixed; top:80px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; font-family:var(--font-body); font-size:14px; padding:14px 28px; border-radius:8px; box-shadow:0 8px 32px rgba(12,36,56,0.3); z-index:9999; display:flex; align-items:center; gap:10px; border-left:4px solid var(--brass); animation:slideDown .3s ease; }
+  @keyframes slideDown{ from{opacity:0;transform:translateX(-50%) translateY(-20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
 
-  /* â•Ââ•Ââ•Ââ•Ââ•Ââ•Â RESPONSIVE â•Ââ•Ââ•Ââ•Ââ•Ââ•Â */
   @media (max-width:900px){
-    .stat-row{ grid-template-columns:repeat(2,1fr); }
-    .hero-inner{ flex-direction:column; text-align:center; }
-    .hero-right{ text-align:center; }
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+    .qa-row{ grid-template-columns:repeat(2,1fr); }
+    .mod-row{ grid-template-columns:repeat(2,1fr); }
   }
-  @media (max-width:640px){
-    .stat-row{ grid-template-columns:1fr; }
-    .action-grid{ grid-template-columns:1fr; }
-    .ik-nav-inner{ height:auto; flex-direction:column; padding:10px 0; gap:8px; }
-    .inquiry-row{ flex-direction:column; }
-    .main{ padding:20px 16px; }
+  @media (max-width:560px){
+    .kpi-row,.qa-row,.mod-row{ grid-template-columns:1fr; }
+    .insight-bar{ flex-wrap:wrap; }
+    .insight-bar .ib-jump{ margin-left:0; }
+    .query-row{ flex-direction:column; }
   }
 </style>
 </head>
 <body>
-
-<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â NAV â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
+<div class="corp-bar">
+  <div class="corp-bar-inner">
+    <span class="corp-name">InfoKrafts</span>
+    <span class="corp-tag">Trust &middot; Quality &middot; Performance</span>
+  </div>
+</div>
 <nav class="ik-nav">
   <div class="ik-nav-inner">
-    <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
+    <a href="index.html" class="ik-brand">IK<span class="ik-gold">°</span> Kontrol</a>
     <div class="ik-nav-links">
-      <a href="index.html">Dashboard</a>
-      <a href="SOD.html">Risk Analytics</a>
-      <a href="create-user.html">User Creation</a>
-      <span id='navUser' style='font-family:var(--font-display);font-weight:600;font-size:12px;color:var(--gold);letter-spacing:0.3px;'></span><button class="signout-btn" onclick="logout()">Sign out</button>
+      <span class="nav-user" id="navUser"></span>
+      <button class="signout-btn" onclick="logout()">SIGN OUT</button>
     </div>
   </div>
 </nav>
 
-<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â DASHBOARD VIEW â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
-<div id="view-dashboard" class="page-view active">
+<section>
+  <div class="section-inner">
 
-<!-- Hero Banner (compact) -->
-<div class="hero">
-  <div class="hero-inner">
-    <div class="hero-left">
-      <h1><span class="ik-gold">IK</span>Aegis</h1>
-      <p>SAP Access Governance Platform — Security · Compliance · Risk</p>
+    <!-- Welcome -->
+    <div class="welcome">
+      <h2 id="welcomeName">Welcome back</h2>
+      <div class="sub" id="welcomeSub">&nbsp;</div>
     </div>
-  </div>
-</div>
 
-<div class="main">
+    <!-- Smart insight bar -->
+    <div class="insight-bar">
+      <span class="ib-icon">&#128161;</span>
+      <span class="ib-text" id="insightText">Loading your latest activity&hellip;</span>
+      <a class="ib-jump" id="insightJump" href="reviews-hub.html">Jump in &#8594;</a>
+    </div>
 
-  <!-- Security Posture Stats -->
-  <div class="section-header">
-    <h2>Security Posture</h2>
-    <div class="section-line"></div>
-  </div>
-  <div class="stat-row">
-    <div class="stat-card navy">
-      <div class="stat-value" id="mTotal">—</div>
-      <div class="stat-label">Total Users</div>
+    <!-- KPI cards -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-num amber" id="kpiApprovals">&mdash;</div>
+        <div class="kpi-label">Pending approvals</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num blue" id="kpiUar">&mdash;</div>
+        <div class="kpi-label">Active UAR</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num red" id="kpiSu53">&mdash;</div>
+        <div class="kpi-label">SU53 fails</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpiUsers">&mdash;</div>
+        <div class="kpi-label">SAP users</div>
+      </div>
     </div>
-    <div class="stat-card red">
-      <div class="stat-value" id="mLocked">—</div>
-      <div class="stat-label">Locked Accounts</div>
-    </div>
-    <div class="stat-card amber">
-      <div class="stat-value" id="mDev">—</div>
-      <div class="stat-label">S_DEVELOP Access</div>
-    </div>
-    <div class="stat-card green">
-      <div class="stat-value">✓</div>
-      <div class="stat-label">System Online</div>
-    </div>
-  </div>
 
-  <!-- Quick Actions -->
-  <div class="section-header">
-    <h2>Quick Actions</h2>
-    <div class="section-line"></div>
-  </div>
-  <div class="action-grid">
-    <a class="action-card" href="risk-hub.html">
-      <div class="action-icon navy-bg">
-        <svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/><path d="M3 20h18" stroke-width="1.5"/></svg>
-      </div>
-      <div class="action-title">Risk Analysis</div>
-    </a>
-    <a class="action-card" href="requests-hub.html">
-      <div class="action-icon gold-bg">
-        <svg width="22" height="22" fill="none" stroke="#C1811E" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-      </div>
-      <div class="action-title">Access Requests</div>
-    </a>
-    <a class="action-card" href="reviews-hub.html">
-      <div class="action-icon" style="background:#EDF2F8;">
-        <svg width="22" height="22" fill="none" stroke="#1F497D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1z"/><path d="M8 6H6a1 1 0 00-1 1v13a1 1 0 001 1h12a1 1 0 001-1V7a1 1 0 00-1-1h-2"/><path d="M9 14l2 2 4-4"/></svg>
-      </div>
-      <div class="action-title">Access Reviews</div>
-    </a>
-    <a class="action-card" href="reports-hub.html">
-      <div class="action-icon crimson-bg">
-        <svg width="22" height="22" fill="none" stroke="#C33438" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>
-      </div>
-      <div class="action-title">Reports &amp; Monitoring</div>
-    </a>
-    <a class="action-card" href="su53-inbox.html">
-      <div class="action-icon crimson-bg">
-        <svg width="22" height="22" fill="none" stroke="#C33438" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
-      </div>
-      <div class="action-title">SU53 Agent</div>
-    </a>
-  </div><span id="heroWho" style="display:none;"></span>
-  <div class="inquiry-section">
-    <div class="section-header">
-      <h2>Security Query</h2>
-      <div class="section-line"></div>
+    <!-- Quick actions -->
+    <div class="block-label">Quick actions</div>
+    <div class="qa-row">
+      <a class="qa-card" href="SOD.html">
+        <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+        Run SoD check
+      </a>
+      <a class="qa-card" href="new-request.html">
+        <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
+        New request
+      </a>
+      <a class="qa-card" href="simulation.html">
+        <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0H5a2 2 0 0 1-2-2v-4m6 6h10a2 2 0 0 0 2-2v-4"/></svg></span>
+        Simulate access
+      </a>
+      <button class="qa-card" type="button" onclick="showToast('Lock/Unlock Request &mdash; coming soon')">
+        <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        Lock/Unlock Request
+      </button>
     </div>
-    <div class="inquiry-box">
-      <div class="inquiry-row">
+
+    <!-- Security Query (inline AI) -->
+    <div class="block-label">Security query</div>
+    <div class="query-box">
+      <div class="query-row">
         <input type="text" id="queryInput" placeholder="e.g. Which users have S_DEVELOP access and are also locked?">
-        <button class="go-btn" id="submitQuery">Ask</button>
+        <button class="query-btn" id="submitQuery">Ask</button>
       </div>
       <div class="response-log" id="responseLog"></div>
     </div>
-  </div>
 
-
-  <div style="text-align:center;padding:20px 0 10px;font-family:var(--font-mono);font-size:10.5px;color:var(--slate-light);letter-spacing:0.5px;">&copy; 2026 Infokrafts &middot; IKAegis v1.0</div>
-</div>
-</div>
-
-<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â LOCKED USERS VIEW â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
-<div id="view-locked" class="page-view">
-  <div class="page-head">
-    <div class="page-head-inner">
-      <button class="back-link" data-nav="dashboard">â†Â Back to dashboard</button>
-      <h2>Locked Users</h2>
-      <p>Every account currently locked in SAP, ordered by user ID.</p>
+    <!-- Module tiles -->
+    <div class="block-label">Modules</div>
+    <div class="mod-row">
+      <a class="mod-tile" href="risk-hub.html">
+        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        <div class="mod-name">Risk</div>
+        <div class="mod-desc">SoD · Sim · Analysis</div>
+      </a>
+      <a class="mod-tile" href="requests-hub.html">
+        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+        <div class="mod-name">Requests</div>
+        <div class="mod-desc">New · Track</div>
+      </a>
+      <a class="mod-tile" href="reviews-hub.html">
+        <span class="mod-badge" id="reviewsBadge"></span>
+        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <div class="mod-name">Reviews</div>
+        <div class="mod-desc">UAR · Approvals</div>
+      </a>
+      <a class="mod-tile" href="reports-hub.html">
+        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></span>
+        <div class="mod-name">Reports</div>
+        <div class="mod-desc">Audit · Export</div>
+      </a>
+      <a class="mod-tile" href="ai-chat.html">
+        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></span>
+        <div class="mod-name">AI</div>
+        <div class="mod-desc">Ask assistant</div>
+      </a>
     </div>
-  </div>
-  <section class="sub-section">
-    <div class="section-inner">
-      <div class="panel">
-        <div class="table-scroll">
-          <table class="data">
-            <thead><tr><th>User</th><th>Reason</th><th>Type</th></tr></thead>
-            <tbody id="lockedBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
 
-<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â S_DEVELOP VIEW â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
-<div id="view-devaccess" class="page-view">
-  <div class="page-head">
-    <div class="page-head-inner">
-      <button class="back-link" data-nav="dashboard">â†Â Back to dashboard</button>
-      <h2>S_DEVELOP Access Check</h2>
-      <p>Users holding S_DEVELOP authorization to create or change programs.</p>
-    </div>
   </div>
-  <section class="sub-section">
-    <div class="section-inner">
-      <div class="panel">
-        <div class="table-scroll">
-          <table class="data">
-            <thead><tr><th>User</th><th>Role</th><th>Activity</th><th>Risk</th></tr></thead>
-            <tbody id="devBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- â•Ââ•Ââ•Ââ•Ââ•Ââ•Â FOOTER â•Ââ•Ââ•Ââ•Ââ•Ââ•Â -->
-<footer>
-  <div class="footer-inner">
-    <span class="footer-brand"><span class="ik-gold">IK</span>Aegis</span>
-    <span id="dataSource">Data source: —</span>
-  </div>
-</footer>
+</section>
 
 <script>
+// ---- Toast ----
+function showToast(msg) {
+  var existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B0894F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>' + msg + '</span>';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 2800);
+}
+
+// ---- Role-based welcome + view (fired by auth-guard.js) ----
+document.addEventListener('auth-ready', function(e){
+  var u = e.detail || {};
+  var name = u.displayName || u.username || '';
+  var nav = document.getElementById('navUser'); if (nav) nav.textContent = name;
+  var w = document.getElementById('welcomeName'); if (w) w.textContent = 'Welcome back' + (name ? ', ' + name : '');
+  var sub = document.getElementById('welcomeSub');
+  if (sub) {
+    var roleLabel = u.role === 'approver' ? 'Approver'
+      : (u.role === 'admin' ? 'Security Administrator'
+      : (u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'User'));
+    sub.textContent = roleLabel;
+  }
+  // Approver jumps into the approval queue; others into reviews hub.
+  var jump = document.getElementById('insightJump');
+  if (jump && u.role === 'approver') jump.setAttribute('href', 'approvals.html');
+
+  // Approval-stats pending badge (admin / manager / role_owner / approver).
+  if (u.role === 'admin' || u.role === 'manager' || u.role === 'role_owner' || u.role === 'approver') {
+    fetch('/api/approval-stats').then(function(r){ return r.json(); }).then(function(d){
+      if (d && d.pending > 0) {
+        var badge = document.getElementById('reviewsBadge');
+        if (badge) { badge.textContent = d.pending; badge.style.display = 'flex'; }
+      }
+    }).catch(function(){});
+  }
+});
+
+// ---- Live KPI counts + smart insight ----
+fetch('/api/dashboard/summary').then(function(r){return r.json();}).then(function(d){
+  function set(id, val){ var el = document.getElementById(id); if (el) el.textContent = (val === null || val === undefined) ? '\u2014' : val; }
+  set('kpiApprovals', d.pendingApprovals);
+  set('kpiUar', d.activeUar);
+  set('kpiSu53', d.su53Fails);
+  set('kpiUsers', d.sapUsers);
+
+  var bits = [];
+  if (d.pendingApprovals) bits.push('<b>' + d.pendingApprovals + ' approval' + (d.pendingApprovals === 1 ? '' : 's') + '</b>');
+  if (d.activeUar) bits.push('<b>' + d.activeUar + ' active UAR</b>');
+  if (d.su53Fails) bits.push('<b>' + d.su53Fails + ' SU53 fail' + (d.su53Fails === 1 ? '' : 's') + '</b>');
+  var el = document.getElementById('insightText');
+  if (el) {
+    if (bits.length) {
+      var joined = bits.length === 1 ? bits[0] : bits.slice(0, -1).join(', ') + ' and ' + bits[bits.length - 1];
+      el.innerHTML = 'You have ' + joined + ' waiting for your attention.';
+    } else {
+      el.innerHTML = 'All clear &mdash; nothing pending right now.';
+    }
+  }
+}).catch(function(){
+  var el = document.getElementById('insightText');
+  if (el) el.textContent = 'Live counts unavailable right now.';
+});
+
+// ---- Security Query (inline AI) ----
 (function(){
-  const DEMO = {
-    totalUsers: 402,
-    lockedUsers: [
-      { user:'CHANDU87', reason:'Locked in SAP (UFLAG)', type:'A' },
-      { user:'DEMO1', reason:'Locked in SAP (UFLAG)', type:'A' },
-      { user:'FFS4H_OMG', reason:'Locked in SAP (UFLAG)', type:'S' },
-      { user:'MAHESH', reason:'Locked in SAP (UFLAG)', type:'A' },
-      { user:'NAG', reason:'Locked in SAP (UFLAG)', type:'A' },
-      { user:'RAJU', reason:'Locked in SAP (UFLAG)', type:'A' },
-      { user:'RFCUSER', reason:'Locked in SAP (UFLAG)', type:'B' },
-      { user:'TEST0', reason:'Locked in SAP (UFLAG)', type:'A' },
-      { user:'TEST06', reason:'Locked in SAP (UFLAG)', type:'A' }
-    ],
-    devAccessUsers: [
-      { user:'ADMIN01', role:'Z_DEV_FULL_ACCESS', activity:'01 / 02', risk:'high' },
-      { user:'ARSH', role:'Z_DEV_CHANGE', activity:'02', risk:'medium' }
-    ]
-  };
-
-  const typeNames = { A:'Dialog', S:'Service', B:'System' };
-
-  function setStatus(mode){
-    document.getElementById('dataSource').textContent = 'Data source: ' + (mode==='live' ? 'live SAP feed' : 'local demo dataset (viewing outside Node server)');
-  }
-
-  function renderLocked(rows){
-    document.getElementById('lockedBody').innerHTML = rows.map(r => `
-      <tr>
-        <td class="user-id">${escapeHtml(r.user)}</td>
-        <td>${escapeHtml(r.reason)}</td>
-        <td><span class="utype ${escapeHtml(r.type)}"><span class="dot"></span>${escapeHtml(r.type)} · ${typeNames[r.type]||'Unknown'}</span></td>
-      </tr>`).join('');
-    document.getElementById('mLocked').textContent = rows.length;
-  }
-
-  function renderDev(rows){
-    document.getElementById('devBody').innerHTML = rows.map(r => `
-      <tr>
-        <td class="user-id">${escapeHtml(r.user)}</td>
-        <td>${escapeHtml(r.role||'—')}</td>
-        <td>${escapeHtml(r.activity||'—')}</td>
-        <td><span class="risk-tag ${r.risk==='high'?'high':'medium'}">${r.risk==='high'?'High':'Medium'}</span></td>
-      </tr>`).join('');
-    document.getElementById('mDev').textContent = rows.length;
-  }
-
-  function escapeHtml(str){
-    return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
-  function boot(){
-    document.getElementById('mTotal').textContent = DEMO.totalUsers;
-    renderLocked(DEMO.lockedUsers);
-    renderDev(DEMO.devAccessUsers);
-    setStatus('demo');
-
-    fetch('/api/sap-data')
-      .then(res => { if(!res.ok) throw new Error('bad response'); return res.json(); })
-      .then(data => {
-        if(Array.isArray(data.lockedUsers)) renderLocked(data.lockedUsers);
-        if(Array.isArray(data.devAccessUsers)) renderDev(data.devAccessUsers);
-        if(typeof data.totalUsers === 'number') document.getElementById('mTotal').textContent = data.totalUsers;
-        setStatus('live');
-      })
-      .catch(() => {});
-  }
-
-  const VIEWS = ['dashboard','locked','devaccess'];
-  function showView(name){
-    if(!VIEWS.includes(name)) name = 'dashboard';
-    VIEWS.forEach(v => {
-      document.getElementById('view-' + v).classList.toggle('active', v === name);
-    });
-    window.scrollTo({ top:0, behavior:'instant' in window ? 'instant' : 'auto' });
-  }
-  function navTo(name){
-    location.hash = name === 'dashboard' ? '' : name;
-  }
-  window.addEventListener('hashchange', () => {
-    showView(location.hash.replace('#','') || 'dashboard');
-  });
-
-  document.querySelectorAll('[data-nav]').forEach(el => {
-    el.addEventListener('click', () => navTo(el.dataset.nav));
-  });
-
-  document.getElementById('submitQuery').addEventListener('click', submitQuery);
-  document.getElementById('queryInput').addEventListener('keydown', e => { if(e.key==='Enter') submitQuery(); });
-
+  var input = document.getElementById('queryInput');
+  var btn = document.getElementById('submitQuery');
   function submitQuery(){
-    const input = document.getElementById('queryInput');
-    const q = input.value.trim();
-    if(!q) return;
-    const log = document.getElementById('responseLog');
+    var q = input.value.trim();
+    if (!q) return;
+    var log = document.getElementById('responseLog');
     log.classList.add('show');
-    const qLine = document.createElement('div');
+    var qLine = document.createElement('div');
     qLine.className = 'line q'; qLine.textContent = '> ' + q;
     log.appendChild(qLine);
-    const aLine = document.createElement('div');
-    aLine.className = 'line'; aLine.textContent = 'Submitting to /api/ai/chatâ€¦';
+    var aLine = document.createElement('div');
+    aLine.className = 'line'; aLine.textContent = 'Submitting to /api/ai/chat\u2026';
     log.appendChild(aLine);
     log.scrollTop = log.scrollHeight;
-
     fetch('/api/ai/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message:q })
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message: q })
     })
-      .then(res => { if(!res.ok) throw new Error('bad'); return res.json(); })
-      .then(data => { aLine.textContent = data.answer || 'No answer field in response.'; })
-      .catch(() => { aLine.textContent = 'Not connected — /api/ai/chat unreachable.'; });
-
+      .then(function(res){ if(!res.ok) throw new Error('bad'); return res.json(); })
+      .then(function(data){ aLine.textContent = data.answer || 'No answer field in response.'; log.scrollTop = log.scrollHeight; })
+      .catch(function(){ aLine.textContent = 'Not connected \u2014 /api/ai/chat unreachable.'; });
     input.value = '';
   }
-
-  boot();
-  showView(location.hash.replace('#','') || 'dashboard');
+  btn.addEventListener('click', submitQuery);
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') submitQuery(); });
 })();
-
-document.addEventListener('auth-ready', function(e){
-  document.getElementById('navUser').textContent=e.detail.displayName || e.detail.username;
-  document.getElementById('heroWho').textContent = e.detail.displayName + ' (' + e.detail.username + ')';
-  const card = document.getElementById('workflowCard');
-  const title = document.getElementById('workflowCardTitle');
-
-  if(e.detail.role === 'approver'){
-    card.setAttribute('href', 'approvals.html');
-    title.textContent = 'Approval Queue';
-} else {
-      card.setAttribute('href', 'new-request.html');
-      title.textContent = 'Access Requests';
-
-    }
-    var inboxCard=document.getElementById('inboxCard');
-    if(e.detail.role==='admin'||e.detail.role==='manager'||e.detail.role==='role_owner'){
-      inboxCard.style.display='';
-      fetch('/api/approval-stats').then(function(r){
-        return r.json();
-      }).then(function(d){
-        var badge=document.getElementById('inboxBadge');
-        if(d.pending>0){
-          badge.textContent=d.pending;
-          badge.style.display='flex';
-        }
-      }).catch(function(){});
-    }
-});
 </script>
 <script src="auth-guard.js"></script>
-
 </body>
 </html>
-
-

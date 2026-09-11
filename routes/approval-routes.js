@@ -356,7 +356,7 @@ module.exports = function(app) {
         if (app.assignSapRole) {
           const sapUser = request.sapUsername || request.requestedBy;
           try {
-            const result = await app.assignSapRole(sapUser, request.role);
+            const result = await (app.assignSapRoleSmart || app.assignSapRole)(sapUser, request.role); /* IK-COMPOSITE-ASSIGN */
             await db.updateRequest(requestId, {
               sapSyncStatus: (!result || /(error|fail|invalid|not authorized|must)/i.test(String((result && (result.Message || result.message)) || ''))) ? 'failed' : 'success',
               sapSyncMessage: result.message || ''

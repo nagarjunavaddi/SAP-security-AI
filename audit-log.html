@@ -2,81 +2,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IKAegis — Audit Log</title>
+<title>IK° Kontrol — Audit Log</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FFFFFF;
-    --ice-1:#F5F7FA; --ice-2:#EDF2F8; --ice-3:#DCE5F0;
-    --ink:#1E2A3A; --slate:#5A6A85; --slate-light:#8A95A8;
-    --navy:#15263F; --navy-corp:#1F497D; --navy-dark:#002060;
-    --crimson:#C33438; --green:#00B050; --gold:#FFC000; --amber:#C1811E;
-    --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
-    --shadow-sm:0 1px 3px rgba(21,38,63,0.06);
-    --shadow-md:0 4px 16px rgba(21,38,63,0.08);
-    --shadow-lg:0 12px 40px rgba(21,38,63,0.12);
-    --radius:10px;
+    /* v3 tokens */
+    --navy:#0C2438; --navy-2:#14344F; --navy-corp:#14344F; --navy-dark:#0C2438;
+    --brass:#B0894F; --blue:#2563A8;
+    --paper:#FAFBFC; --paper-2:#F1F4F6; --line:#E4E9EC;
+    --ink:#0C2438; --slate:#5A6A7A; --slate-light:#8A97A6;
+    /* legacy aliases kept so inline styles / JS var refs still resolve */
+    --bg:#FFFFFF; --ice-1:#FAFBFC; --ice-2:#F1F4F6; --ice-3:#E4E9EC;
+    --crimson:#B23A3A; --green:#1E7A46; --gold:#B0894F; --amber:#9A6B1E;
+    /* status */
+    --ok:#1E7A46; --ok-bg:#E4F3EA; --bad:#B23A3A; --bad-bg:#F8E7E7; --warn:#9A6B1E; --warn-bg:#FBF1DF;
+    --font-display:'Fraunces',Georgia,serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --shadow-sm:0 1px 2px rgba(12,36,56,0.05); --shadow-md:0 8px 24px rgba(12,36,56,0.06); --shadow-lg:0 12px 40px rgba(12,36,56,0.10);
+    --radius:14px;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  body{ background:var(--ice-1); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
-  ::selection{ background:var(--navy-corp); color:#fff; }
-  .ik-nav{ background:var(--navy); border-top:3px solid var(--gold); padding:0 32px; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(21,38,63,0.3); }
-  .ik-nav-inner{ max-width:1240px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:56px; }
-  .ik-brand{ font-family:var(--font-display); font-weight:800; font-size:22px; color:#EEF1F6; text-decoration:none; letter-spacing:-0.5px; }
-  .ik-gold{ color:var(--gold); }
-  .ik-nav-links{ display:flex; gap:4px; align-items:center; }
-  .nav-user{ font-family:var(--font-body); font-size:13px; font-weight:600; color:var(--gold); margin-right:8px; }
-  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
-  .signout-btn:hover{ border-color:var(--gold); color:var(--gold); }
-  .page-head{ background:linear-gradient(135deg, var(--navy) 0%, var(--navy-corp) 100%); color:#EEF1F6; padding:32px; }
+  body{ background:var(--paper); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--brass); color:#fff; }
+
+  /* Corp bar */
+  .corp-bar{ background:#fff; border-bottom:1px solid var(--line); }
+  .corp-bar-inner{ max-width:1240px; margin:0 auto; height:38px; padding:0 32px; display:flex; align-items:center; justify-content:space-between; }
+  .corp-wordmark{ font-family:var(--font-display); font-weight:600; font-size:16px; letter-spacing:-0.3px; }
+  .corp-wordmark .info{ color:var(--navy); }
+  .corp-wordmark .krafts{ color:var(--blue); }
+  .corp-tag{ font-family:var(--font-mono); font-size:10px; font-weight:500; color:var(--brass); text-transform:uppercase; letter-spacing:2px; }
+
+  /* Nav */
+  .ik-nav{ background:var(--navy); padding:0 32px; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(12,36,56,0.25); }
+  .ik-nav-inner{ max-width:1240px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:58px; }
+  .ik-brand{ font-family:var(--font-display); font-weight:500; font-size:23px; color:#F2F5F8; text-decoration:none; letter-spacing:-0.3px; display:inline-flex; align-items:baseline; }
+  .ik-brand .deg{ color:var(--brass); font-size:16px; position:relative; top:-3px; margin:0 1px; }
+  .ik-brand .name{ margin-left:5px; }
+  .ik-nav-links{ display:flex; gap:16px; align-items:center; }
+  .nav-link{ font-family:var(--font-mono); font-size:11px; color:#9FB2C8; text-decoration:none; text-transform:uppercase; letter-spacing:0.5px; transition:color .15s; }
+  .nav-link:hover{ color:var(--brass); }
+  .nav-user{ font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--brass); }
+  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#C3D1E0; background:none; border:1px solid rgba(255,255,255,0.22); padding:6px 14px; border-radius:8px; cursor:pointer; transition:all .15s; text-transform:uppercase; letter-spacing:0.5px; }
+  .signout-btn:hover{ border-color:var(--brass); color:var(--brass); }
+
+  /* Head */
+  .page-head{ background:#fff; border-bottom:1px solid var(--line); padding:28px 32px 30px; }
   .page-head-inner{ max-width:1240px; margin:0 auto; }
-  .page-head-inner a{ color:var(--gold); font-size:13px; text-decoration:none; font-weight:500; }
-  .page-head-inner a:hover{ text-decoration:underline; }
-  .page-head h2{ font-family:var(--font-display); font-weight:800; font-size:24px; margin:8px 0 6px; }
-  .page-head p{ font-size:13px; color:#B9C2D6; margin:0; max-width:520px; line-height:1.5; }
+  .page-head-inner a.back{ font-family:var(--font-mono); color:var(--brass); font-size:11px; text-decoration:none; text-transform:uppercase; letter-spacing:0.5px; }
+  .page-head-inner a.back:hover{ text-decoration:underline; }
+  .eyebrow{ font-family:var(--font-mono); font-size:11px; font-weight:500; color:var(--brass); text-transform:uppercase; letter-spacing:2px; margin:14px 0 6px; }
+  .page-head h2{ font-family:var(--font-display); font-weight:400; font-size:38px; color:var(--navy); letter-spacing:-0.5px; margin:0 0 8px; }
+  .page-head p{ font-size:14px; color:var(--slate); margin:0; max-width:560px; line-height:1.55; }
   .main{ max-width:1240px; margin:0 auto; padding:32px; }
 
   /* Filters */
-  .filter-bar{ background:#fff; border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow-sm); margin-bottom:24px; display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; }
-  .filter-group{ display:flex; flex-direction:column; gap:4px; }
+  .filter-bar{ background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow-sm); margin-bottom:24px; display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; }
+  .filter-group{ display:flex; flex-direction:column; gap:5px; }
   .filter-group label{ font-family:var(--font-mono); font-size:11px; font-weight:500; color:var(--slate-light); text-transform:uppercase; letter-spacing:0.5px; }
-  .filter-group select, .filter-group input{ font-family:var(--font-body); font-size:13px; padding:8px 12px; border:1px solid var(--ice-3); border-radius:6px; background:#fff; color:var(--ink); min-width:180px; }
-  .filter-group select:focus, .filter-group input:focus{ outline:none; border-color:var(--navy-corp); box-shadow:0 0 0 3px rgba(31,73,125,0.1); }
-  .btn-filter{ font-family:var(--font-body); font-size:13px; font-weight:600; padding:9px 20px; border:none; border-radius:6px; cursor:pointer; transition:all .15s; }
-  .btn-primary{ background:var(--navy-corp); color:#fff; }
-  .btn-primary:hover{ background:var(--navy-dark); }
-  .btn-secondary{ background:var(--ice-2); color:var(--slate); }
-  .btn-secondary:hover{ background:var(--ice-3); }
+  .filter-group select, .filter-group input{ font-family:var(--font-body); font-size:13px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); min-width:180px; }
+  .filter-group select:focus, .filter-group input:focus{ outline:none; border-color:var(--brass); box-shadow:0 0 0 3px rgba(176,137,79,0.15); }
+  .btn-filter{ font-family:var(--font-mono); font-size:12px; font-weight:500; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; transition:all .15s; text-transform:uppercase; letter-spacing:0.5px; }
+  .btn-primary{ background:var(--navy); color:#fff; }
+  .btn-primary:hover{ background:var(--navy-2); }
+  .btn-secondary{ background:var(--paper-2); color:var(--slate); border:1px solid var(--line); }
+  .btn-secondary:hover{ background:var(--line); }
 
   /* Table */
-  .table-wrap{ background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
+  .table-wrap{ background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
   table{ width:100%; border-collapse:collapse; }
-  thead th{ background:var(--navy-corp); color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; padding:14px 16px; text-align:left; white-space:nowrap; }
-  tbody td{ padding:12px 16px; font-size:13px; border-bottom:1px solid var(--ice-2); vertical-align:top; }
-  tbody tr:hover{ background:var(--ice-1); }
+  thead th{ background:var(--navy); color:#EAF0F6; font-family:var(--font-mono); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.8px; padding:14px 16px; text-align:left; white-space:nowrap; }
+  tbody td{ padding:13px 16px; font-size:13px; border-bottom:1px solid var(--paper-2); vertical-align:top; }
+  tbody tr:hover{ background:var(--paper); }
   tbody tr:last-child td{ border-bottom:none; }
 
   /* Badges */
-  .badge{ display:inline-block; padding:3px 10px; border-radius:4px; font-family:var(--font-mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
-  .badge-user{ background:#E8F0FE; color:var(--navy-corp); }
-  .badge-request{ background:#FFF3E0; color:var(--amber); }
-  .badge-config{ background:#E8F5E9; color:#2E7D32; }
-  .badge-auth{ background:#FCE4EC; color:var(--crimson); }
+  .badge{ display:inline-block; padding:4px 10px; border-radius:6px; font-family:var(--font-mono); font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+  .badge-user{ background:#E7EEF6; color:var(--blue); }
+  .badge-request{ background:var(--warn-bg); color:var(--warn); }
+  .badge-config{ background:var(--ok-bg); color:var(--ok); }
+  .badge-auth{ background:var(--bad-bg); color:var(--bad); }
 
   /* Details JSON */
-  .detail-toggle{ font-size:12px; color:var(--navy-corp); cursor:pointer; text-decoration:underline; background:none; border:none; font-family:var(--font-body); }
-  .detail-block{ display:none; margin-top:6px; background:var(--ice-1); border-radius:6px; padding:10px 14px; font-family:var(--font-mono); font-size:11px; color:var(--slate); white-space:pre-wrap; word-break:break-all; max-width:400px; }
+  .detail-toggle{ font-family:var(--font-mono); font-size:11px; color:var(--brass); cursor:pointer; text-decoration:underline; background:none; border:none; text-transform:uppercase; letter-spacing:0.5px; }
+  .detail-block{ display:none; margin-top:8px; background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:10px 14px; font-family:var(--font-mono); font-size:11px; color:var(--slate); white-space:pre-wrap; word-break:break-all; max-width:400px; line-height:1.6; }
 
   .empty-state{ text-align:center; padding:60px 20px; color:var(--slate-light); }
   .empty-state svg{ width:48px; height:48px; margin-bottom:12px; opacity:0.4; }
   .empty-state p{ font-size:14px; }
-  .loading{ text-align:center; padding:40px; color:var(--slate-light); font-size:14px; }
+  .loading{ text-align:center; padding:40px; color:var(--slate-light); font-size:14px; font-family:var(--font-mono); }
 
   @media(max-width:768px){
+    .corp-bar-inner{ padding:0 16px; }
+    .corp-tag{ display:none; }
+    .ik-nav{ padding:0 16px; }
+    .main{ padding:20px 16px; }
+    .page-head{ padding:22px 16px 24px; }
+    .page-head h2{ font-size:28px; }
     .stat-row{ grid-template-columns:1fr; }
-    .filter-bar{ flex-direction:column; }
+    .filter-bar{ flex-direction:column; align-items:stretch; }
     .filter-group select, .filter-group input{ min-width:100%; }
+    .btn-filter{ margin-left:0 !important; }
     table{ font-size:12px; }
     thead th, tbody td{ padding:10px 8px; }
   }
@@ -84,19 +111,27 @@
 </head>
 <body>
 
+<div class="corp-bar">
+  <div class="corp-bar-inner">
+    <span class="corp-wordmark"><span class="info">Info</span><span class="krafts">Krafts</span></span>
+    <span class="corp-tag">Trust • Quality • Performance</span>
+  </div>
+</div>
+
 <nav class="ik-nav">
   <div class="ik-nav-inner">
-    <a href="index.html" class="ik-brand"><span class="ik-gold">IK</span>Aegis</a>
+    <a href="index.html" class="ik-brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
     <div class="ik-nav-links">
+      <a href="index.html" class="nav-link">Dashboard</a>
       <span class="nav-user" id="navUser"></span>
-      <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">SIGN OUT</button>
+      <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">Sign out</button>
     </div>
   </div>
 </nav>
 
 <div class="page-head">
   <div class="page-head-inner">
-    <a href="index.html">← Back to dashboard</a>
+    <a href="reports-hub.html" class="back">← Reports &amp; Monitoring</a>
     <h2>Audit Log</h2>
     <p>Complete trail of all system actions — user management, approval decisions, configuration changes.</p>
   </div>
@@ -290,7 +325,7 @@ function downloadCSV() {
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
-  a.download = 'IKAegis_AuditLog_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = 'IKKontrol_AuditLog_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
 }
