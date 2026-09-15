@@ -36,7 +36,7 @@ function requireLogin(req, res, next) {
 
 // List requests -- requester sees only their own, approver sees everything
 app.get('/api/requests', requireLogin, (req, res) => {
-  const list = readRequests();
+  const list = []; // legacy route neutralised (real requests live in DB) [patch-fix-readrequests]
   if (req.session.user.role === 'approver') return res.json(list.reverse());
   res.json(list.filter(r => r.requestedBy === req.session.user.username).reverse());
 });
@@ -1041,7 +1041,7 @@ app.get('/api/debug-permission-summary/:roleName', async (req, res) => {
 });
 
 // ── IKAegis Approval Workflow Routes ──
-app.assignSapRole = assignSapRoleInSAP; app.createSapUser = createSapUser; require('./routes/approval-routes')(app); require('./routes/user-create-requests')(app); app.getRoleTcodes = getRoleTcodesFromSAP; require('./routes/composite-routes')(app); /* IK-COMPOSITE */
+app.assignSapRole = assignSapRoleInSAP; app.createSapUser = createSapUser; require('./routes/approval-routes')(app); require('./routes/user-create-requests')(app); app.setUserLock = require('./user-lock').setUserLock; require('./routes/user-lock-requests')(app); /* IK-USERLOCK */ app.getRoleTcodes = getRoleTcodesFromSAP; require('./routes/composite-routes')(app); /* IK-COMPOSITE */
 app.use('/api/rfc', require('./routes/rfc-routes'));
 app.use('/api/ai', require('./routes/ai-routes'));
 app.use('/api/uar', require('./routes/uar-routes'));
@@ -1152,6 +1152,7 @@ app.post('/api/simulation/role', async (req, res) => {
   }
 });
 
+app.use(require('./routes/user-lock-routes'));
 app.listen(3000, () => console.log('Running on http://localhost:3000'));
 
 

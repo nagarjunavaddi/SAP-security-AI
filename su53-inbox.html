@@ -101,8 +101,25 @@
   .role-action{ background:var(--brass); color:var(--navy); border:none; border-radius:8px; padding:8px 15px; font-weight:600; font-size:12px; cursor:pointer; white-space:nowrap; text-decoration:none; display:inline-block; }
   .role-action:hover{ filter:brightness(1.08); }
   .role-action.disabled{ background:var(--paper-2); color:var(--slate-light); cursor:not-allowed; pointer-events:none; }
+  /* SEEMORE_CSS */
+  .seemore-wrap{ text-align:center; margin:14px 0 2px; }
+  .seemore{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.5px; color:var(--navy);
+    background:var(--card); border:1px solid var(--line); border-radius:9px; padding:10px 22px; cursor:pointer; }
+  .seemore:hover{ border-color:var(--brass); color:var(--brass); }
+  .seemore[disabled]{ opacity:0.6; cursor:default; }
   .no-roles{ font-size:13px; color:var(--slate); font-family:var(--font-mono); padding:6px 0; }
 
+  /* RESOLVE_CSS */
+  .resolve-bar{ display:flex; gap:10px; justify-content:flex-end; margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }
+  .rbtn{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.5px; padding:8px 16px; border-radius:8px; cursor:pointer; border:1px solid var(--line); background:var(--card); color:var(--slate); }
+  .rbtn.resolve{ border-color:var(--green); color:var(--green); }
+  .rbtn.resolve:hover{ background:var(--green-bg); }
+  .rbtn.dismiss:hover{ border-color:var(--red); color:var(--red); background:var(--red-bg); }
+  .rbtn[disabled]{ opacity:0.55; cursor:default; }
+  .view-toggle{ font-family:var(--font-mono); font-size:11px; color:var(--slate); background:none; border:1px solid var(--line); padding:7px 15px; border-radius:7px; cursor:pointer; margin-right:8px; }
+  .view-toggle:hover{ border-color:var(--brass); color:var(--brass); }
+  .view-toggle.active{ border-color:var(--brass); color:var(--brass); background:var(--paper-2); }
+  .resolved-note{ font-family:var(--font-mono); font-size:11px; color:var(--slate-light); margin-top:6px; }
   .empty{ background:var(--card); border:1px dashed var(--line); border-radius:var(--radius); padding:60px 30px; text-align:center; color:var(--slate-light); font-size:14px; }
   .login-notice{ background:var(--amber-bg); border:1px solid #EAD7A8; color:var(--amber); border-radius:var(--radius); padding:18px 22px; font-size:13.5px; }
   .login-notice a{ color:var(--blue); }
@@ -147,7 +164,11 @@
 
     <div class="toolbar" id="toolbar" style="display:none;">
       <span class="status" id="status"></span>
-      <button class="refresh" onclick="load()">Refresh</button>
+      <div>
+        <button class="view-toggle active" id="viewOpen" onclick="setView('open')">Open</button>
+        <button class="view-toggle" id="viewResolved" onclick="setView('resolved')">Resolved</button>
+        <button class="refresh" onclick="load()">Refresh</button>
+      </div><!-- RESOLVE_TOGGLE -->
     </div>
 
     <div id="content">
@@ -261,10 +282,28 @@
       cards = sugg.map(roleCard).join('');
     }
     const expl = it.explanation ? '<div class="expl">'+esc(it.explanation)+'</div>' : '';
+    /* SEEMORE_DETAIL */
+    const total = (typeof it.totalMatched==='number') ? it.totalMatched : sugg.length;
+    const pending = Array.isArray(it.pendingRoles) ? it.pendingRoles.length : 0;
+    const countLabel = pending>0 ? (sugg.length+' of '+total) : String(sugg.length);
+    const idx = ITEMS.indexOf(it);
+    const seemore = pending>0
+      ? '<div class="seemore-wrap"><button class="seemore" onclick="loadMore(\''+esc(it.id)+'\','+idx+',this)">See more ('+pending+')</button></div>'
+      : '';
+    /* RESOLVE_BAR */
+    const isResolved = it.status && it.status !== 'open';
+    const rbar = isResolved
+      ? '<div class="resolved-note">'+esc((it.status||'').toUpperCase())+(it.resolvedBy?(' by '+esc(it.resolvedBy)):'')+(it.resolvedAt?(' · '+fmtTime(it.resolvedAt)):'')+'</div>'
+      : '<div class="resolve-bar">'
+        +   '<button class="rbtn dismiss" onclick="resolveEvent(\''+esc(it.id)+'\',\'dismissed\','+ITEMS.indexOf(it)+',this)">Dismiss</button>'
+        +   '<button class="rbtn resolve" onclick="resolveEvent(\''+esc(it.id)+'\',\'resolved\','+ITEMS.indexOf(it)+',this)">Mark resolved</button>'
+        + '</div>';
     return '<div class="detail">'
       + expl
-      + '<div class="sec-label">Suggested roles ('+sugg.length+')</div>'
+      + '<div class="sec-label">Suggested roles ('+countLabel+')</div>'
       + cards
+      + seemore
+      + rbar
       + '</div>';
   }
 
@@ -311,10 +350,68 @@
     }
   }
 
+  /* SEEMORE_LOADMORE */
+  async function loadMore(id, idx, btn){
+    if(btn){ btn.disabled = true; btn.textContent = 'Scoring…'; }
+    try{
+      const r = await fetch('/api/su53/score-more', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ id: id })
+      });
+      if(!r.ok) throw new Error('score-more '+r.status);
+      const d = await r.json();
+      const it = ITEMS[idx];
+      if(it){
+        if(Array.isArray(d.suggestions)) it.suggestions = d.suggestions;
+        else if(Array.isArray(d.added))  it.suggestions = (it.suggestions||[]).concat(d.added);
+        // shrink local pending by however many we know remain
+        if(typeof d.remaining==='number'){
+          const have = Array.isArray(it.pendingRoles)?it.pendingRoles.length:0;
+          it.pendingRoles = new Array(Math.max(0, d.remaining)).fill('');
+        }
+      }
+      // re-render just this open detail row
+      const detailRow = document.querySelector('tr[data-detail="'+idx+'"]');
+      if(detailRow) detailRow.querySelector('td').innerHTML = detailHtml(ITEMS[idx]);
+    }catch(e){
+      if(btn){ btn.disabled = false; btn.textContent = 'Retry — '+ (e.message||'failed'); }
+    }
+  }
+
+  /* RESOLVE_JS */
+  let CURRENT_VIEW = 'open';
+  function setView(v){
+    CURRENT_VIEW = v;
+    document.getElementById('viewOpen').classList.toggle('active', v==='open');
+    document.getElementById('viewResolved').classList.toggle('active', v!=='open');
+    load();
+  }
+  async function resolveEvent(id, action, idx, btn){
+    if(btn){ btn.disabled = true; btn.textContent = (action==='resolved'?'Resolving…':'Dismissing…'); }
+    try{
+      const r = await fetch('/api/su53/resolve', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ id: id, action: action })
+      });
+      if(!r.ok) throw new Error('resolve '+r.status);
+      // remove from current (open) list and re-render
+      const row = document.querySelector('tr.item-row[data-i="'+idx+'"]');
+      const det = document.querySelector('tr[data-detail="'+idx+'"]');
+      if(row) row.remove();
+      if(det) det.remove();
+      ITEMS.splice(idx, 1);
+      renderStats();
+      if(!ITEMS.length){ render(); }
+    }catch(e){
+      if(btn){ btn.disabled = false; btn.textContent = 'Retry'; }
+    }
+  }
+
   async function load(){
     document.getElementById('content').innerHTML = '<div class="empty">Loading…</div>';
     try{
-      const r = await fetch('/api/su53/recent');
+      const statusParam = (CURRENT_VIEW==='open') ? 'open' : 'resolved';
+      const r = await fetch('/api/su53/recent?status='+encodeURIComponent(statusParam));
       if(r.status===401){
         document.getElementById('content').innerHTML =
           '<div class="login-notice">You are not signed in. Please <a href="/login.html">sign in</a> to view the SU53 inbox.</div>';

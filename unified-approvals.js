@@ -79,6 +79,7 @@
       '.ikq-type{font-family:var(--font-mono);font-size:10px;letter-spacing:.5px;padding:4px 10px;border-radius:20px;font-weight:600;display:inline-block;}',
       '.ikq-type.role{background:rgba(31,73,125,.1);color:var(--navy-corp);}',
       '.ikq-type.user_create{background:rgba(193,129,30,.12);color:var(--amber);}',
+      '.ikq-type.user_lock{background:rgba(37,99,168,.12);color:var(--blue,#2563A8);}',
       '.status-badge.sap_failed{background:rgba(195,52,56,.12);color:var(--crimson);}',
       '.status-badge.manager_approved{background:rgba(31,73,125,.1);color:var(--navy-corp);}',
       '.ikq-detail{padding:26px 28px;}',
@@ -157,6 +158,19 @@
     };
   }
 
+  function normaliseUlr(r) {
+    return {
+      key: 'ulr:' + r.id,
+      id: r.id,
+      type: 'user_lock',
+      typeLabel: 'User Lock',
+      status: r.status,
+      requestedBy: r.requestedBy || '\u2014',
+      submittedAt: r.createdAt,
+      raw: r
+    };
+  }
+
   function getJson(url) {
     return fetch(url)
       .then(function (res) {
@@ -172,11 +186,13 @@
   function loadAll() {
     return Promise.all([
       getJson('/api/approval-requests'),
-      getJson('/api/user-create-requests')
+      getJson('/api/user-create-requests'),
+      getJson('/api/user-lock-requests')
     ]).then(function (out) {
       var roleRows = (out[0] && out[0].requests) || [];
       var ucrRows = (out[1] && out[1].requests) || [];
-      ITEMS = roleRows.map(normaliseRole).concat(ucrRows.map(normaliseUcr));
+      var ulrRows = (out[2] && out[2].requests) || [];
+      ITEMS = roleRows.map(normaliseRole).concat(ucrRows.map(normaliseUcr)).concat(ulrRows.map(normaliseUlr));
       ITEMS.sort(function (a, b) {
         var ap = a.status === 'pending' || a.status === 'manager_approved';
         var bp = b.status === 'pending' || b.status === 'manager_approved';
@@ -196,7 +212,7 @@
 
   function canAct(item) {
     if (MY_ROLE === 'admin') return item.status === 'pending' || item.status === 'manager_approved';
-    if (item.type === 'user_create') {
+    if (item.type === 'user_create' || item.type === 'user_lock') {
       return item.status === 'pending' &&
         String(item.raw.approver || '').toUpperCase() === MY_USERNAME;
     }
@@ -226,7 +242,8 @@
     var counts = {
       all: ITEMS.length,
       role: ITEMS.filter(function (i) { return i.type === 'role'; }).length,
-      user_create: ITEMS.filter(function (i) { return i.type === 'user_create'; }).length
+      user_create: ITEMS.filter(function (i) { return i.type === 'user_create'; }).length,
+      user_lock: ITEMS.filter(function (i) { return i.type === 'user_lock'; }).length
     };
 
     function chip(key, label) {
@@ -249,7 +266,7 @@
 
     return '' +
       '<div class="section-header"><h2>All requests</h2><div class="section-line"></div></div>' +
-      '<div class="filter-bar">' + chip('all', 'All') + chip('role', 'Role') + chip('user_create', 'User creation') + '</div>' +
+      '<div class="filter-bar">' + chip('all', 'All') + chip('role', 'Role') + chip('user_create', 'User creation') + chip('user_lock', 'User lock') + '</div>' +
       '<div class="panel"><div class="table-scroll"><table class="data">' +
       '<thead><tr><th>Request #</th><th>Type</th><th>Status</th><th>Requested By</th><th>Submitted Date</th></tr></thead>' +
       '<tbody>' + body + '</tbody></table></div>' +
@@ -267,7 +284,21 @@
     var r = i.raw;
     var fields;
 
-    if (i.type === 'user_create') {
+    if (i.type === 'user_lock') {
+      fields =
+        field('SAP username', r.username) +
+        field('Action', r.actionType) +
+        field('Approver', r.approver) +
+        field('Requested by', r.requestedBy) +
+        field('Valid from', r.validFrom ? fmtDate(r.validFrom) : '\u2014') +
+        field('Valid to', r.validTo ? fmtDate(r.validTo) : '\u2014') +
+        field('Submitted', fmtDate(r.createdAt)) +
+        field('Last updated', fmtDate(r.updatedAt)) +
+        field('Status', statusLabel(r.status)) +
+        (r.justification ? field('Justification', r.justification, true) : '') +
+        (r.comments ? field('Comments', r.comments, true) : '') +
+        (r.sapResult ? field('SAP result', r.sapResult, true) : '');
+    } else if (i.type === 'user_create') {
       fields =
         field('SAP username', r.username) +
         field('Last name', r.lastName) +
@@ -302,7 +333,7 @@
         '<button class="btn-approve" id="ikqApprove">Approve</button>' +
         '<button class="btn-reject" id="ikqReject">Reject</button></div>';
     } else if (i.status === 'pending' || i.status === 'manager_approved') {
-      var waiting = i.type === 'user_create' ? r.approver
+      var waiting = (i.type === 'user_create' || i.type === 'user_lock') ? r.approver
         : (i.status === 'pending' ? r.approver : r.roleOwner);
       actions = '<div class="ikq-actions"><span class="ikq-note">Waiting on ' +
         esc(waiting || 'the assigned approver') + '</span></div>';
@@ -439,7 +470,8 @@
     btn.disabled = true;
     btn.textContent = 'Processing...';
 
-    fetch('/api/user-create-requests/' + encodeURIComponent(item.id) + '/action', {
+    var endpoint = item.type === 'user_lock' ? '/api/user-lock-requests/' : '/api/user-create-requests/';
+    fetch(endpoint + encodeURIComponent(item.id) + '/action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: action, comments: comments })

@@ -97,6 +97,41 @@ async function getODataEntitySet(entitySet, filter) {
   return { success: false, error: 'OData GET failed' };
 }
 
+// [tok-opt] Trim tool results before feeding them back to the AI (saves tokens)
+var TOKOPT_MAX_ROWS = 60;
+function slimResult(result) {
+  try {
+    if (!result || result.success !== true || !Array.isArray(result.data)) return result;
+    var rows = result.data;
+    var total = rows.length;
+
+    // 1) strip OData cruft keys from each object row
+    var cleaned = rows.map(function (row) {
+      if (row && typeof row === 'object' && !Array.isArray(row)) {
+        var copy = {};
+        for (var k in row) {
+          if (k === '__metadata' || k === 'uri' || k === 'type') continue;
+          copy[k] = row[k];
+        }
+        return copy;
+      }
+      return row;
+    });
+
+    // 2) truncate if very large, but keep the true count visible
+    if (total > TOKOPT_MAX_ROWS) {
+      return {
+        success: true,
+        data: cleaned.slice(0, TOKOPT_MAX_ROWS),
+        _note: 'Showing first ' + TOKOPT_MAX_ROWS + ' of ' + total + ' rows. Total count is ' + total + '.'
+      };
+    }
+    return { success: true, data: cleaned };
+  } catch (e) {
+    return result; // never break the loop on optimization failure
+  }
+}
+
 // Execute whatever the AI decided
 async function executeTool(call) {
   const { tool, params } = call;
@@ -104,12 +139,77 @@ async function executeTool(call) {
     return await readSapTable(params.tableName, params.fields, params.whereClause, params.maxRows);
   }
   if (tool === 'get_locked_users') {
-    return await getODataEntitySet('UserLockSet');
+    const res = await getODataEntitySet('UserLockSet');
+    if (res && res.success && Array.isArray(res.data)) {
+      const lockedOnly = res.data.filter(function (u) {
+        return u && typeof u.LockStatus === 'string' && u.LockStatus.toLowerCase() === 'locked';
+      });
+      return { success: true, data: lockedOnly };
+    }
+    return res;
   }
   if (tool === 'get_user_roles') {
     return await getODataEntitySet('UserRole', "Username eq '" + (params.username || '').toUpperCase() + "'");
   }
   return { success: false, error: 'Unknown tool: ' + tool };
+}
+
+// [gemini-fallback] Gemini fallback + unified callAI wrapper
+const GEMINI_KEY = process.env.GEMINI_API_KEY;
+
+function callGemini(messages) {
+  // Convert OpenAI-style messages -> Gemini "contents".
+  // System messages are prepended to the first user turn (Gemini has no system role here).
+  return new Promise((resolve, reject) => {
+    if (!GEMINI_KEY) { reject(new Error('GEMINI_API_KEY not set')); return; }
+
+    let systemText = '';
+    const contents = [];
+    for (const m of messages) {
+      if (m.role === 'system') { systemText += (m.content || '') + '\n'; continue; }
+      const role = (m.role === 'assistant') ? 'model' : 'user';
+      let text = m.content || '';
+      if (systemText && role === 'user') { text = systemText + '\n' + text; systemText = ''; }
+      contents.push({ role: role, parts: [{ text: text }] });
+    }
+    if (systemText) { contents.unshift({ role: 'user', parts: [{ text: systemText }] }); }
+
+    const payload = JSON.stringify({
+      contents: contents,
+      generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
+    });
+    const options = {
+      hostname: 'generativelanguage.googleapis.com', port: 443,
+      path: '/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_KEY,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+    };
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', c => body += c);
+      res.on('end', () => {
+        try {
+          const data = JSON.parse(body);
+          if (data.error) { reject(new Error(data.error.message || 'Gemini error')); return; }
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          resolve(text);
+        } catch (e) { reject(new Error('Gemini parse error')); }
+      });
+    });
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
+// Try Groq first; on ANY failure (expired key, rate limit, parse error) fall back to Gemini.
+async function callAI(messages) {
+  try {
+    return await callGroq(messages);
+  } catch (e) {
+    console.log('[gemini-fallback] Groq failed (' + e.message + '), falling back to Gemini...');
+    return await callGemini(messages);
+  }
 }
 
 // Groq API
@@ -118,7 +218,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 async function callGroq(messages, retries) {
   retries = retries || 0;
   return new Promise((resolve, reject) => {
-    const payload = JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: messages, temperature: 0.2, max_tokens: 2048 });
+    const payload = JSON.stringify({ model: (process.env.GROQ_MODEL || 'openai/gpt-oss-120b'), messages: messages, temperature: 0.2, max_tokens: 8192, reasoning_effort: 'low' });
     const options = {
       hostname: 'api.groq.com', port: 443, path: '/openai/v1/chat/completions', method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY, 'Content-Length': Buffer.byteLength(payload) }
@@ -165,6 +265,17 @@ You work in a LOOP: you make SAP queries, see results, and decide if you need mo
 
 YOUR ONLY TOOL: table_read
 params: { tableName, fields (comma-separated, UPPERCASE), whereClause (ABAP syntax), maxRows }
+
+DATA INTEGRITY — ABSOLUTE:
+- NEVER invent, guess, or fabricate usernames, roles, or any data. Placeholder answers like "USER1, USER2, USER3" or "replace with actual..." are STRICTLY FORBIDDEN.
+- You have NO knowledge of this system's data. The ONLY way to know anything is to call a tool and read the real result.
+- If you have not yet called a tool for the data being asked, you MUST make a tool_call first. Do NOT give a final_answer with data you did not get from a tool.
+- If a tool returns no rows, say exactly that (e.g. "No locked users found") — never fill in example data.
+
+LOCKED USERS — how to answer:
+- Preferred: {"action":"tool_call","calls":[{"tool":"get_locked_users","params":{}}]} — returns the currently locked users directly.
+- Alternative via table_read: USR02 with fields BNAME,UFLAG where UFLAG <> 0 (UFLAG 0 = not locked; any non-zero value = locked). Report the BNAME values returned.
+- Report ONLY the usernames the tool actually returns.
 
 CRITICAL RULES:
 - NEVER make more than 5 tool calls at once. If step 1 returns many roles, pick the TOP 5 most important ones for step 2.
@@ -248,7 +359,7 @@ router.post('/chat', async (req, res) => {
     for (let loop = 0; loop < MAX_LOOPS; loop++) {
       console.log('--- Agent Loop', loop + 1, '---');
 
-      const aiResponse = await callGroq(conversationMessages);
+      const aiResponse = await callAI(conversationMessages);
       console.log('AI:', aiResponse.substring(0, 300));
 
       // Parse AI response
@@ -272,7 +383,7 @@ router.post('/chat', async (req, res) => {
 
         for (const call of decision.calls) {
           try {
-            const result = await executeTool(call);
+            const result = slimResult(await executeTool(call));
             results.push({ tool: call.tool, params: call.params, result: result });
             allSapCalls.push({ tool: call.tool, params: call.params });
           } catch(err) {
@@ -300,7 +411,7 @@ router.post('/chat', async (req, res) => {
       content: 'You have reached the maximum number of queries. Please give a final_answer with whatever data you have collected so far.'
     });
 
-    const finalResponse = await callGroq(conversationMessages);
+    const finalResponse = await callAI(conversationMessages);
     let finalAnswer;
     try {
       const cleaned = finalResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();

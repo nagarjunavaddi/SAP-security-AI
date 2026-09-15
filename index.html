@@ -207,10 +207,10 @@
         <div class="kpi-num blue" id="kpiUar">&mdash;</div>
         <div class="kpi-label">Active UAR</div>
       </div>
-      <div class="kpi-card">
+      <a class="kpi-card" href="su53-inbox.html" style="text-decoration:none;color:inherit;" title="Open SU53 inbox">
         <div class="kpi-num red" id="kpiSu53">&mdash;</div>
         <div class="kpi-label">SU53 fails</div>
-      </div>
+      </a>
       <div class="kpi-card">
         <div class="kpi-num" id="kpiUsers">&mdash;</div>
         <div class="kpi-label">SAP users</div>
@@ -232,10 +232,10 @@
         <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0H5a2 2 0 0 1-2-2v-4m6 6h10a2 2 0 0 0 2-2v-4"/></svg></span>
         Simulate access
       </a>
-      <button class="qa-card" type="button" onclick="showToast('Lock/Unlock Request &mdash; coming soon')">
+      <a class="qa-card" href="user-lock-request.html" style="text-decoration:none;color:inherit;">
         <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
         Lock/Unlock Request
-      </button>
+      </a>
     </div>
 
     <!-- Security Query (inline AI) -->
@@ -328,6 +328,14 @@ fetch('/api/dashboard/summary').then(function(r){return r.json();}).then(functio
   set('kpiApprovals', d.pendingApprovals);
   set('kpiUar', d.activeUar);
   set('kpiSu53', d.su53Fails);
+  /* SU53_JUMP_PATCH */
+  if (d.su53Fails > 0) {
+    var _sj = document.getElementById('insightJump');
+    // don't override the approver's approvals link
+    if (_sj && _sj.getAttribute('href') !== 'approvals.html') {
+      _sj.setAttribute('href', 'su53-inbox.html');
+    }
+  }
   set('kpiUsers', d.sapUsers);
 
   var bits = [];

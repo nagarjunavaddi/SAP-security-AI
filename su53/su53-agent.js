@@ -86,7 +86,9 @@ async function findMatchingRoles(ctx) {
     if (f && wantField && f !== wantField) continue;
     if (valueMatches(ctx.value, String(r.LOW||'').toUpperCase())) roles.add(r.AGR_NAME);
   }
-  return Array.from(roles);
+  /* SAP_ROLE_FILTER: SAP-delivered roles (SAP_*) are standard/template roles,
+     not customer-assignable — never suggest them. */
+  return Array.from(roles).filter(function(rn){ return !/^SAP_/i.test(String(rn).trim()); });
 }
 function valueMatches(req, low) {
   if (!low) return false;
@@ -188,22 +190,62 @@ function explain(ctx, uc, ranked) {
   return msg;
 }
 
+/* PRERANK_LAZY_PATCH */
+// Cheap ordering with NO API calls. Puts same-module roles first, then Z*
+// custom roles, then stable name order. Used to decide which roles are worth
+// full (expensive) scoring first, so matching roles like Z_FI_POST are never
+// dropped by a blind cap before they are scored.
+const TOP_SCORE_COUNT = 40;   // auto-scored on first investigate()
+const MORE_BATCH      = 20;   // scored per "See more" click
+
+function cheapPreRank(names, uc) {
+  const userMod = uc && uc.module ? String(uc.module).toUpperCase() : null;
+  function tier(rn) {
+    const mod = roleModule(rn);                 // Z_FI_* -> FI, etc.
+    const sameMod = !!(userMod && mod && mod === userMod);
+    const isZ = /^Z/i.test(String(rn).trim());
+    if (sameMod) return 0;                       // your module first
+    if (isZ)     return 1;                        // other custom Z roles
+    return 2;                                     // everything else
+  }
+  return names.slice().sort(function(a, b){
+    const ta = tier(a), tb = tier(b);
+    if (ta !== tb) return ta - tb;
+    return String(a).localeCompare(String(b));
+  });
+}
+
+// Score a specific list of role names (used by investigate for the top batch
+// and by the /score-more route for later batches). Returns ranked scored[].
+async function scoreRoleNames(names, ctx, uc) {
+  const scored = await Promise.all(names.map(function(r){ return scoreRole(r, ctx, uc); }));
+  return rank(scored);
+}
+
 // --- orchestrator ---
 async function investigate(payload) {
   const ctx = parsePayload(payload);
   const uc  = await getUserContext(ctx.user);
   const matched = await findMatchingRoles(ctx);
-  const cap = matched.slice(0, 25); // bound self-calls
-  const scored = await Promise.all(cap.map(r => scoreRole(r, ctx, uc)));
-  const ranked = rank(scored);
+  // Cheap pre-rank ALL matches (no API calls), then fully score only the top
+  // batch. Remaining names are returned unscored to avoid wasted API calls
+  // until the user asks for them ("See more").
+  const ordered = cheapPreRank(matched, uc);
+  const topNames  = ordered.slice(0, TOP_SCORE_COUNT);
+  const pending   = ordered.slice(TOP_SCORE_COUNT);
+  const ranked = await scoreRoleNames(topNames, ctx, uc);
   return {
     context: ctx,
     userContext: { group: uc.group, module: uc.module, existingRoleCount: uc.existingRoles.length },
-    steps: { matchedRoles: matched, candidatesEvaluated: cap.length },
+    steps: { matchedRoles: matched, candidatesEvaluated: topNames.length, totalMatched: matched.length },
     suggestions: ranked,
+    pendingRoles: pending,          // unscored names, in pre-rank order
+    scoredCount: ranked.length,     // how many are scored so far
+    totalMatched: matched.length,   // grand total that matched
+    moreBatch: MORE_BATCH,          // client hint: how many per "See more"
     explanation: explain(ctx, uc, ranked),
     generatedAt: new Date().toISOString(),
   };
 }
 
-module.exports = { investigate, parsePayload, findMatchingRoles, valueMatches, roleModule, userModule };
+module.exports = { investigate, parsePayload, findMatchingRoles, valueMatches, roleModule, userModule, getUserContext, cheapPreRank, scoreRoleNames };
