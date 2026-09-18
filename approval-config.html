@@ -127,6 +127,7 @@
     .form-row{flex-direction:column;}.config-stats{grid-template-columns:1fr;}
   }
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
 </head>
 <body>
 <script>fetch("/api/my-profile").then(r=>r.json()).then(d=>{if(d.role!=="admin"){alert("Access denied. Admin only.");window.location="/index.html";}}).catch(()=>window.location="/login.html");</script>
@@ -142,8 +143,7 @@
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
     <div class="ik-nav-links">
-      <a href="index.html">Dashboard</a>
-      <button class="ik-signout" onclick="fetch('/api/logout',{method:'POST'}).then(()=>window.location='/login.html')">Sign Out</button>
+<button class="ik-signout" onclick="fetch('/api/logout',{method:'POST'}).then(()=>window.location='/login.html')">Sign Out</button>
     </div>
   </div>
 </nav>

@@ -106,6 +106,64 @@
     section{ padding:28px 16px; }
   }
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- IK-ROLE-GRID-assets -->
+  <style>
+    .role-grid{ width:100%; border-collapse:separate; border-spacing:0; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-bottom:10px; }
+    .role-grid thead th{ background:var(--navy); color:#fff; font-size:11px; padding:9px 12px; text-align:left; font-weight:500; }
+    .role-grid thead th.c-date{ width:150px; }
+    .role-grid thead th.c-del{ width:36px; }
+    .role-grid tbody td{ padding:0; border-bottom:1px solid var(--line); background:#fff; }
+    .role-grid tbody td.dcell{ border-left:1px solid var(--line); }
+    .role-grid tbody td input{ width:100%; border:none; background:transparent; padding:9px 12px; font-size:13px; color:var(--ink); outline:none; box-sizing:border-box; font-family:var(--font-body); }
+    .role-grid tbody td input[type=date]{ font-size:12px; padding:8px; }
+    .role-grid tbody td input:focus{ background:rgba(176,137,79,.08); }
+    .rg-del{ width:100%; background:none; border:none; border-left:1px solid var(--line); color:var(--ink-faint); cursor:pointer; font-size:15px; padding:9px; }
+    .rg-del:hover{ color:var(--red); }
+    .rg-toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .rg-btn{ font-size:12px; padding:6px 14px; border-radius:5px; cursor:pointer; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+    .rg-btn.rg-up{ background:#E8F0E8; border-color:#B8D4B8; color:#2E6B2E; }
+    .rg-btn.rg-clr{ background:#F8E7E7; border-color:#EFC9C9; color:var(--red); }
+    .rg-row-note{ font-size:12px; margin-top:6px; }
+  </style>
+  <script>
+    function rgToday(){ return new Date().toISOString().slice(0,10); }
+    function rgAddRow(role, from, to){
+      var tb=document.getElementById('roleGridBody'); if(!tb) return;
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td><input type="text" class="rg-role" placeholder="e.g. Z_AP_ACCOUNTANT" value="'+(role||'')+'"></td>'+
+        '<td class="dcell"><input type="date" class="rg-from" value="'+(from||rgToday())+'"></td>'+
+        '<td class="dcell"><input type="date" class="rg-to" value="'+(to||'')+'"></td>'+
+        '<td><button type="button" class="rg-del" title="Remove" onclick="rgRemove(this)">&times;</button></td>';
+      tb.appendChild(tr);
+      var ri=tr.querySelector('.rg-role');
+      ri.addEventListener('input',function(){ var rows=tb.querySelectorAll('tr'); if(tr===rows[rows.length-1] && this.value.trim()) rgAddRow(); });
+      ri.addEventListener('paste',function(e){ var p=(e.clipboardData||window.clipboardData).getData('text');
+        if(p.indexOf('\n')!==-1||p.indexOf('\r')!==-1){ e.preventDefault(); var L=p.split(/[\r\n]+/).map(function(s){return s.trim();}).filter(Boolean);
+          if(L.length){ this.value=L[0]; for(var i=1;i<L.length;i++) rgAddRow(L[i]); } } });
+      return tr;
+    }
+    function rgRemove(b){ var tb=document.getElementById('roleGridBody'); if(tb.querySelectorAll('tr').length<=1) return; b.closest('tr').remove(); }
+    function rgClear(n){ document.getElementById('roleGridBody').innerHTML=''; for(var i=0;i<(n||5);i++) rgAddRow(); }
+    function rgGetValues(){ var out=[]; document.querySelectorAll('#roleGridBody tr').forEach(function(tr){
+      var role=tr.querySelector('.rg-role').value.trim().toUpperCase(), from=tr.querySelector('.rg-from').value, to=tr.querySelector('.rg-to').value;
+      if(role) out.push({role:role,validFrom:from,validTo:to}); }); return out; }
+    var RG_SKIP=['role','role name','rolename','agr','agr name'];
+    function rgUpload(fi){ var f=fi.files[0]; if(!f) return; var rd=new FileReader();
+      rd.onload=function(e){ try{ var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+        var data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}); var vals=[];
+        data.forEach(function(row){ if(Array.isArray(row)){ for(var j=0;j<row.length;j++){ var v=String(row[j]||'').trim();
+          if(v && RG_SKIP.indexOf(v.toLowerCase())===-1){ vals.push(v); break; } } } });
+        if(!vals.length){ alert('No valid role names found.'); fi.value=''; return; }
+        document.getElementById('roleGridBody').innerHTML=''; vals.forEach(function(v){ rgAddRow(v); }); rgAddRow();
+      }catch(err){ alert('Error: '+err.message); } fi.value=''; };
+      rd.readAsArrayBuffer(f); }
+    function rgPaste(){ navigator.clipboard.readText().then(function(t){ var L=t.split(/[\r\n,]+/).map(function(s){return s.trim();}).filter(Boolean);
+      if(!L.length){ alert('Clipboard empty.'); return; } document.getElementById('roleGridBody').innerHTML='';
+      L.forEach(function(v){ rgAddRow(v); }); rgAddRow(); }).catch(function(){ alert('Use Ctrl+V in a cell instead.'); }); }
+    document.addEventListener('DOMContentLoaded', function(){ if(document.getElementById('roleGridBody')) rgClear(); });
+  </script>
 </head>
 <body>
 
@@ -120,8 +178,7 @@
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
     <div class="ik-nav-links">
-      <a href="index.html">Dashboard</a>
-      <span class="nav-user" id="navUser"></span>
+<span class="nav-user" id="navUser"></span>
       <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">Sign out</button>
     </div>
   </div>
@@ -129,7 +186,7 @@
 
 <div class="page-head">
   <div>
-    <a href="index.html" class="back-link">← Back to dashboard</a>
+    <a class="back-link" href="index.html">&larr; Back to dashboard</a>
     <h2>New Access Request</h2>
     <p>Submit a role-assignment request for approval before it reaches SAP.</p>
   </div>
@@ -147,10 +204,26 @@
         <label for="sapUsername">SAP username</label>
         <input type="text" id="sapUsername" required placeholder="">
       </div>
+      <!-- IK-ROLE-GRID: multi-role grid with per-role dates -->
       <div class="field">
-        <label for="roleName">Role / AGR name</label>
-        <input type="text" id="roleName" required placeholder="">
-      </div>
+        <label>Roles</label>
+        <table class="role-grid" id="roleGrid">
+          <thead><tr>
+            <th class="c-role">Role name</th>
+            <th class="c-date">Valid from</th>
+            <th class="c-date">Valid to</th>
+            <th class="c-del"></th>
+          </tr></thead>
+          <tbody id="roleGridBody"></tbody>
+        </table>
+        <div class="rg-toolbar">
+          <button type="button" class="rg-btn" onclick="rgAddRow()">+ Add row</button>
+          <button type="button" class="rg-btn rg-up" onclick="document.getElementById('rgFile').click()">Upload Excel</button>
+          <button type="button" class="rg-btn" onclick="rgPaste()">Paste</button>
+          <button type="button" class="rg-btn rg-clr" onclick="rgClear()">Clear</button>
+          <input type="file" id="rgFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="rgUpload(this)">
+        </div>
+</div>
       <div class="field">
         <label for="reason">Business reason</label>
         <textarea id="reason" rows="3" placeholder="Why does this user need this role?"></textarea>
@@ -216,43 +289,49 @@ function loadRequests(){
     .catch(() => {});
 }
 
-document.getElementById('reqForm').addEventListener('submit', function(e){
+document.getElementById('reqForm').addEventListener('submit', function(e){ /* IK-ROLE-GRID-submit */
   e.preventDefault();
-  const btn = document.getElementById('submitBtn');
-  const note = document.getElementById('reqNote');
+  var btn=document.getElementById('submitBtn'), note=document.getElementById('reqNote');
   note.classList.remove('show','error','success');
-  btn.disabled = true;  const payload = {
-    sapUsername: document.getElementById('sapUsername').value.trim(),
-    roleName: document.getElementById('roleName').value.trim(),
-    reason: document.getElementById('reason').value.trim()
-  };
+  var sapUsername=document.getElementById('sapUsername').value.trim();
+  var reason=document.getElementById('reason').value.trim();
+  var roles=rgGetValues();
 
-  if(payload.reason.length < 10){btn.disabled=false;note.classList.add('show','error');note.textContent='Business Reason must be at least 10 characters.';return;}
+  if(!sapUsername){ note.classList.add('show','error'); note.textContent='SAP username is required.'; return; }
+  if(!roles.length){ note.classList.add('show','error'); note.textContent='Add at least one role.'; return; }
+  if(reason.length<10){ note.classList.add('show','error'); note.textContent='Business reason must be at least 10 characters.'; return; }
+  var missing=roles.filter(function(r){ return !r.validFrom || !r.validTo; });
+  if(missing.length){ note.classList.add('show','error'); note.textContent='Valid-from and valid-to are required for every role ('+missing.map(function(m){return m.role;}).join(', ')+').'; return; }
 
-  fetch('/api/sap-user-check/'+encodeURIComponent(payload.sapUsername)).then(function(r){return r.json();}).then(function(chk){if(!chk.exists){btn.disabled=false;note.classList.add('show','error');note.textContent='SAP User '+payload.sapUsername+' not found in SAP system.';return;}fetch('/api/sap-role-check-v2/'+encodeURIComponent(payload.roleName))/* IK-COMPOSITE-CHK */.then(function(r2){return r2.json();}).then(function(rchk){if(!rchk.exists){btn.disabled=false;note.classList.add('show','error');note.textContent='Role '+payload.roleName+' not found in SAP system.';return;}fetch('/api/approval-requests',{
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-  })
-    .then(res => res.json().then(data => ({ ok: res.ok, data })))
-    .then(({ ok, data }) => {
-      btn.disabled = false;
-      note.classList.add('show');
-      if(!ok){
-        note.classList.add('error');
-        note.textContent = data.error || 'Request failed.';
-        return;
-      }
-      note.classList.add('success');
-      note.textContent = 'Request submitted — awaiting approval.';
-      document.getElementById('reqForm').reset();
-      loadRequests();
-    })
-    .catch(err => {
-      btn.disabled = false;
-      note.classList.add('show','error');
-      note.textContent = 'Not connected — /api/approval-requests unreachable. ' + err.message;
-    });
-  }).catch(function(err2){btn.disabled=false;note.classList.add('show','error');note.textContent='Role check failed: '+err2.message;});
-  }).catch(function(e){btn.disabled=false;note.classList.add('show','error');note.textContent='SAP check failed: '+e.message;});
+  btn.disabled=true; note.classList.add('show'); note.classList.remove('error','success');
+  note.textContent='Checking SAP user…';
+
+  fetch('/api/sap-user-check/'+encodeURIComponent(sapUsername)).then(function(r){return r.json();}).then(function(chk){
+    if(!chk.exists){ btn.disabled=false; note.classList.add('error'); note.textContent='SAP User '+sapUsername+' not found in SAP system.'; return; }
+
+    var results=[]; var idx=0;
+    function next(){
+      if(idx>=roles.length){ finish(); return; }
+      var r=roles[idx]; note.textContent='Submitting '+(idx+1)+' of '+roles.length+' — '+r.role+'…';
+      fetch('/api/sap-role-check-v2/'+encodeURIComponent(r.role)).then(function(x){return x.json();}).then(function(rchk){
+        if(!rchk.exists){ results.push({role:r.role, ok:false, msg:'not found in SAP'}); idx++; next(); return; }
+        fetch('/api/approval-requests',{ method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ sapUsername:sapUsername, roleName:r.role, reason:reason, validFrom:r.validFrom, validTo:r.validTo }) })
+          .then(function(res){ return res.json().then(function(data){ return {ok:res.ok,data:data}; }); })
+          .then(function(o){ results.push({role:r.role, ok:o.ok && !(o.data&&o.data.error), msg:(o.data&&(o.data.error||''))||'submitted'}); idx++; next(); })
+          .catch(function(err){ results.push({role:r.role, ok:false, msg:err.message}); idx++; next(); });
+      }).catch(function(err){ results.push({role:r.role, ok:false, msg:'role check failed'}); idx++; next(); });
+    }
+    function finish(){
+      btn.disabled=false;
+      var okc=results.filter(function(x){return x.ok;}).length, bad=results.filter(function(x){return !x.ok;});
+      note.classList.remove('error','success');
+      if(bad.length===0){ note.classList.add('success'); note.textContent=okc+' request(s) submitted — awaiting approval.'; rgClear(); document.getElementById('reason').value=''; }
+      else { note.classList.add(okc?'success':'error'); note.textContent=okc+' submitted, '+bad.length+' failed: '+bad.map(function(b){return b.role+' ('+b.msg+')';}).join('; '); }
+      if(typeof loadRequests==='function') loadRequests();
+    }
+    next();
+  }).catch(function(e){ btn.disabled=false; note.classList.add('error'); note.textContent='SAP check failed: '+e.message; });
 });
 fetch('/api/my-profile').then(r=>r.json()).then(u=>{var n=document.getElementById('navUser');if(n)n.textContent=u.displayName||u.username;}).catch(()=>{});
 </script>

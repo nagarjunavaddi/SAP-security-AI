@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IK° Kontrol — User Lock / Unlock Request</title>
+<title>IK&deg; Kontrol &mdash; User Lock / Unlock Request</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -100,22 +100,22 @@
     .field-row{ flex-direction:column; gap:0; }
   }
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
 </head>
 <body>
 
 <div class="corp-bar">
   <div class="corp-bar-inner">
     <span class="corp-wordmark"><span class="info">Info</span><span class="krafts">Krafts</span></span>
-    <span class="corp-tag">Trust • Quality • Performance</span>
+    <span class="corp-tag">Trust ï¿½ Quality ï¿½ Performance</span>
   </div>
 </div>
 
 <nav class="ik-nav">
   <div class="ik-nav-inner">
-    <a href="index.html" class="ik-brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
+    <a href="index.html" class="ik-brand">IK<span class="deg">&deg;</span><span class="name">Kontrol</span></a>
     <div class="ik-nav-links">
-      <a href="index.html">Dashboard</a>
-      <span class="nav-user" id="navUser"></span>
+<span class="nav-user" id="navUser"></span>
       <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">Sign out</button>
     </div>
   </div>
@@ -123,12 +123,12 @@
 
 <div class="page-head">
   <div>
-    <a href="index.html" class="back-link">? Back to dashboard</a>
+    <a class="back-link" href="index.html">&larr; Back to dashboard</a>
     <h2>User Lock / Unlock</h2>
     <p>Request to lock or unlock a SAP user. Submitted for manager approval before it reaches SAP.</p>
   </div>
   <div class="who">
-    <span id="whoName">—</span>
+    <span id="whoName">&mdash;</span>
     <button onclick="logout()">Sign out</button>
   </div>
 </div>
@@ -140,7 +140,7 @@
       <div class="field">
         <label for="actionType">Action</label>
         <select id="actionType" required>
-          <option value="">— Select —</option>
+          <option value="">&mdash; Select &mdash;</option>
           <option value="LOCK">Lock user</option>
           <option value="UNLOCK">Unlock user</option>
         </select>
@@ -245,14 +245,14 @@ document.getElementById('lockForm').addEventListener('submit', function(e){
       note.classList.add('show');
       if(!ok){ note.classList.add('error'); note.textContent = data.error || 'Request failed.'; return; }
       note.classList.add('success');
-      note.textContent = data.message || 'Request submitted — awaiting approval.';
+      note.textContent = data.message || 'Request submitted &mdash; awaiting approval.';
       document.getElementById('lockForm').reset();
       loadRequests();
     })
     .catch(err => {
       btn.disabled = false;
       note.classList.add('show','error');
-      note.textContent = 'Not connected — /api/user-lock-requests unreachable. ' + err.message;
+      note.textContent = 'Not connected &mdash; /api/user-lock-requests unreachable. ' + err.message;
     });
 });
 

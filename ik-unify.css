@@ -1,0 +1,164 @@
+/* ============================================================
+   ik-unify.css  —  IK° Kontrol global look unifier  (v2)
+   ------------------------------------------------------------
+   TWO GOALS, tool-wide:
+   1. FONT: nowhere should the shouty uppercase + wide-tracked
+      mono LABEL look appear. Everything reads like the home-page
+      "Needs attention" heading — Inter (body font), proper case,
+      minimal letter-spacing.
+   2. BACK-LINK + NAVY BAND: every page matches SOD.html — light
+      page-head, lower-case back-link, navy only on the nav bar,
+      same page-head size everywhere.
+
+   INTENTIONALLY LEFT UPPERCASE: the corp bar branding
+   (.corp-tag / .corp-values span / .corp-name). Deliberate wordmark.
+
+   Additive override, linked LAST in each <head>. Remove <link> to revert.
+   ============================================================ */
+
+/* ---- 1. FONT: neutralise every mono-uppercase LABEL ---- */
+.ik-nav-links a,
+.nav-link,
+.signout-btn,
+.ik-signout,
+.nav-signout,
+.back-link,
+.page-head .back-link,
+.page-head-inner a.back,
+a.back,
+.eyebrow,
+.sec-label,
+.rk-sec-label,
+.pw-title,
+.input-label,
+.grid-label,
+.toggle-label,
+.field label,
+.form-field label,
+.filter-group label,
+.modal-body label,
+.stat .l,
+.stat-card .stat-label,
+.config-stat .l,
+.summary-card .lbl,
+.summary-card .label,
+thead th,
+table th,
+.data-table thead th,
+table.data thead th,
+.dtable th,
+.spreadsheet-grid thead th,
+.preview-table th,
+table.preview-table th,
+section thead th,
+section table th,
+.pill,
+.badge,
+.status-badge,
+.role-badge,
+.role-tag,
+.risktype-badge,
+.btn,
+.rbtn,
+.go-btn,
+.filter-btn,
+.btn-filter,
+.btn-approve,
+.btn-reject,
+.modal-cancel,
+.modal-confirm,
+.ikmodal-btn,
+.open-link,
+.link-btn,
+.config-tab,
+.detail-toggle,
+.seemore,
+.who button,
+.toggle-group button,
+.or-divider,
+.field .hint {
+  text-transform: none !important;
+  letter-spacing: 0.2px !important;
+  font-family: var(--font-body), 'Inter', sans-serif !important;
+}
+
+/* keep labels/headers a touch heavier so they still read as labels */
+.stat .l,
+.stat-card .stat-label,
+.config-stat .l,
+.summary-card .lbl,
+.summary-card .label,
+thead th,
+table th,
+.data-table thead th,
+table.data thead th,
+.dtable th,
+.spreadsheet-grid thead th,
+.preview-table th,
+table.preview-table th,
+.field label,
+.form-field label,
+.filter-group label,
+.modal-body label,
+.pw-title,
+.input-label,
+.grid-label,
+.sec-label,
+.rk-sec-label {
+  font-weight: 600 !important;
+}
+
+/* ---- exception: corp bar branding stays as designed ---- */
+.corp-tag,
+.corp-values span,
+.corp-name {
+  text-transform: uppercase !important;
+  font-family: var(--font-mono), monospace !important;
+}
+
+/* ---- 2. BACK-LINK + PAGE-HEAD: match SOD.html exactly ---- */
+.page-head {
+  background: transparent !important;
+  border-bottom: none !important;
+  color: var(--ink) !important;
+  padding: 32px 28px 8px !important;
+}
+
+.back-link,
+.page-head .back-link,
+.page-head-inner a.back,
+a.back {
+  text-transform: none !important;
+  letter-spacing: 0.2px !important;
+  font-size: 12px !important;
+  color: var(--brass) !important;
+  margin-bottom: 16px !important;
+  text-decoration: none !important;
+}
+.back-link:hover,
+.page-head .back-link:hover,
+.page-head-inner a.back:hover,
+a.back:hover {
+  color: var(--navy) !important;
+  text-decoration: none !important;
+}
+
+.page-head h2 {
+  font-size: 32px !important;
+  letter-spacing: 0.2px !important;
+}
+
+.ik-nav-links a {
+  font-size: 12px !important;
+}
+
+/* ---- nav user name: same brass colour on every page ---- */
+.nav-user,
+#navUser {
+  color: var(--brass) !important;
+}
+
+/* ---- 3. hide duplicate user/sign-out block inside page-head ---- */
+.page-head .who {
+  display: none !important;
+}

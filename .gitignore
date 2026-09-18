@@ -19,3 +19,7 @@ probe-metadata.js
 *.dashroute-bak
 *.backup-*
 *-bak
+patch-*.js
+*.bak-*
+index-old-backup.html
+index-v2.html

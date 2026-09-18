@@ -158,6 +158,7 @@
   }
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
 </head>
 <body>
 
@@ -172,8 +173,7 @@
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
     <div class="ik-nav-links">
-      <a href="index.html">Dashboard</a>
-      <span class="nav-user" id="navUser"></span>
+<span class="nav-user" id="navUser"></span>
       <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">Sign Out</button>
     </div>
   </div>
@@ -181,7 +181,7 @@
 
 <div class="page-head">
   <div class="page-head-inner">
-    <a class="back-link" href="index.html">← Back to dashboard</a>
+    <a class="back-link" href="index.html">&larr; Back to dashboard</a>
     <h2>User Creation</h2>
     <p>Create a new SAP user account, one at a time or in bulk.</p>
   </div>

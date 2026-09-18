@@ -6,383 +6,425 @@
 <title>Dashboard — IK° Kontrol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;450;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FFFFFF;
-    --tint:#F5F7FA;
-    --tint-2:#EDF2F8;
-    --ink:#12181F;
-    --ink-soft:#5A6A85;
-    --ink-faint:#8A93A0;
-    --line:#DCE5F0;
-    --navy:#0C2438;
-    --navy-2:#123252;
-    --blue:#1F497D;
-    --brass:#B0894F;
-    --red:#C33438;
-    --amber:#C1811E;
-    --green:#00B050;
-    --font-display:'Fraunces',serif;
-    --font-body:'Inter',sans-serif;
-    --font-mono:'IBM Plex Mono',monospace;
-    --shadow-sm:0 1px 3px rgba(12,36,56,0.06);
-    --shadow-md:0 4px 16px rgba(12,36,56,0.08);
-    --radius:10px;
+    --navy:#0C2438; --navy-2:#14344F; --navy-3:#1D4368;
+    --ink:#1B2A38; --slate:#5E7186; --slate-light:#8A99A8;
+    --line:#E4E9EC; --line-2:#EDF1F3;
+    --paper:#F5F7F9; --paper-2:#F1F4F6; --card:#FFFFFF;
+    --brass:#B0894F; --brass-soft:#F4EDE1; --brass-line:#E7D8BE;
+    --blue:#2563A8;
+    --green:#1E7A46; --green-bg:#E4F3EA;
+    --red:#B23A3A; --red-bg:#F8E7E7; --red-line:#EFC9C9;
+    --amber:#9A6B1E; --amber-bg:#FBF1DF; --amber-line:#EAD7A8;
+    --font-display:'Fraunces',serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    --radius:16px; --radius-sm:11px;
+    --shadow:0 1px 2px rgba(12,36,56,0.04), 0 6px 20px rgba(12,36,56,0.05);
+    --shadow-lg:0 2px 4px rgba(12,36,56,0.05), 0 14px 40px rgba(12,36,56,0.09);
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{ background:var(--tint); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--paper); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; line-height:1.5; }
   ::selection{ background:var(--navy); color:#fff; }
   a{ text-decoration:none; color:inherit; }
 
-  /* ====== Corp bar ====== */
-  .corp-bar{ background:#081A2A; height:32px; display:flex; align-items:center; padding:0 28px; }
-  .corp-bar-inner{ max-width:1180px; width:100%; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
-  .corp-name{ font-family:var(--font-mono); font-size:11px; letter-spacing:1px; color:#8FA3C4; text-transform:uppercase; }
-  .corp-tag{ font-family:var(--font-mono); font-size:10px; letter-spacing:2px; color:#5C7392; text-transform:uppercase; }
+  .corp-bar{ background:#fff; border-bottom:1px solid var(--line); padding:0 40px; }
+  .corp-inner{ max-width:1200px; margin:0 auto; height:46px; display:flex; align-items:center; justify-content:space-between; }
+  .logo-fallback{ font-weight:700; font-size:15px; color:var(--navy); letter-spacing:-0.2px; }
+  .logo-fallback .k{ color:var(--blue); }
+  .corp-values{ display:flex; align-items:center; gap:10px; }
+  .corp-values span{ font-weight:600; font-size:11px; letter-spacing:0.3px; color:var(--brass); }
+  .corp-values .cv-dot{ width:3px; height:3px; border-radius:50%; background:var(--brass-line); }
 
-  /* ====== Nav ====== */
-  .ik-nav{ background:var(--navy); padding:0 28px; height:52px; display:flex; align-items:center; }
-  .ik-nav-inner{ max-width:1180px; width:100%; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
-  .ik-brand{ font-family:var(--font-display); font-weight:700; font-size:22px; color:#fff; letter-spacing:0.2px; }
-  .ik-gold{ color:var(--brass); }
-  .ik-nav-links{ display:flex; align-items:center; gap:18px; }
-  .nav-user{ font-family:var(--font-mono); font-size:12px; color:#B9C2D6; }
-  .signout-btn{ font-family:var(--font-mono); font-size:11px; color:#8FA3C4; background:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .15s; }
-  .signout-btn:hover{ border-color:var(--brass); color:var(--brass); }
+  .nav{ background:var(--navy); padding:0 40px; position:sticky; top:0; z-index:100; }
+  .nav-inner{ max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:64px; }
+  .brand{ font-family:var(--font-display); font-weight:500; font-size:22px; color:#fff; letter-spacing:0.3px; display:flex; align-items:baseline; gap:1px; }
+  .brand .deg{ color:var(--brass); font-size:16px; position:relative; top:-3px; margin:0 1px; }
+  .brand .name{ font-weight:400; letter-spacing:0.6px; }
+  .nav-right{ display:flex; align-items:center; gap:16px; }
+  .nav-user{ font-size:13px; font-weight:500; color:#C6D3E0; display:flex; align-items:center; gap:9px; }
+  .nav-avatar{ width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--brass),#96703a); color:#fff; font-weight:600; font-size:12px; display:flex; align-items:center; justify-content:center; text-transform:uppercase; }
+  .nav-signout{ font-size:12px; font-weight:500; color:#C6D3E0; background:none; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:8px; cursor:pointer; transition:.15s; }
+  .nav-signout:hover{ border-color:var(--brass); color:var(--brass); }
 
-  /* ====== Layout ====== */
-  section{ padding:32px 28px 60px; }
-  .section-inner{ max-width:1180px; margin:0 auto; }
+  .sec-h{ display:flex; align-items:baseline; justify-content:space-between; margin:0 0 14px; }
+  .sec-h h2{ font-weight:600; font-size:14px; letter-spacing:0.2px; color:var(--navy); }
+  .sec-h .sec-link{ font-size:13px; font-weight:500; color:var(--brass); }
+  .sec-h .sec-link:hover{ text-decoration:underline; }
+  .block{ margin-bottom:28px; }
 
-  /* ====== Welcome ====== */
-  .welcome{ margin-bottom:20px; }
-  .welcome h2{ font-family:var(--font-display); font-weight:700; font-size:28px; margin:0 0 4px; color:var(--ink); letter-spacing:0.2px; }
-  .welcome .sub{ font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); }
+  .wrap{ max-width:1200px; margin:0 auto; padding:30px 40px 80px; }
 
-  /* ====== Smart insight bar ====== */
-  .insight-bar{
-    display:flex; align-items:center; gap:12px;
-    background:var(--navy); color:#fff; border-radius:var(--radius);
-    padding:14px 20px; margin-bottom:22px;
-  }
-  .insight-bar .ib-icon{ font-size:18px; color:var(--brass); flex-shrink:0; }
-  .insight-bar .ib-text{ font-size:13.5px; line-height:1.5; }
-  .insight-bar .ib-text b{ font-weight:600; color:#fff; }
-  .insight-bar .ib-jump{ margin-left:auto; font-family:var(--font-mono); font-size:12px; color:#B9C2D6; white-space:nowrap; }
-  .insight-bar .ib-jump:hover{ color:var(--brass); }
+  /* POSTURE */
+  .posture{ background:linear-gradient(120deg,var(--navy) 0%,var(--navy-2) 62%,var(--navy-3) 130%);
+    border-radius:var(--radius); padding:30px 34px; color:#fff; position:relative; overflow:hidden;
+    box-shadow:var(--shadow-lg); margin-bottom:24px; }
+  .posture::after{ content:""; position:absolute; right:-70px; top:-70px; width:300px; height:300px;
+    background:radial-gradient(circle,rgba(176,137,79,0.22),transparent 65%); }
+  .posture-inner{ display:flex; align-items:center; gap:38px; position:relative; z-index:1; flex-wrap:wrap; }
+  .posture-main{ display:flex; align-items:center; gap:22px; }
+  .ring-wrap{ display:flex; align-items:center; gap:22px; }
+  .ring{ position:relative; width:132px; height:132px; flex-shrink:0; }
+  .ring svg{ transform:rotate(-90deg); }
+  .ring .track{ fill:none; stroke:rgba(255,255,255,0.14); stroke-width:11; }
+  .ring .prog{ fill:none; stroke:var(--brass); stroke-width:11; stroke-linecap:round; stroke-dasharray:339.3; stroke-dashoffset:339.3; transition:stroke-dashoffset 1s ease; }
+  .ring-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring-center .val{ font-family:var(--font-display); font-weight:600; font-size:38px; line-height:1; }
+  .ring-center .of{ font-size:11px; color:rgba(255,255,255,0.55); margin-top:3px; font-weight:500; }
+  .posture-title .ey{ font-size:12px; font-weight:600; letter-spacing:0.3px; color:var(--brass); margin-bottom:7px; }
+  .posture-title h1{ font-family:var(--font-display); font-weight:400; font-size:30px; line-height:1.12; letter-spacing:-0.4px; }
+  .posture-title .band{ display:inline-flex; align-items:center; gap:7px; margin-top:11px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.16); padding:5px 12px; border-radius:20px; font-size:12px; font-weight:500; }
+  .posture-title .band .d{ width:7px; height:7px; border-radius:50%; background:var(--amber); }
+  .posture-div{ width:1px; align-self:stretch; background:rgba(255,255,255,0.12); }
+  .p-metrics{ display:grid; grid-template-columns:repeat(2,auto); gap:22px 40px; margin-left:auto; }
+  @media(max-width:820px){ .p-metrics{ margin-left:0; grid-template-columns:repeat(2,1fr); width:100%; } }
+  .p-metric .n{ font-family:var(--font-display); font-weight:500; font-size:26px; line-height:1; }
+  .p-metric .n.red{ color:#FF9A9A; } .p-metric .n.amber{ color:#F2C57C; } .p-metric .n.good{ color:#9FE0B8; }
+  .p-metric .l{ font-size:12px; color:rgba(255,255,255,0.6); margin-top:7px; font-weight:500; }
+  .p-metric .l b{ color:rgba(255,255,255,0.85); font-weight:600; }
 
-  /* ====== KPI cards ====== */
-  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:26px; }
-  .kpi-card{
-    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
-    padding:20px 22px; box-shadow:var(--shadow-sm);
-  }
-  .kpi-card .kpi-num{ font-family:var(--font-display); font-weight:700; font-size:32px; line-height:1; color:var(--navy); }
-  .kpi-card .kpi-num.red{ color:var(--red); }
-  .kpi-card .kpi-num.amber{ color:var(--amber); }
-  .kpi-card .kpi-num.blue{ color:var(--blue); }
-  .kpi-card .kpi-label{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:var(--ink-soft); margin-top:8px; }
+  /* QUICK ACTIONS */
+  .qa-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  @media(max-width:820px){ .qa-row{ grid-template-columns:repeat(2,1fr); } }
+  .qa-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:16px 18px; display:flex; align-items:center; gap:13px; cursor:pointer; transition:.15s; box-shadow:var(--shadow); }
+  .qa-card:hover{ border-color:var(--brass-line); transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+  .qa-ic{ width:40px; height:40px; border-radius:10px; background:var(--brass-soft); color:var(--brass);
+    border:1px solid var(--brass-line); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:.15s; }
+  .qa-card:hover .qa-ic{ background:var(--brass); color:#fff; border-color:var(--brass); }
+  .qa-t{ font-size:13.5px; font-weight:600; color:var(--ink); }
 
-  /* ====== Section heading ====== */
-  .block-label{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--ink-soft); margin:0 0 12px; }
+  /* NEEDS ATTENTION */
+  .panel{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+  .worklist{ padding:12px 22px; }
+  .wl-item{ display:flex; align-items:center; gap:15px; padding:15px 12px; border-radius:var(--radius-sm); transition:.14s; cursor:pointer; border:1px solid transparent; }
+  .wl-item:hover{ background:var(--paper-2); border-color:var(--line); }
+  .wl-ic{ width:42px; height:42px; border-radius:11px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .wl-ic.red{ background:var(--red-bg); color:var(--red); }
+  .wl-ic.amber{ background:var(--amber-bg); color:var(--amber); }
+  .wl-ic.blue{ background:#E7F0FA; color:var(--blue); }
+  .wl-body{ flex:1; min-width:0; }
+  .wl-body .t{ font-size:14px; font-weight:600; color:var(--ink); }
+  .wl-body .s{ font-size:12.5px; color:var(--slate); margin-top:2px; }
+  .wl-count{ font-family:var(--font-display); font-weight:600; font-size:22px; color:var(--navy); margin-right:4px; }
+  .wl-count.red{ color:var(--red); }
+  .wl-go{ color:var(--slate-light); font-size:18px; transition:.14s; }
+  .wl-item:hover .wl-go{ color:var(--brass); transform:translateX(2px); }
+  .wl-empty{ display:flex; align-items:center; gap:12px; padding:16px 12px; color:var(--slate); font-size:13.5px; }
+  .wl-empty .ok{ width:34px; height:34px; border-radius:9px; background:var(--green-bg); color:var(--green); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
-  /* ====== Quick actions ====== */
-  .qa-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:30px; }
-  .qa-card{
-    display:flex; align-items:center; gap:10px;
-    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
-    padding:15px 18px; cursor:pointer; font-family:var(--font-body); font-size:13.5px; font-weight:500; color:var(--ink);
-    text-align:left; width:100%; transition:all .15s ease; box-shadow:var(--shadow-sm);
-  }
-  .qa-card:hover{ border-color:var(--brass); box-shadow:var(--shadow-md); transform:translateY(-1px); }
-  .qa-card .qa-icon{ width:30px; height:30px; border-radius:7px; background:var(--tint-2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .qa-card .qa-icon svg{ width:16px; height:16px; stroke:var(--blue); }
+  /* MODULES */
+  .mods{ display:grid; grid-template-columns:repeat(6,1fr); gap:16px; }
+  @media(max-width:1000px){ .mods{ grid-template-columns:repeat(3,1fr); } }
+  @media(max-width:820px){ .mods{ grid-template-columns:repeat(2,1fr); } }
+  .mod{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px 22px;
+    box-shadow:var(--shadow); transition:.16s; cursor:pointer; position:relative; overflow:hidden; min-height:150px; }
+  .mod::before{ content:""; position:absolute; left:0; top:0; height:3px; width:100%; background:var(--brass); transform:scaleX(0); transform-origin:left; transition:transform .2s; }
+  .mod:hover{ transform:translateY(-3px); box-shadow:var(--shadow-lg); border-color:var(--brass-line); }
+  .mod:hover::before{ transform:scaleX(1); }
+  .mod-ic{ width:52px; height:52px; border-radius:13px; background:var(--navy); color:var(--brass);
+    display:flex; align-items:center; justify-content:center; margin-bottom:18px; transition:.16s; }
+  .mod:hover .mod-ic{ background:var(--brass); color:#fff; }
+  .mod-name{ font-family:var(--font-display); font-weight:500; font-size:21px; color:var(--navy); letter-spacing:-0.2px; }
+  .mod-sub{ font-size:13px; color:var(--slate); margin-top:6px; }
+  .mod-badge{ position:absolute; top:16px; right:16px; min-width:22px; height:22px; padding:0 7px; background:var(--red); color:#fff;
+    border-radius:11px; font-family:var(--font-mono); font-size:12px; font-weight:600; display:none; align-items:center; justify-content:center; }
 
-  /* ====== Security Query (inline AI) ====== */
-  .query-box{
-    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
-    padding:20px 22px; box-shadow:var(--shadow-sm); margin-bottom:30px;
-  }
-  .query-row{ display:flex; gap:10px; }
-  .query-row input{
-    flex:1; font-family:var(--font-body); font-size:14px;
-    background:var(--tint); border:1px solid var(--line); border-radius:8px;
-    padding:12px 16px; color:var(--ink); outline:none;
-  }
-  .query-row input:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
-  .query-row input::placeholder{ color:var(--ink-faint); }
-  .query-btn{
-    font-family:var(--font-display); font-weight:600; font-size:14px;
-    background:var(--navy); color:#fff; border:none; border-radius:8px;
-    padding:0 26px; cursor:pointer; transition:background .15s ease;
-  }
-  .query-btn:hover{ background:var(--navy-2); }
-  .response-log{
-    margin-top:16px; border-top:1px solid var(--line); padding-top:14px;
-    font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);
-    display:none; line-height:1.8; max-height:220px; overflow-y:auto;
-  }
-  .response-log.show{ display:block; }
-  .response-log .line{ padding:4px 0 4px 14px; border-left:2px solid var(--line); margin-bottom:6px; }
-  .response-log .line.q{ color:var(--navy); font-weight:600; border-left-color:var(--brass); }
+  /* SECURITY QUERY */
+  .aiq{ padding:24px 26px; position:relative; overflow:hidden; background:linear-gradient(180deg,#fff 0%,#FCFAF6 100%); border:1px solid var(--brass-line); }
+  .aiq-h{ display:flex; align-items:center; gap:10px; margin-bottom:15px; }
+  .aiq-badge{ width:34px; height:34px; border-radius:9px; background:var(--navy); color:var(--brass); display:flex; align-items:center; justify-content:center; }
+  .aiq-h .t{ font-weight:600; font-size:14.5px; color:var(--navy); }
+  .aiq-box{ display:flex; gap:11px; }
+  .aiq-input{ flex:1; border:1px solid var(--line); border-radius:11px; padding:15px 17px; font-family:var(--font-body); font-size:14px; color:var(--ink); background:#fff; outline:none; transition:.15s; }
+  .aiq-input:focus{ border-color:var(--brass); box-shadow:0 0 0 3px rgba(176,137,79,0.12); }
+  .aiq-input::placeholder{ color:var(--slate-light); }
+  .aiq-btn{ background:var(--navy); color:#fff; border:none; border-radius:11px; padding:0 30px; font-weight:600; font-size:14px; cursor:pointer; transition:.15s; }
+  .aiq-btn:hover{ background:var(--navy-2); }
+  .aiq-chips{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .aiq-chip{ font-size:12px; color:var(--slate); background:#fff; border:1px solid var(--line); padding:6px 13px; border-radius:20px; cursor:pointer; transition:.14s; }
+  .aiq-chip:hover{ border-color:var(--brass); color:var(--brass); }
+  .aiq-log{ margin-top:16px; border-top:1px solid var(--line); padding-top:14px; font-family:var(--font-mono); font-size:12px; color:var(--slate); display:none; line-height:1.8; max-height:240px; overflow-y:auto; }
+  .aiq-log.show{ display:block; }
+  .aiq-log .line{ padding:5px 0 5px 14px; border-left:2px solid var(--line); margin-bottom:6px; }
+  .aiq-log .line.q{ color:var(--navy); font-weight:600; border-left-color:var(--brass); }
 
-  /* ====== Module tiles ====== */
-  .mod-row{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
-  .mod-tile{
-    position:relative;
-    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
-    padding:26px 16px; text-align:center; cursor:pointer; transition:all .2s ease; box-shadow:var(--shadow-sm);
-  }
-  .mod-tile:hover{ border-color:var(--brass); box-shadow:var(--shadow-md); transform:translateY(-2px); }
-  .mod-tile .mod-icon{ width:42px; height:42px; margin:0 auto 12px; border-radius:10px; background:var(--tint-2); display:flex; align-items:center; justify-content:center; }
-  .mod-tile .mod-icon svg{ width:22px; height:22px; stroke:var(--navy); }
-  .mod-tile .mod-name{ font-family:var(--font-display); font-weight:600; font-size:15px; color:var(--ink); margin-bottom:4px; }
-  .mod-tile .mod-desc{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.3px; color:var(--ink-faint); }
-  .mod-badge{
-    position:absolute; top:12px; right:12px; min-width:20px; height:20px; padding:0 6px;
-    background:var(--red); color:#fff; border-radius:10px;
-    font-family:var(--font-mono); font-size:11px; font-weight:600;
-    display:none; align-items:center; justify-content:center;
-  }
-
-  /* ====== Toast ====== */
-  .toast{ position:fixed; top:80px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; font-family:var(--font-body); font-size:14px; padding:14px 28px; border-radius:8px; box-shadow:0 8px 32px rgba(12,36,56,0.3); z-index:9999; display:flex; align-items:center; gap:10px; border-left:4px solid var(--brass); animation:slideDown .3s ease; }
+  /* TOAST */
+  .toast{ position:fixed; top:80px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; font-size:14px; padding:14px 28px; border-radius:10px; box-shadow:0 8px 32px rgba(12,36,56,0.3); z-index:9999; display:flex; align-items:center; gap:10px; border-left:4px solid var(--brass); animation:slideDown .3s ease; }
   @keyframes slideDown{ from{opacity:0;transform:translateX(-50%) translateY(-20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
-
-  @media (max-width:900px){
-    .kpi-row{ grid-template-columns:repeat(2,1fr); }
-    .qa-row{ grid-template-columns:repeat(2,1fr); }
-    .mod-row{ grid-template-columns:repeat(2,1fr); }
-  }
-  @media (max-width:560px){
-    .kpi-row,.qa-row,.mod-row{ grid-template-columns:1fr; }
-    .insight-bar{ flex-wrap:wrap; }
-    .insight-bar .ib-jump{ margin-left:0; }
-    .query-row{ flex-direction:column; }
-  }
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
 </head>
 <body>
-<div class="corp-bar">
-  <div class="corp-bar-inner">
-    <span class="corp-name">InfoKrafts</span>
-    <span class="corp-tag">Trust &middot; Quality &middot; Performance</span>
-  </div>
-</div>
-<nav class="ik-nav">
-  <div class="ik-nav-inner">
-    <a href="index.html" class="ik-brand">IK<span class="ik-gold">°</span> Kontrol</a>
-    <div class="ik-nav-links">
-      <span class="nav-user" id="navUser"></span>
-      <button class="signout-btn" onclick="logout()">SIGN OUT</button>
+
+  <div class="corp-bar">
+    <div class="corp-inner">
+      <div class="logo-fallback">Info<span class="k">Krafts</span></div>
+      <div class="corp-values">
+        <span>Trust</span><span class="cv-dot"></span>
+        <span>Quality</span><span class="cv-dot"></span>
+        <span>Performance</span>
+      </div>
     </div>
   </div>
-</nav>
 
-<section>
-  <div class="section-inner">
-
-    <!-- Welcome -->
-    <div class="welcome">
-      <h2 id="welcomeName">Welcome back</h2>
-      <div class="sub" id="welcomeSub">&nbsp;</div>
-    </div>
-
-    <!-- Smart insight bar -->
-    <div class="insight-bar">
-      <span class="ib-icon">&#128161;</span>
-      <span class="ib-text" id="insightText">Loading your latest activity&hellip;</span>
-      <a class="ib-jump" id="insightJump" href="reviews-hub.html">Jump in &#8594;</a>
-    </div>
-
-    <!-- KPI cards -->
-    <div class="kpi-row">
-      <div class="kpi-card">
-        <div class="kpi-num amber" id="kpiApprovals">&mdash;</div>
-        <div class="kpi-label">Pending approvals</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-num blue" id="kpiUar">&mdash;</div>
-        <div class="kpi-label">Active UAR</div>
-      </div>
-      <a class="kpi-card" href="su53-inbox.html" style="text-decoration:none;color:inherit;" title="Open SU53 inbox">
-        <div class="kpi-num red" id="kpiSu53">&mdash;</div>
-        <div class="kpi-label">SU53 fails</div>
-      </a>
-      <div class="kpi-card">
-        <div class="kpi-num" id="kpiUsers">&mdash;</div>
-        <div class="kpi-label">SAP users</div>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
+      <div class="nav-right">
+        <span class="nav-user"><span class="nav-avatar" id="navAvatar">&nbsp;</span><span id="navUser">&nbsp;</span></span>
+        <button class="nav-signout" onclick="logout()">Sign out</button>
       </div>
     </div>
+  </nav>
 
-    <!-- Quick actions -->
-    <div class="block-label">Quick actions</div>
-    <div class="qa-row">
-      <a class="qa-card" href="SOD.html">
-        <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-        Run SoD check
-      </a>
-      <a class="qa-card" href="new-request.html">
-        <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
-        New request
-      </a>
-      <a class="qa-card" href="simulation.html">
-        <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0H5a2 2 0 0 1-2-2v-4m6 6h10a2 2 0 0 0 2-2v-4"/></svg></span>
-        Simulate access
-      </a>
-      <a class="qa-card" href="user-lock-request.html" style="text-decoration:none;color:inherit;">
-        <span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-        Lock/Unlock Request
-      </a>
-    </div>
+  <div class="wrap">
 
-    <!-- Security Query (inline AI) -->
-    <div class="block-label">Security query</div>
-    <div class="query-box">
-      <div class="query-row">
-        <input type="text" id="queryInput" placeholder="e.g. Which users have S_DEVELOP access and are also locked?">
-        <button class="query-btn" id="submitQuery">Ask</button>
+    <!-- POSTURE -->
+    <div class="posture">
+      <div class="posture-inner">
+        <div class="posture-main">
+          <div class="ring">
+            <svg width="132" height="132" viewBox="0 0 132 132">
+              <circle class="track" cx="66" cy="66" r="54"></circle>
+              <circle class="prog" id="postureRing" cx="66" cy="66" r="54"></circle>
+            </svg>
+            <div class="ring-center"><div class="val" id="postureVal">—</div><div class="of">/ 100</div></div>
+          </div>
+          <div class="posture-title">
+            <div class="ey">GOVERNANCE POSTURE</div>
+            <h1 id="postureHeadline">Checking your posture…</h1>
+            <div class="band"><span class="d" id="postureDot"></span> <span id="postureBand">Loading…</span></div>
+          </div>
+        </div>
+        <div class="posture-div"></div>
+        <div class="p-metrics">
+          <div class="p-metric"><div class="n red" id="mSu53">—</div><div class="l"><b>SU53</b> auth failures</div></div>
+          <div class="p-metric"><div class="n amber" id="mApprovals">—</div><div class="l"><b>Pending</b> approvals</div></div>
+          <div class="p-metric"><div class="n good" id="mUar">—</div><div class="l"><b>Active</b> UAR</div></div>
+          <div class="p-metric"><div class="n" id="mUsers">—</div><div class="l"><b>SAP</b> users monitored</div></div>
+        </div>
       </div>
-      <div class="response-log" id="responseLog"></div>
     </div>
 
-    <!-- Module tiles -->
-    <div class="block-label">Modules</div>
-    <div class="mod-row">
-      <a class="mod-tile" href="risk-hub.html">
-        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
-        <div class="mod-name">Risk</div>
-        <div class="mod-desc">SoD · Sim · Analysis</div>
-      </a>
-      <a class="mod-tile" href="requests-hub.html">
-        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
-        <div class="mod-name">Requests</div>
-        <div class="mod-desc">New · Track</div>
-      </a>
-      <a class="mod-tile" href="reviews-hub.html">
-        <span class="mod-badge" id="reviewsBadge"></span>
-        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
-        <div class="mod-name">Reviews</div>
-        <div class="mod-desc">UAR · Approvals</div>
-      </a>
-      <a class="mod-tile" href="reports-hub.html">
-        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></span>
-        <div class="mod-name">Reports</div>
-        <div class="mod-desc">Audit · Export</div>
-      </a>
-      <a class="mod-tile" href="ai-chat.html">
-        <span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></span>
-        <div class="mod-name">AI</div>
-        <div class="mod-desc">Ask assistant</div>
-      </a>
+    <!-- QUICK ACTIONS -->
+    <div class="block">
+      <div class="qa-row">
+        <a class="qa-card" href="create-user.html"><span class="qa-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span><span class="qa-t">Create user</span></a>
+        <a class="qa-card" href="new-request.html"><span class="qa-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg></span><span class="qa-t">New access request</span></a>
+        <a class="qa-card" href="SOD.html"><span class="qa-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span><span class="qa-t">Run SoD check</span></a>
+        <a class="qa-card" href="user-lock-request.html"><span class="qa-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><span class="qa-t">Lock / Unlock request</span></a>
+      </div>
     </div>
 
+    <!-- NEEDS ATTENTION -->
+    <div class="block">
+      <div class="sec-h"><h2>Needs attention</h2><a class="sec-link" href="reviews-hub.html">View all activity →</a></div>
+      <div class="panel worklist" id="worklist">
+        <div class="wl-empty">
+          <span class="ok"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Loading your latest activity…
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULES -->
+    <div class="block">
+      <div class="sec-h"><h2>Modules</h2></div>
+      <div class="mods">
+        <a class="mod" href="requests-hub.html">
+          <div class="mod-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg></div>
+          <div class="mod-name">Requests</div><div class="mod-sub">New · Track</div>
+        </a>
+        <a class="mod" href="risk-hub.html">
+          <div class="mod-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <div class="mod-name">Risk</div><div class="mod-sub">SoD · Simulate · Analyze</div>
+        </a>
+        <a class="mod" href="reviews-hub.html">
+          <span class="mod-badge" id="reviewsBadge"></span>
+          <div class="mod-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3a8 8 0 1 0 8 8"/><path d="M11 7v4l2 2"/><path d="m16 3 3 3 4-4"/></svg></div>
+          <div class="mod-name">Reviews</div><div class="mod-sub">UAR · Approvals</div>
+        </a>
+        <a class="mod" href="reports-hub.html">
+          <div class="mod-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16v-4"/><path d="M12 16V8"/><path d="M17 16v-6"/></svg></div>
+          <div class="mod-name">Reports</div><div class="mod-sub">Audit · Export</div>
+        </a>
+        <a class="mod" href="su53-inbox.html">
+          <span class="mod-badge" id="su53Badge"></span>
+          <div class="mod-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+          <div class="mod-name">SU53</div><div class="mod-sub">Auth failures · Fix</div>
+        </a>
+        <a class="mod" href="ai-chat.html">
+          <div class="mod-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+          <div class="mod-name">AI Agent</div><div class="mod-sub">Ask assistant</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- SECURITY QUERY -->
+    <div class="block">
+      <div class="panel aiq">
+        <div class="aiq-h">
+          <span class="aiq-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span>
+          <div class="t">Security Query</div>
+        </div>
+        <div class="aiq-box">
+          <input class="aiq-input" id="queryInput" placeholder="e.g. Which users have S_DEVELOP access and are also locked?">
+          <button class="aiq-btn" id="submitQuery">Ask</button>
+        </div>
+        <div class="aiq-chips">
+          <span class="aiq-chip">Locked users with critical access</span>
+          <span class="aiq-chip">Roles granting FB60</span>
+          <span class="aiq-chip">Who can post &amp; approve invoices?</span>
+        </div>
+        <div class="aiq-log" id="responseLog"></div>
+      </div>
+    </div>
+
+    <!-- ik-version-footer: static dashboard version line (additive) -->
+    <div class="ik-version-footer" style="text-align:center; padding:28px 0 4px; color:var(--slate-light); font-size:12.5px;">
+      IK&deg; Kontrol &middot; v1.0 &middot; 2026-09-18
+    </div>
   </div>
-</section>
 
 <script>
-// ---- Toast ----
-function showToast(msg) {
-  var existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  var t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B0894F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>' + msg + '</span>';
-  document.body.appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 2800);
-}
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
-// ---- Role-based welcome + view (fired by auth-guard.js) ----
-document.addEventListener('auth-ready', function(e){
-  var u = e.detail || {};
-  var name = u.displayName || u.username || '';
-  var nav = document.getElementById('navUser'); if (nav) nav.textContent = name;
-  var w = document.getElementById('welcomeName'); if (w) w.textContent = 'Welcome back' + (name ? ', ' + name : '');
-  var sub = document.getElementById('welcomeSub');
-  if (sub) {
-    var roleLabel = u.role === 'approver' ? 'Approver'
-      : (u.role === 'admin' ? 'Security Administrator'
-      : (u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'User'));
-    sub.textContent = roleLabel;
+  // ---- Toast ----
+  function showToast(msg){
+    var ex = document.querySelector('.toast'); if(ex) ex.remove();
+    var t = document.createElement('div'); t.className='toast';
+    t.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B0894F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>'+esc(msg)+'</span>';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(function(){ t.remove(); },300); }, 2800);
   }
-  // Approver jumps into the approval queue; others into reviews hub.
-  var jump = document.getElementById('insightJump');
-  if (jump && u.role === 'approver') jump.setAttribute('href', 'approvals.html');
+  function logout(){ fetch('/api/logout',{method:'POST'}).finally(function(){ location.href='/login.html'; }); }
 
-  // Approval-stats pending badge (admin / manager / role_owner / approver).
-  if (u.role === 'admin' || u.role === 'manager' || u.role === 'role_owner' || u.role === 'approver') {
-    fetch('/api/approval-stats').then(function(r){ return r.json(); }).then(function(d){
-      if (d && d.pending > 0) {
-        var badge = document.getElementById('reviewsBadge');
-        if (badge) { badge.textContent = d.pending; badge.style.display = 'flex'; }
-      }
-    }).catch(function(){});
+  /* ============================================================
+     POSTURE SCORE — single place to tune the formula & weights.
+     score = 100 − SU53�&mdash;4 − openSoD�&mdash;6 − pendingApprovals�&mdash;2 − overdueUar�&mdash;5
+     Bands: 85+ Strong · 70–84 Moderate · <70 Needs work
+     (We don't have a separate open-SoD count endpoint yet, so SoD
+      weight uses 0 for now — see SOD_COUNT note below.)
+  ============================================================ */
+  var POSTURE_W = { su53:4, sod:6, approvals:2, uar:5 };
+  function computePosture(d){
+    var openSod = (typeof d.openSod === 'number') ? d.openSod : 0; // SOD_COUNT: wire when endpoint exists
+    var raw = 100
+      - (d.su53Fails||0) * POSTURE_W.su53
+      - openSod * POSTURE_W.sod
+      - (d.pendingApprovals||0) * POSTURE_W.approvals
+      - (d.overdueUar||0) * POSTURE_W.uar;
+    return Math.max(0, Math.min(100, Math.round(raw)));
   }
-});
+  function bandOf(score){
+    if(score >= 85) return { label:'Strong', color:'var(--green)', dot:'#9FE0B8' };
+    if(score >= 70) return { label:'Moderate', color:'var(--amber)', dot:'#F2C57C' };
+    return { label:'Needs work', color:'var(--red)', dot:'#FF9A9A' };
+  }
+  function paintPosture(d){
+    var score = computePosture(d);
+    document.getElementById('postureVal').textContent = score;
+    // ring fill (circumference 2πr = 339.3)
+    var C = 339.3;
+    document.getElementById('postureRing').style.strokeDashoffset = C - (C * score/100);
+    var b = bandOf(score);
+    document.getElementById('postureBand').textContent = b.label;
+    document.getElementById('postureDot').style.background = b.dot;
 
-// ---- Live KPI counts + smart insight ----
-fetch('/api/dashboard/summary').then(function(r){return r.json();}).then(function(d){
-  function set(id, val){ var el = document.getElementById(id); if (el) el.textContent = (val === null || val === undefined) ? '\u2014' : val; }
-  set('kpiApprovals', d.pendingApprovals);
-  set('kpiUar', d.activeUar);
-  set('kpiSu53', d.su53Fails);
-  /* SU53_JUMP_PATCH */
-  if (d.su53Fails > 0) {
-    var _sj = document.getElementById('insightJump');
-    // don't override the approver's approvals link
-    if (_sj && _sj.getAttribute('href') !== 'approvals.html') {
-      _sj.setAttribute('href', 'su53-inbox.html');
+    var issues = (d.su53Fails||0) + (d.pendingApprovals||0) + (d.overdueUar||0) + (d.openSod||0);
+    var h = document.getElementById('postureHeadline');
+    if(issues === 0) h.textContent = "You're all clear";
+    else if(issues === 1) h.textContent = 'One item needs\u00a0your attention';
+    else h.textContent = issues + ' items need\u00a0your attention';
+  }
+
+  // ---- metrics into posture header ----
+  function set(id, v){ var el=document.getElementById(id); if(el) el.textContent = (v==null?'\u2014':v); }
+
+  // ---- Needs-attention worklist ----
+  function renderWorklist(d){
+    var rows = '';
+    if(d.su53Fails > 0){
+      rows += '<a class="wl-item" href="su53-inbox.html">'
+        + '<div class="wl-ic red"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>'
+        + '<div class="wl-body"><div class="t">SU53 authorization failures</div><div class="s">'+d.su53Fails+' user'+(d.su53Fails>1?'s':'')+' blocked \u2014 clean-fix roles suggested where possible</div></div>'
+        + '<span class="wl-count red">'+d.su53Fails+'</span><span class="wl-go">\u2192</span></a>';
     }
-  }
-  set('kpiUsers', d.sapUsers);
-
-  var bits = [];
-  if (d.pendingApprovals) bits.push('<b>' + d.pendingApprovals + ' approval' + (d.pendingApprovals === 1 ? '' : 's') + '</b>');
-  if (d.activeUar) bits.push('<b>' + d.activeUar + ' active UAR</b>');
-  if (d.su53Fails) bits.push('<b>' + d.su53Fails + ' SU53 fail' + (d.su53Fails === 1 ? '' : 's') + '</b>');
-  var el = document.getElementById('insightText');
-  if (el) {
-    if (bits.length) {
-      var joined = bits.length === 1 ? bits[0] : bits.slice(0, -1).join(', ') + ' and ' + bits[bits.length - 1];
-      el.innerHTML = 'You have ' + joined + ' waiting for your attention.';
+    if(d.pendingApprovals > 0){
+      rows += '<a class="wl-item" href="approvals.html">'
+        + '<div class="wl-ic amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>'
+        + '<div class="wl-body"><div class="t">Access requests awaiting approval</div><div class="s">'+d.pendingApprovals+' request'+(d.pendingApprovals>1?'s':'')+' in your approval queue</div></div>'
+        + '<span class="wl-count">'+d.pendingApprovals+'</span><span class="wl-go">\u2192</span></a>';
+    }
+    if(d.activeUar > 0){
+      rows += '<a class="wl-item" href="reviews-hub.html">'
+        + '<div class="wl-ic blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>'
+        + '<div class="wl-body"><div class="t">User access reviews in progress</div><div class="s">'+d.activeUar+' active review campaign'+(d.activeUar>1?'s':'')+'</div></div>'
+        + '<span class="wl-count">'+d.activeUar+'</span><span class="wl-go">\u2192</span></a>';
+    }
+    var wl = document.getElementById('worklist');
+    if(!rows){
+      wl.innerHTML = '<div class="wl-empty"><span class="ok"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Nothing needs your attention right now. You\u2019re all clear.</div>';
     } else {
-      el.innerHTML = 'All clear &mdash; nothing pending right now.';
+      wl.innerHTML = rows;
     }
   }
-}).catch(function(){
-  var el = document.getElementById('insightText');
-  if (el) el.textContent = 'Live counts unavailable right now.';
-});
 
-// ---- Security Query (inline AI) ----
-(function(){
-  var input = document.getElementById('queryInput');
-  var btn = document.getElementById('submitQuery');
-  function submitQuery(){
-    var q = input.value.trim();
-    if (!q) return;
+  // ---- Live summary ----
+  fetch('/api/dashboard/summary').then(function(r){return r.json();}).then(function(d){
+    d = d || {};
+    set('mSu53', d.su53Fails);
+    set('mApprovals', d.pendingApprovals);
+    set('mUar', d.activeUar);
+    set('mUsers', d.sapUsers);
+    if(d.su53Fails > 0){ var b=document.getElementById('su53Badge'); if(b){ b.textContent=d.su53Fails; b.style.display='flex'; } }
+    paintPosture(d);
+    renderWorklist(d);
+  }).catch(function(){
+    document.getElementById('postureHeadline').textContent = 'Live counts unavailable';
+    document.getElementById('postureBand').textContent = 'Unknown';
+    document.getElementById('worklist').innerHTML = '<div class="wl-empty">Could not load activity right now.</div>';
+  });
+
+  // ---- Auth (auth-guard.js fires 'auth-ready') ----
+  document.addEventListener('auth-ready', function(e){
+    var u = e.detail || {};
+    var name = u.displayName || u.username || '';
+    var nu = document.getElementById('navUser'); if(nu) nu.textContent = name;
+    var av = document.getElementById('navAvatar');
+    if(av && name){ av.textContent = name.trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join(''); }
+    // pending-approvals badge on Reviews (admin/manager/role_owner/approver)
+    if(u.role==='admin'||u.role==='manager'||u.role==='role_owner'||u.role==='approver'){
+      fetch('/api/approval-stats').then(function(r){return r.json();}).then(function(d){
+        if(d && d.pending>0){ var b=document.getElementById('reviewsBadge'); if(b){ b.textContent=d.pending; b.style.display='flex'; } }
+      }).catch(function(){});
+    }
+  });
+
+  // ---- Security Query (inline AI) ----
+  (function(){
+    var input = document.getElementById('queryInput');
+    var btn = document.getElementById('submitQuery');
     var log = document.getElementById('responseLog');
-    log.classList.add('show');
-    var qLine = document.createElement('div');
-    qLine.className = 'line q'; qLine.textContent = '> ' + q;
-    log.appendChild(qLine);
-    var aLine = document.createElement('div');
-    aLine.className = 'line'; aLine.textContent = 'Submitting to /api/ai/chat\u2026';
-    log.appendChild(aLine);
-    log.scrollTop = log.scrollHeight;
-    fetch('/api/ai/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message: q })
-    })
-      .then(function(res){ if(!res.ok) throw new Error('bad'); return res.json(); })
-      .then(function(data){ aLine.textContent = data.answer || 'No answer field in response.'; log.scrollTop = log.scrollHeight; })
-      .catch(function(){ aLine.textContent = 'Not connected \u2014 /api/ai/chat unreachable.'; });
-    input.value = '';
-  }
-  btn.addEventListener('click', submitQuery);
-  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') submitQuery(); });
-})();
+    function ask(q){
+      q = (q||input.value).trim(); if(!q) return;
+      log.classList.add('show');
+      var ql = document.createElement('div'); ql.className='line q'; ql.textContent='> '+q; log.appendChild(ql);
+      var al = document.createElement('div'); al.className='line'; al.textContent='Submitting to /api/ai/chat\u2026'; log.appendChild(al);
+      log.scrollTop = log.scrollHeight;
+      fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q})})
+        .then(function(res){ if(!res.ok) throw new Error('bad'); return res.json(); })
+        .then(function(data){ al.textContent = data.answer || 'No answer field in response.'; log.scrollTop = log.scrollHeight; })
+        .catch(function(){ al.textContent = 'Not connected \u2014 /api/ai/chat unreachable.'; });
+      input.value='';
+    }
+    btn.addEventListener('click', function(){ ask(); });
+    input.addEventListener('keydown', function(e){ if(e.key==='Enter') ask(); });
+    Array.prototype.forEach.call(document.querySelectorAll('.aiq-chip'), function(c){
+      c.addEventListener('click', function(){ input.value = c.textContent; ask(c.textContent); });
+    });
+  })();
 </script>
 <script src="auth-guard.js"></script>
 </body>

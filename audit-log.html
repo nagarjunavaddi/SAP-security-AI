@@ -108,6 +108,7 @@
     thead th, tbody td{ padding:10px 8px; }
   }
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
 </head>
 <body>
 
@@ -122,8 +123,7 @@
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
     <div class="ik-nav-links">
-      <a href="index.html" class="nav-link">Dashboard</a>
-      <span class="nav-user" id="navUser"></span>
+<span class="nav-user" id="navUser"></span>
       <button class="signout-btn" onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='login.html')">Sign out</button>
     </div>
   </div>
@@ -131,7 +131,7 @@
 
 <div class="page-head">
   <div class="page-head-inner">
-    <a href="reports-hub.html" class="back">← Reports &amp; Monitoring</a>
+    <a class="back-link" href="index.html">&larr; Back to dashboard</a>
     <h2>Audit Log</h2>
     <p>Complete trail of all system actions — user management, approval decisions, configuration changes.</p>
   </div>

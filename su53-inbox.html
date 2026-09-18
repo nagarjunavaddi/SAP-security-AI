@@ -123,7 +123,44 @@
   .empty{ background:var(--card); border:1px dashed var(--line); border-radius:var(--radius); padding:60px 30px; text-align:center; color:var(--slate-light); font-size:14px; }
   .login-notice{ background:var(--amber-bg); border:1px solid #EAD7A8; color:var(--amber); border-radius:var(--radius); padding:18px 22px; font-size:13.5px; }
   .login-notice a{ color:var(--blue); }
+
+  /* SU53_RISK_OBJECTS_PATCH */
+  .rk-summary{ display:flex; align-items:center; gap:7px; margin-top:9px; flex-wrap:wrap; }
+  .rk-warn{ color:var(--red); font-size:13px; }
+  .rk-count{ font-size:12.5px; color:var(--ink); font-family:var(--font-body); }
+  .rk-toggle{ margin-top:9px; display:inline-flex; align-items:center; gap:6px; background:none;
+    border:1px solid var(--line); border-radius:7px; padding:6px 12px; font-family:var(--font-mono);
+    font-size:11px; color:var(--slate); cursor:pointer; }
+  .rk-toggle:hover{ border-color:var(--brass); color:var(--brass); }
+  .rk-caret{ display:inline-block; transition:transform .15s; font-size:10px; }
+  .rk-details{ margin-top:12px; }
+  .rk-sec{ margin-bottom:12px; }
+  .rk-sec:last-child{ margin-bottom:0; }
+  .rk-sec-label{ font-family:var(--font-mono); font-size:10px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--slate); margin-bottom:6px; }
+  .rk-sec-label.danger{ color:var(--red); }
+  .rk-items{ font-family:var(--font-mono); font-size:12px; color:var(--ink); line-height:1.9; }
+  .rk-item{ white-space:nowrap; }
+  .rk-tag{ color:var(--slate-light); font-size:10px; margin-left:3px; }
+  .rk-dot{ color:var(--slate-light); margin:0 7px; }
+
+  /* SU53_FULLACCESS_SEEMORE_CSS */
+  .rk-more-toggle{ display:inline-block; margin-left:4px; font-family:var(--font-mono);
+    font-size:11px; color:var(--brass); background:none; border:none; cursor:pointer;
+    padding:0; text-decoration:underline; }
+  .rk-more-toggle:hover{ filter:brightness(1.1); }
+  .rk-more-hidden{ display:none; }
+
+
+  /* SU53_RISKITEMS_WRAP_CSS — wrap risk-object rows so they never overflow the card */
+  .rk-items{ display:flex; flex-wrap:wrap; align-items:baseline;
+    row-gap:2px; column-gap:0; max-width:100%; }
+  .rk-item{ white-space:nowrap; }
+  .rk-items .rk-more-hidden{ display:none; }
+  .rk-items .rk-more-hidden.rk-shown{ display:inline; }
+
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
 </head>
 <body>
 
@@ -149,9 +186,8 @@
   </nav>
 
   <div class="head">
-    <a href="/index.html" class="back">&larr; Dashboard</a>
-    <div class="eyebrow">Access Intelligence</div>
-    <h1>SU53 Inbox</h1>
+    <a class="back-link" href="index.html">&larr; Back to dashboard</a>
+<h1>SU53 Inbox</h1>
   </div>
 
   <div class="main" id="main">
@@ -179,6 +215,30 @@
 <script>
   // ---- helpers ----
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  /* SU53_RISK_OBJECTS_PATCH */
+  function toggleRisk(id, btn){
+    var d = document.getElementById(id);
+    if(!d) return;
+    var open = d.style.display !== 'none';
+    d.style.display = open ? 'none' : 'block';
+    if(btn){
+      var lbl = btn.querySelector('span'); if(lbl) lbl.textContent = open ? 'Show details' : 'Hide details';
+      var car = btn.querySelector('.rk-caret'); if(car) car.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+  }
+
+  /* SU53_FULLACCESS_SEEMORE_JS */
+  function toggleFullObjs(id, btn){
+    var extra = document.getElementById(id);
+    if(!extra) return;
+    var hidden = extra.classList.contains('rk-more-hidden');
+    extra.classList.toggle('rk-more-hidden', !hidden);
+    if(btn){
+      var n = btn.getAttribute('data-n') || '';
+      btn.textContent = hidden ? 'Show less' : ('See more (' + n + ')');
+    }
+  }
+
   function fmtTime(ts){
     if(!ts) return '—';
     const d = new Date(ts);
@@ -186,17 +246,61 @@
     return d.toLocaleString(undefined,{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   }
   function sodInfo(s){
-    // one suggestion object -> {isSod, risks[]}
-    // Authoritative flag is s.clean (mirrors su53-agent.html). s.sod is an
-    // object {newCount, details:[...]}, NOT an array -- never truth-test directly.
+    /* SU53_RISK_OBJECTS_PATCH */
+    // -> {isSod, risks[], groups{sod,critical,full}, totalUnique, wildcardObjects[]}
     const isSod = !s.clean;
-    let risks = [];
-    if(s.sod && Array.isArray(s.sod.details)){
-      risks = s.sod.details.map(r => r && (r.riskName || r.desc || r.riskType || r.risk || r.name || r.riskId || r.id)).filter(Boolean);
-    } else if(Array.isArray(s.sod)){
-      risks = s.sod.map(r => r && (r.riskName || r.risk || r.name || r.riskId || r.id)).filter(Boolean);
+    let details = [];
+    if(s.sod && Array.isArray(s.sod.details)) details = s.sod.details;
+    else if(Array.isArray(s.sod)) details = s.sod;
+
+    const risks = details.map(r => r && (r.riskName || r.desc || r.riskType || r.risk || r.name || r.riskId || r.id)).filter(Boolean);
+
+    // full list of objects with ACTVT=* (from the suggestion, not truncated desc)
+    const wildcardObjects = (s.wildcard && Array.isArray(s.wildcard.objects)) ? s.wildcard.objects.slice() : [];
+
+    // strip a leading "CP-" so the auth OBJECT name shows cleanly
+    function cleanId(id){
+      var t = String(id||'').trim();
+      return t.replace(/^CP-/i, '');
     }
-    return { isSod, risks };
+    function bucketOf(rt, riskId){
+      if(String(riskId||'').toUpperCase() === 'WILDCARD-ACTVT') return 'full';
+      const t = String(rt||'').toLowerCase();
+      if(t.indexOf('critical') !== -1) return 'critical';
+      return 'sod';
+    }
+    function tagOf(rt, riskId){
+      if(String(riskId||'').toUpperCase() === 'WILDCARD-ACTVT') return 'full access';
+      const t = String(rt||'').toLowerCase();
+      if(t === 'action level') return 'action';
+      if(t === 'permission level') return 'perm';
+      if(t === 'critical action') return 'crit action';
+      if(t === 'critical permission') return 'critical permission';
+      return String(rt||'').toLowerCase() || 'risk';
+    }
+    const buckets = { sod:new Map(), critical:new Map(), full:new Map() };
+    for(const r of details){
+      if(!r) continue;
+      // the WILDCARD-ACTVT pseudo-risk is rendered from wildcardObjects instead
+      if(String(r.riskId||'').toUpperCase() === 'WILDCARD-ACTVT') continue;
+      const rawId = String(r.riskId || r.id || r.riskName || r.desc || '').trim();
+      if(!rawId) continue;
+      const b = bucketOf(r.riskType, r.riskId);
+      const shown = (b === 'critical') ? cleanId(rawId) : rawId;
+      const map = buckets[b];
+      if(!map.has(shown)) map.set(shown, { id: shown, tags:[] });
+      const entry = map.get(shown);
+      const tag = tagOf(r.riskType, r.riskId);
+      if(tag && entry.tags.indexOf(tag) === -1) entry.tags.push(tag);
+    }
+    const groups = {
+      sod:      Array.from(buckets.sod.values()),
+      critical: Array.from(buckets.critical.values()),
+      full:     wildcardObjects   // array of plain object names
+    };
+    const fullCount = wildcardObjects.length ? 1 : 0;  // "1 full access" = one wildcard finding
+    const totalUnique = groups.sod.length + groups.critical.length + fullCount;
+    return { isSod, risks, groups, totalUnique, wildcardObjects };
   }
 
   // ---- auth (self-contained; same pattern as su53-agent.html) ----
@@ -259,8 +363,65 @@
     const metaLine = meta.length ? '<div class="role-meta">'+meta.join(' · ')+'</div>' : '';
     const reasons = Array.isArray(s.reasons)&&s.reasons.length
       ? '<div class="role-reasons">'+esc(s.reasons.join(' · '))+'</div>' : '';
-    const risk = info.isSod && info.risks.length
-      ? '<div class="role-risk">Introduces: '+esc(info.risks.join(', '))+'</div>' : '';
+    /* SU53_RISK_OBJECTS_PATCH */
+    let risk = '';
+    if(info.isSod && info.groups && info.totalUnique > 0){
+      const g = info.groups;
+      const fullCount = (g.full && g.full.length) ? 1 : 0;
+      const parts = [];
+      if(g.sod.length)      parts.push(g.sod.length+' SoD conflict'+(g.sod.length>1?'s':''));
+      if(g.critical.length) parts.push(g.critical.length+' critical access');
+      if(fullCount)         parts.push('1 full access');
+      const summary = info.totalUnique+' new risk'+(info.totalUnique>1?'s':'')
+        + (parts.length ? ' \u2014 ' + parts.join(' \u00b7 ') : '');
+
+      const uid = 'risk-' + Math.random().toString(36).slice(2,9);
+
+      function chip(entry){
+        const tags = (entry.tags||[]).length
+          ? ' <span class="rk-tag">'+esc(entry.tags.join(' + '))+'</span>' : '';
+        return '<span class="rk-item">'+esc(entry.id)+tags+'</span>';
+      }
+      function joinChips(arr){ return arr.map(chip).join('<span class="rk-dot">\u00b7</span>'); }
+
+      let details = '';
+      if(g.sod.length){
+        details += '<div class="rk-sec"><div class="rk-sec-label">SoD conflicts ('+g.sod.length+')</div>'
+          + '<div class="rk-items">'+joinChips(g.sod)+'</div></div>';
+      }
+      if(g.critical.length){
+        details += '<div class="rk-sec"><div class="rk-sec-label">Critical access ('+g.critical.length+')</div>'
+          + '<div class="rk-items">'+joinChips(g.critical)+'</div></div>';
+      }
+      if(fullCount){
+        /* SU53_FULLACCESS_SEEMORE — cap at 8, rest behind a "See more (N)" toggle */
+        const DOT = '<span class="rk-dot">\u00b7</span>';
+        const chip = function(o){ return '<span class="rk-item">'+esc(o)+'</span>'; };
+        const CAP = 8;
+        let objsHtml;
+        if(g.full.length > CAP){
+          const head = g.full.slice(0, CAP).map(chip).join(DOT);
+          const rest = g.full.slice(CAP).map(chip).join(DOT);
+          const restN = g.full.length - CAP;
+          const eid = 'full-' + Math.random().toString(36).slice(2,9);
+          objsHtml = head
+            + '<span id="'+eid+'" class="rk-more-hidden">'+DOT+rest+'</span>'
+            + ' <button type="button" class="rk-more-toggle" data-n="'+restN+'" '
+            +   'onclick="toggleFullObjs(\''+eid+'\',this)">See more ('+restN+')</button>';
+        } else {
+          objsHtml = g.full.map(chip).join(DOT);
+        }
+        details += '<div class="rk-sec"><div class="rk-sec-label danger">Full access \u2014 ACTVT=* on '
+          + g.full.length+' object'+(g.full.length>1?'s':'')+'</div>'
+          + '<div class="rk-items">'+objsHtml+'</div></div>';
+      }
+
+      risk = '<div class="rk-summary"><span class="rk-warn">\u26a0</span> '
+        +   '<span class="rk-count">'+esc(summary)+'</span></div>'
+        + '<button type="button" class="rk-toggle" onclick="toggleRisk(\''+uid+'\',this)">'
+        +   '<span>Show details</span> <span class="rk-caret">\u25be</span></button>'
+        + '<div class="rk-details" id="'+uid+'" style="display:none;">'+details+'</div>';
+    }
     const action = info.isSod
       ? '<span class="role-action disabled">SoD — review</span>'
       : '<a class="role-action" href="/new-request.html?role='+encodeURIComponent(s.role||'')+'">Raise Request</a>';
@@ -315,9 +476,19 @@
     let rows = '';
     ITEMS.forEach((it, i)=>{
       const ctx = it.context||{};
-      const auth = esc(ctx.authObject||'—')
-        + (ctx.field ? ' <span class="f">'+esc(ctx.field)+'</span>' : '')
-        + (ctx.value ? '=' + esc(ctx.value) : '');
+      /* SU53_ACTIVITY_ACCURACY_PATCH */
+      // Show every failed field (e.g. AUART=L2, ACTVT=01), not just the first.
+      let auth;
+      if (Array.isArray(ctx.fields) && ctx.fields.length) {
+        auth = esc(ctx.authObject||'—') + ' '
+          + ctx.fields.map(function(fv){
+              return '<span class="f">'+esc(fv.field)+'</span>=' + esc(fv.value);
+            }).join(', ');
+      } else {
+        auth = esc(ctx.authObject||'—')
+          + (ctx.field ? ' <span class="f">'+esc(ctx.field)+'</span>' : '')
+          + (ctx.value ? '=' + esc(ctx.value) : '');
+      }
       rows += '<tr class="item-row" data-i="'+i+'" onclick="toggle('+i+')">'
         +   '<td><span class="caret">&#9654;</span></td>'
         +   '<td class="mono"><span class="u">'+esc(ctx.user||'—')+'</span></td>'

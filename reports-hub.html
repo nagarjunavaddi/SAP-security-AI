@@ -59,6 +59,7 @@
   .notice{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:40px; text-align:center; box-shadow:var(--shadow); color:var(--slate); font-size:14px; }
   .notice a{ color:var(--blue); font-weight:600; text-decoration:none; }
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
 </head>
 <body>
 
@@ -77,17 +78,15 @@
     <div class="nav-inner">
       <a href="index.html" class="brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
       <div class="nav-right">
-        <div class="nav-links"><a href="index.html">Dashboard</a></div>
-        <span class="nav-user" id="navUser"></span>
+<span class="nav-user" id="navUser"></span>
         <button class="nav-signout" onclick="signOut()">Sign out</button>
       </div>
     </div>
   </nav>
 
   <div class="head">
-    <a href="index.html" class="back">&larr; Dashboard</a>
-    <div class="eyebrow">Reports &amp; Monitoring</div>
-    <h1>Reports</h1>
+    <a class="back-link" href="index.html">&larr; Back to dashboard</a>
+<h1>Reports</h1>
   </div>
 
   <div class="main">

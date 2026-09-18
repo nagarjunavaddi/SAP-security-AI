@@ -154,6 +154,7 @@
     .main{ padding:20px 16px; } .action-btns{ flex-direction:column; }
   }
 </style>
+  <link rel="stylesheet" href="ik-unify.css"><!-- ik-unify: global look unifier (additive) -->
 </head>
 <body>
 
@@ -168,8 +169,7 @@
   <div class="ik-nav-inner">
     <a href="index.html" class="ik-brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
     <div class="ik-nav-links">
-      <a href="index.html">Dashboard</a>
-      <a href="SOD.html">Risk Analytics</a>
+<a href="SOD.html">Risk Analytics</a>
       <a href="create-user.html">User Creation</a>
       <span id='navUser' style='font-family:var(--font-mono);font-size:12px;color:var(--brass);margin-right:4px;'></span>
       <button class="signout-btn" onclick="logout()">Sign out</button>
@@ -179,7 +179,7 @@
 
 <div class="page-head">
   <div class="page-head-inner">
-    <a href='index.html' style='color:var(--brass);font-family:var(--font-mono);font-size:11px;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:0.5px;'>&larr; Back to dashboard</a>
+    <a class="back-link" href="index.html">&larr; Back to dashboard</a>
     <h2>Approval Queue</h2>
     <p>Review, approve or reject pending access requests routed to you.</p>
   </div>

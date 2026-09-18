@@ -15,6 +15,11 @@ const GROUP_MODULE = {
 };
 const PREFER_CUSTOM = true;   // org builds its own Z_* roles
 
+/* SU53_ACTIVITY_ACCURACY_PATCH */
+// role name -> true if it grants every required SU53 field by an EXACT
+// value (not a bare '*'). Populated in findMatchingRoles, read in scoreRole.
+const EXACT_MATCH_MAP = new Map();
+
 function roleModule(role) {
   const m = String(role).toUpperCase().match(/^Z_(FI|SD|MM)_/);
   return m ? m[1] : null;
@@ -39,11 +44,34 @@ async function apiGet(path) {
 
 // --- Step 1: parse ---
 function parsePayload(p) {
+  /* SU53_MULTIFIELD_PATCH */
+  // Normalise a multi-field SU53 failure. Payload may carry:
+  //   - fields: [ {field,value}, ... ]           (new ZKONTROL_SU53)
+  //   - field / value                            (old single-field payload)
+  var fields = [];
+  if (Array.isArray(p.fields)) {
+    for (var i = 0; i < p.fields.length; i++) {
+      var it = p.fields[i] || {};
+      var f = String(it.field || '').toUpperCase().trim();
+      var v = String(it.value != null ? it.value : '').toUpperCase().trim();
+      if (f) fields.push({ field: f, value: v });
+    }
+  }
+  // fall back to / ensure the single field is present
+  var sField = (p.field || '').toUpperCase().trim();
+  var sValue = String(p.value != null ? p.value : '').toUpperCase().trim();
+  if (sField && !fields.some(function(x){ return x.field === sField; })) {
+    fields.push({ field: sField, value: sValue });
+  }
+  // primary field/value kept for backward compatibility (first entry wins)
+  var primary = fields[0] || { field: sField, value: sValue };
   return {
     system:(p.system||'').toUpperCase(), client:String(p.client||''),
     user:(p.user||'').toUpperCase(), tcode:(p.tcode||'').toUpperCase(),
-    authObject:(p.authObject||'').toUpperCase(), field:(p.field||'').toUpperCase(),
-    value:String(p.value||'').toUpperCase(), timestamp:p.timestamp||new Date().toISOString(),
+    authObject:(p.authObject||'').toUpperCase(),
+    field: primary.field, value: primary.value,
+    fields: fields,
+    timestamp:p.timestamp||new Date().toISOString(),
   };
 }
 
@@ -63,32 +91,80 @@ async function getUserContext(user) {
 
 // --- Step 3: matching roles (AGR_1251, wildcard-aware) ---
 async function findMatchingRoles(ctx) {
-  // [twoqueries-fix] two short cap-safe queries (RFC_READ_TABLE OPTIONS = 72 chars/line):
-  //   Q1 exact value, Q2 full wildcard '*'. Merge rows, then JS filter below.
+  /* SU53_AUTH_INSTANCE_PATCH */
+  // Per-AUTH-instance matching. SAP grants access only when a SINGLE
+  // authorization instance (AGR_1251.AUTH) satisfies EVERY required field.
+  // We therefore group role -> AUTH -> field -> [LOW...] and require some
+  // instance to grant all fields. Exact-match is evaluated within the same
+  // instance. Object-only WHERE keeps it cap-safe (<=72 chars).
   const obj = ctx.authObject.replace(/'/g,"''");
-  const val = String(ctx.value||'').replace(/'/g,"''");
-  const q = async (w) => {
-    const rr = await apiPost('/api/rfc/table-read', { tableName:'AGR_1251', fields:'AGR_NAME,OBJECT,FIELD,LOW,HIGH', whereClause:w, maxRows:500 });
-    return (rr && rr.data) || [];
-  };
-  let rows = [];
-  if (val) {
-    rows = rows.concat(await q("OBJECT = '" + obj + "' AND LOW = '" + val + "'"));
-    rows = rows.concat(await q("OBJECT = '" + obj + "' AND LOW = '*'"));
-  } else {
-    rows = await q("OBJECT = '" + obj + "'");
-  }
-  const resp = { data: rows };
-  const roles = new Set();
-  for (const r of (resp.data||[])) {
+
+  var required = (Array.isArray(ctx.fields) && ctx.fields.length)
+    ? ctx.fields.slice()
+    : [{ field: String(ctx.field||'').toUpperCase(), value: String(ctx.value||'').toUpperCase() }];
+  required = required.filter(function(x){ return x.field; });
+
+  const rr = await apiPost('/api/rfc/table-read', {
+    tableName:'AGR_1251',
+    fields:'AGR_NAME,AUTH,OBJECT,FIELD,LOW,HIGH',
+    whereClause:"OBJECT = '" + obj + "'",
+    maxRows:5000
+  });
+  const rows = (rr && rr.data) || [];
+
+  // role -> AUTH -> field -> [LOW...]
+  const byRole = new Map();
+  for (const r of rows) {
+    const rn = String(r.AGR_NAME||'');
+    if (!rn) continue;
+    const auth = String(r.AUTH||'') || '_NOAUTH_';
     const f = String(r.FIELD||'').toUpperCase();
-    const wantField = String(ctx.field||'').toUpperCase();
-    if (f && wantField && f !== wantField) continue;
-    if (valueMatches(ctx.value, String(r.LOW||'').toUpperCase())) roles.add(r.AGR_NAME);
+    const low = String(r.LOW||'').toUpperCase();
+    if (!byRole.has(rn)) byRole.set(rn, new Map());
+    const authMap = byRole.get(rn);
+    if (!authMap.has(auth)) authMap.set(auth, new Map());
+    const fieldMap = authMap.get(auth);
+    if (!fieldMap.has(f)) fieldMap.set(f, []);
+    fieldMap.get(f).push(low);
   }
+
+  // does this one instance grant every required field? (wildcard-aware)
+  function instanceGrantsAll(fieldMap) {
+    return required.every(function(req){
+      var lows = fieldMap.get(req.field) || [];
+      return lows.some(function(low){ return valueMatches(req.value, low); });
+    });
+  }
+  // does this one instance grant every required field by EXACT value?
+  function instanceExactAll(fieldMap) {
+    return required.every(function(req){
+      var lows = fieldMap.get(req.field) || [];
+      return lows.some(function(low){ return valueMatchesExact(req.value, String(low).toUpperCase()); });
+    });
+  }
+
+  const roles = [];
+  if (typeof EXACT_MATCH_MAP !== 'undefined' && EXACT_MATCH_MAP.clear) EXACT_MATCH_MAP.clear();
+  byRole.forEach(function(authMap, rn){
+    var matched = false;
+    var exact = false;
+    authMap.forEach(function(fieldMap){
+      if (instanceGrantsAll(fieldMap)) {
+        matched = true;
+        if (instanceExactAll(fieldMap)) exact = true;  // exact within SAME instance
+      }
+    });
+    if (matched) {
+      roles.push(rn);
+      if (typeof EXACT_MATCH_MAP !== 'undefined' && EXACT_MATCH_MAP.set) {
+        try { EXACT_MATCH_MAP.set(rn, exact); } catch(e){}
+      }
+    }
+  });
+
   /* SAP_ROLE_FILTER: SAP-delivered roles (SAP_*) are standard/template roles,
      not customer-assignable — never suggest them. */
-  return Array.from(roles).filter(function(rn){ return !/^SAP_/i.test(String(rn).trim()); });
+  return roles.filter(function(rn){ return !/^SAP_/i.test(String(rn).trim()); });
 }
 function valueMatches(req, low) {
   if (!low) return false;
@@ -96,6 +172,27 @@ function valueMatches(req, low) {
   if (low === req) return true;
   if (low.endsWith('*')) return req.startsWith(low.slice(0,-1));
   return false;
+}
+
+/* SU53_ACTIVITY_ACCURACY_PATCH */
+// Wildcard-aware but distinguishes an EXACT grant from a '*' grant.
+// Returns true only if some LOW equals the requested value literally
+// (or a prefix wildcard that isn't the bare '*'). A bare '*' grants
+// access but is NOT an exact, least-privilege match.
+function valueMatchesExact(req, low) {
+  if (!low) return false;
+  if (low === '*') return false;            // wildcard grants, but not exact
+  if (low === req) return true;             // literal hit
+  if (low.endsWith('*')) return req.startsWith(low.slice(0,-1)); // scoped prefix
+  return false;
+}
+// Given the AGR_1251 rows grouped for one role (field -> [LOW,...]),
+// decide if EVERY required field is granted by an exact (non-'*') value.
+function roleExactForAll(fieldMap, required) {
+  return required.every(function(req){
+    var lows = fieldMap.get(req.field) || [];
+    return lows.some(function(low){ return valueMatchesExact(req.value, String(low).toUpperCase()); });
+  });
 }
 
 // --- Step 4: enrich + score one candidate ---
@@ -160,12 +257,18 @@ async function scoreRole(role, ctx, uc) {
     if (sod.newCount == null) sod.newCount = 0;
     sod.newCount += 1;
   }
+  /* SU53_ACTIVITY_ACCURACY_PATCH */
+  // exact vs wildcard-only grant of the failed field(s) (least privilege)
+  var exactMatch = EXACT_MATCH_MAP.has(role) ? EXACT_MATCH_MAP.get(role) : null;
+  if (exactMatch === true) { score += 2; reasons.push('Exact value match'); }
+  else if (exactMatch === false) { score -= 2; reasons.push('Grants via wildcard (broader than needed)'); }
+
   const clean = sod.newCount === 0;
   if (clean) reasons.push('No new SoD conflict');
   else if (sod.newCount != null) reasons.push(sod.newCount+' new risk(s)'+(wildcard.has?' incl. ACTVT=* full access':''));
   else reasons.push('SoD not verified');
 
-  return { role, module:mod, groupMatch, isCustom, tcodeCount, familiar, sod, clean, wildcard, score, reasons };
+  return { role, module:mod, groupMatch, isCustom, tcodeCount, familiar, sod, clean, wildcard, exactMatch, score, reasons };
 }
 
 // --- rank ---
@@ -173,6 +276,10 @@ function rank(scored) {
   return scored.slice().sort((a,b)=>{
     if (a.clean !== b.clean) return a.clean ? -1 : 1;          // clean first
     if (a.groupMatch !== b.groupMatch) return a.groupMatch?-1:1; // your module next
+    /* SU53_ACTIVITY_ACCURACY_PATCH */
+    var ax = a.exactMatch===true?0:(a.exactMatch===false?1:0.5);
+    var bx = b.exactMatch===true?0:(b.exactMatch===false?1:0.5);
+    if (ax !== bx) return ax - bx;                             // exact-value grant next
     if (b.score !== a.score) return b.score - a.score;          // higher score
     const at=a.tcodeCount==null?1e9:a.tcodeCount, bt=b.tcodeCount==null?1e9:b.tcodeCount;
     if (at!==bt) return at-bt;                                  // fewer tcodes
@@ -181,10 +288,18 @@ function rank(scored) {
 }
 
 function explain(ctx, uc, ranked) {
-  if (!ranked.length) return 'No role grants '+ctx.authObject+' ('+ctx.field+'='+ctx.value+') in '+ctx.system+'/'+ctx.client+'. A new role or role change may be required.';
+  /* SU53_MULTIFIELD_PATCH */
+  var _fstr = (Array.isArray(ctx.fields) && ctx.fields.length)
+    ? ctx.fields.map(function(x){ return x.field+'='+x.value; }).join(', ')
+    : (ctx.field+'='+ctx.value);
+  if (!ranked.length) return 'No role grants '+ctx.authObject+' ('+_fstr+') in '+ctx.system+'/'+ctx.client+'. A new role or role change may be required.';
   const top = ranked[0];
   const grp = uc.group ? (' [group: '+uc.group+']') : '';
-  let msg = 'User '+ctx.user+grp+' was denied '+ctx.authObject+' ('+ctx.field+'='+ctx.value+') running '+ctx.tcode+' on '+ctx.system+'/'+ctx.client+'. Best-fit: '+top.role;
+  /* SU53_ACTIVITY_ACCURACY_PATCH */
+  var _fstr2 = (Array.isArray(ctx.fields) && ctx.fields.length)
+    ? ctx.fields.map(function(x){ return x.field+'='+x.value; }).join(', ')
+    : (ctx.field+'='+ctx.value);
+  let msg = 'User '+ctx.user+grp+' was denied '+ctx.authObject+' ('+_fstr2+') running '+ctx.tcode+' on '+ctx.system+'/'+ctx.client+'. Best-fit: '+top.role;
   if (top.groupMatch) msg += ' (your module)';
   if (top.clean) msg += ' — no new SoD conflict.'; else if (top.sod.newCount==null) msg += ' — SoD unverified.'; else msg += ' — WARNING '+top.sod.newCount+' new SoD.';
   return msg;
