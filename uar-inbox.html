@@ -182,7 +182,7 @@
 
   <div class="page-head">
     <div class="page-head-inner">
-      <a href='reviews-hub.html' style='color:var(--brass);font-family:var(--font-mono);font-size:11px;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:0.5px;'>&larr; Access Reviews</a>
+      <!-- IK-UAR-NAVFIX IK-UAR-BACKLINK-CASE --><a href='index.html' style='color:var(--brass);font-family:var(--font-body);font-size:14px;text-decoration:none;display:inline-block;'>&larr; Back to dashboard</a>
       <h2>Access Review Inbox</h2>
     </div>
   </div>
@@ -285,7 +285,7 @@
 
       var data = await res.json();
       campaigns = data.campaigns || [];
-      if(data.reviewer){ byId('navUser').textContent = data.reviewer; }
+      if(data.reviewer){ byId('navUser').textContent = (function(s){s=String(s||'');return s.toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});})(data.reviewer); } /* IK-UAR-NAVFIX */
       renderCampaigns();
     }catch(err){
       byId('content').innerHTML = '<div class="notice">Failed to load campaigns. ' + esc(err.message) + '</div>';

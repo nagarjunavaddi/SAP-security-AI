@@ -90,7 +90,7 @@ module.exports = function (app) {
   //  app.assignSapRoleSmart(username, roleName)
   //  Composite -> assign each child single role. Single -> unchanged path.
   // ═══════════════════════════════════════════════════════════════════
-  app.assignSapRoleSmart = async function (username, roleName) {
+  app.assignSapRoleSmart = async function (username, roleName, validFrom, validTo) { /* IK-SMART-DATES */
     if (typeof app.assignSapRole !== 'function') {
       throw new Error('assignSapRole not wired - check server.js');
     }
@@ -104,7 +104,7 @@ module.exports = function (app) {
 
     /* Not composite - behave exactly as before. */
     if (!children.length) {
-      return app.assignSapRole(username, roleName);
+      return app.assignSapRole(username, roleName, validFrom, validTo); /* IK-SMART-DATES */
     }
 
     console.log('Composite ' + roleName + ' -> assigning ' + children.length +
@@ -115,7 +115,7 @@ module.exports = function (app) {
 
     for (const child of children) {
       try {
-        const r = await app.assignSapRole(username, child);
+        const r = await app.assignSapRole(username, child, validFrom, validTo); /* IK-SMART-DATES */
         const msg = (r && (r.Message || r.message)) || 'assigned';
         results.push(child + ': ' + msg);
         if (/(error|fail|invalid|not authorized|must)/i.test(msg)) failed.push(child);

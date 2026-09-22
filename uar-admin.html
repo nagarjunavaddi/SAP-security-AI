@@ -188,7 +188,7 @@
 
   <div class="page-head">
     <div class="page-head-inner">
-      <a href='reviews-hub.html' style='color:var(--brass);font-family:var(--font-mono);font-size:11px;text-decoration:none;display:inline-block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;'>&larr; Access Reviews</a>
+      <!-- IK-UAR-NAVFIX IK-UAR-BACKLINK-CASE --><a href='index.html' style='color:var(--brass);font-family:var(--font-body);font-size:14px;text-decoration:none;display:inline-block;margin-bottom:8px;'>&larr; Back to dashboard</a>
       <h2>Create Access Review</h2>
     </div>
   </div>
@@ -286,6 +286,14 @@
   var currentCamp = null;
   var campUsers = [];
   var currentUser = null;
+  /* IK-UAR-NAVFIX: populate nav user from auth-guard, Title Case (matches index.html) */
+  function ikTitle(s){ s=String(s||''); return s.toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); }); }
+  document.addEventListener('auth-ready', function(e){
+    var u = e.detail || {};
+    var name = u.displayName || u.username || '';
+    var nu = document.getElementById('navUser');
+    if(nu && name){ nu.textContent = ikTitle(name); }
+  });
 
   function showToast(msg, isErr){
     var t = byId('toast');
@@ -668,5 +676,6 @@
 
   loadCampaigns();
 </script>
+  <script src="auth-guard.js"></script> <!-- IK-UAR-NAVFIX -->
 </body>
 </html>

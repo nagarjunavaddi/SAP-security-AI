@@ -40,7 +40,7 @@ module.exports = function (app) {
     try {
       if (!req.ikUser) return res.status(401).json({ error: 'Not authenticated' });
 
-      const { username, lastName, password } = req.body;
+      const { username, lastName, password, validFrom, validTo } = req.body; /* IK-CREATE-DATES */
       if (!username || !lastName || !password) {
         return res.status(400).json({ error: 'username, lastName and password are required' });
       }
@@ -56,10 +56,10 @@ module.exports = function (app) {
 
       await pool.query(
         `INSERT INTO user_create_requests
-           (id, username, last_name, password, requested_by, approver, status)
-         VALUES ($1,$2,$3,$4,$5,$6,'pending')`,
-        [id, username.toUpperCase(), lastName, password, requestedBy, approver]
-      );
+           (id, username, last_name, password, requested_by, approver, status, valid_from, valid_to)
+         VALUES ($1,$2,$3,$4,$5,$6,'pending',$7,$8)`,
+        [id, username.toUpperCase(), lastName, password, requestedBy, approver, validFrom || null, validTo || null]
+      ); /* IK-CREATE-DATES */
 
       await db.logAudit('USER_CREATE_REQUESTED', requestedBy, {
         requestId: id, targetUser: username.toUpperCase(), approver
@@ -107,6 +107,7 @@ module.exports = function (app) {
           id: x.id, username: x.username, lastName: x.last_name,
           requestedBy: x.requested_by, approver: x.approver,
           status: x.status, comments: x.comments, sapResult: x.sap_result,
+          validFrom: x.valid_from, validTo: x.valid_to, /* IK-CREATE-DATES */
           createdAt: x.created_at, updatedAt: x.updated_at
         }))
       });
@@ -183,7 +184,8 @@ module.exports = function (app) {
           throw new Error('createSapUser not wired (check server.js patch)');
         }
         const sapResult = await app.createSapUser(
-          request.username, request.last_name, request.password
+          request.username, request.last_name, request.password,
+          request.valid_from, request.valid_to   /* IK-CREATE-DATES */
         );
         sapMessage = (sapResult && (sapResult.Message || sapResult.message)) || 'User created';
       } catch (sapErr) {

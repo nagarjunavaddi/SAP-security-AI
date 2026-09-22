@@ -207,6 +207,15 @@
             <input type="password" id="fPassword" required placeholder="Initial password for the account">
             <span class="hint">User will be prompted to change this on first logon.</span>
           </div>
+          <!-- IK-CREATE-DATES: account validity (SU01 Logon Data) -->
+          <div class="field">
+            <label for="fValidFrom">Valid From</label>
+            <input type="date" id="fValidFrom">
+          </div>
+          <div class="field">
+            <label for="fValidTo">Valid To</label>
+            <input type="date" id="fValidTo">
+          </div>
         </div>
         <div class="form-actions">
           <button type="submit" class="go-btn" id="submitBtn">Create User</button>
@@ -292,7 +301,9 @@
     const payload = {
       username: document.getElementById('fUsername').value.trim(),
       lastName: document.getElementById('fLastName').value.trim(),
-      password: document.getElementById('fPassword').value
+      password: document.getElementById('fPassword').value,
+      validFrom: document.getElementById('fValidFrom').value, /* IK-CREATE-DATES yyyy-mm-dd */
+      validTo: document.getElementById('fValidTo').value
     };
 
     note.classList.remove('error','success');

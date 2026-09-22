@@ -60,7 +60,8 @@ const db = {
       sod_result AS "sodResult", status, comments, manager_comments AS "managerComments",
       manager_decided_by AS "managerDecidedBy", manager_decided_at AS "managerDecidedAt",
       decided_by AS "decidedBy", decided_at AS "decidedAt", requested_at AS "requestedAt",
-      sap_sync_status AS "sapSyncStatus", sap_sync_message AS "sapSyncMessage"
+      sap_sync_status AS "sapSyncStatus", sap_sync_message AS "sapSyncMessage",
+      valid_from AS "validFrom", valid_to AS "validTo"
       FROM approval_requests ORDER BY requested_at DESC`);
     return r.rows;
   },
@@ -71,16 +72,17 @@ const db = {
       sod_result AS "sodResult", status, comments, manager_comments AS "managerComments",
       manager_decided_by AS "managerDecidedBy", manager_decided_at AS "managerDecidedAt",
       decided_by AS "decidedBy", decided_at AS "decidedAt", requested_at AS "requestedAt",
-      sap_sync_status AS "sapSyncStatus", sap_sync_message AS "sapSyncMessage"
+      sap_sync_status AS "sapSyncStatus", sap_sync_message AS "sapSyncMessage",
+      valid_from AS "validFrom", valid_to AS "validTo"
       FROM approval_requests WHERE id=$1`, [id]);
     return r.rows[0] || null;
   },
 
   async createRequest(req) {
     await pool.query(
-      `INSERT INTO approval_requests (id, requested_by, requested_by_name, sap_username, role, approver, role_owner, justification, sod_result, status, requested_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-      [req.id, req.requestedBy, req.requestedByName, req.sapUsername||req.requestedBy, req.role, req.approver, req.roleOwner, req.justification, req.sodResult?JSON.stringify(req.sodResult):null, 'pending', req.requestedAt || new Date().toISOString()]
+      `INSERT INTO approval_requests (id, requested_by, requested_by_name, sap_username, role, approver, role_owner, justification, sod_result, status, requested_at, valid_from, valid_to) /* IK-DB-DATES */
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+      [req.id, req.requestedBy, req.requestedByName, req.sapUsername||req.requestedBy, req.role, req.approver, req.roleOwner, req.justification, req.sodResult?JSON.stringify(req.sodResult):null, 'pending', req.requestedAt || new Date().toISOString(), req.validFrom||null, req.validTo||null]
     );
   },
 

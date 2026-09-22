@@ -23,3 +23,6 @@ patch-*.js
 *.bak-*
 index-old-backup.html
 index-v2.html
+
+# archived patch scripts + backups
+_archive*/

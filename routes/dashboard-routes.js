@@ -17,6 +17,39 @@ const express = require('express');
 const http = require('http');
 const router = express.Router();
 
+/* IK-DASH-LIVE-COUNTS: local pg Pool — same DATABASE_URL/style as db-uar.js & su53-db.js.
+   Used only for the two counts the self-call approach can't get honestly
+   (neutralised /api/requests + per-reviewer-guarded /api/uar/campaigns). */
+const { Pool } = require('pg');
+const ikDashPool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// Sum of pending items across the three real approval queues. Any missing
+// table or error -> null (caller renders "—"), never throws.
+async function ikCountPendingApprovals() {
+  try {
+    const q = await ikDashPool.query(
+      "SELECT " +
+      "  (SELECT COUNT(*) FROM approval_requests    WHERE lower(status)='pending') + " +
+      "  (SELECT COUNT(*) FROM user_create_requests WHERE lower(status)='pending') + " +
+      "  (SELECT COUNT(*) FROM user_lock_requests   WHERE lower(status)='pending') " +
+      "AS n"
+    );
+    return parseInt(q.rows[0].n, 10);
+  } catch (e) { console.error('[dash] pendingApprovals count failed:', e.message); return null; }
+}
+
+// Count of UAR campaigns not in a finished state. Mirrors the app's own
+// finalizeCampaign ('completed') plus defensive synonyms.
+async function ikCountActiveUar() {
+  try {
+    const q = await ikDashPool.query(
+      "SELECT COUNT(*) AS n FROM uar_campaigns " +
+      "WHERE lower(COALESCE(status,'')) NOT IN ('completed','finalized','closed','cancelled')"
+    );
+    return parseInt(q.rows[0].n, 10);
+  } catch (e) { console.error('[dash] activeUar count failed:', e.message); return null; }
+}
+
 // Small helper: GET one of our own endpoints over localhost, forwarding the
 // caller's cookie. Resolves { ok, status, json } and never throws — a failed
 // sub-call just yields ok:false so one broken source can't 500 the dashboard.
@@ -50,30 +83,18 @@ router.get('/summary', async (req, res) => {
   const cookie = req.headers.cookie || '';
   const port = req.socket.localPort || 3000;
 
-  const [requestsRes, campaignsRes, su53Res, sapRes] = await Promise.all([
-    selfGet('/api/requests', cookie, port),
-    selfGet('/api/uar/campaigns', cookie, port),
+  // IK-DASH-LIVE-COUNTS: /api/requests is neutralised and /api/uar/campaigns is
+  // per-reviewer guarded — both counted directly from the DB below.
+  const [su53Res, sapRes] = await Promise.all([
     selfGet('/api/su53/recent', cookie, port),
     selfGet('/api/sap-data', cookie, port)
   ]);
 
-  // Pending approvals — requests with status 'pending'.
-  let pendingApprovals = null;
-  if (requestsRes.ok && Array.isArray(requestsRes.json)) {
-    pendingApprovals = requestsRes.json.filter(
-      (r) => (r.status || '').toLowerCase() === 'pending'
-    ).length;
-  }
+  // Pending approvals — real count across role + user-create + lock queues.
+  const pendingApprovals = await ikCountPendingApprovals();
 
-  // Active UAR campaigns — campaigns not finalized/completed.
-  let activeUar = null;
-  if (campaignsRes.ok && campaignsRes.json && Array.isArray(campaignsRes.json.campaigns)) {
-    activeUar = campaignsRes.json.campaigns.filter((c) => {
-      const s = (c.status || c.state || '').toString().toLowerCase();
-      // Treat anything explicitly finalized/completed/closed as inactive.
-      return !(s === 'finalized' || s === 'completed' || s === 'closed');
-    }).length;
-  }
+  // Active UAR campaigns — real count straight from uar_campaigns.
+  const activeUar = await ikCountActiveUar();
 
   // SU53 auth-fail investigations recorded (in-memory recent list).
   let su53Fails = null;

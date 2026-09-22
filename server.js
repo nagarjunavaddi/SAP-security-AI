@@ -806,15 +806,18 @@ function getCsrfTokenAndCookie() {
   });
 }
 
-function createSapUser(username, lastName, password) {
+function createSapUser(username, lastName, password, validFrom, validTo) { /* IK-CREATE-DATES */
   return new Promise(async (resolve, reject) => {
     try {
+      const { toSapDate } = require('./sap-date'); /* IK-CREATE-DATES-REQ */
       const { token, cookies } = await getCsrfTokenAndCookie();
 
       const body = JSON.stringify({
         Username: username,
         LastName: lastName,
-        Password: password
+        Password: password,
+        FromDate: toSapDate(validFrom),   /* IK-CREATE-DATES */
+        ToDate: toSapDate(validTo)        /* IK-CREATE-DATES */
       });
 
       const options = {
@@ -866,14 +869,20 @@ function createSapUser(username, lastName, password) {
 // entity must first call BAPI_USER_ACTGROUPS_READ, append the new role to the
 // existing list, then call BAPI_USER_ACTGROUPS_ASSIGN with the full list --
 // otherwise every other role the user has gets wiped.
-function assignSapRoleInSAP(username, roleName) {
+function assignSapRoleInSAP(username, roleName, validFrom, validTo) { /* IK-ASSIGN-DATES */
   return new Promise(async (resolve, reject) => {
     try {
       const { token, cookies } = await getCsrfTokenAndCookie();
 
+      /* IK-ASSIGN-DATES */
+      const { toSapDate } = require('./sap-date');
+      const _fromDat = toSapDate(validFrom);
+      const _toDat = toSapDate(validTo);
       const body = JSON.stringify({
         Username: username,
         RoleName: roleName,
+        FromDate: _fromDat,
+        ToDate: _toDat,
         Message: ""
       });
 

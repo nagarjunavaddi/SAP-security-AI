@@ -63,14 +63,12 @@
     background:radial-gradient(circle,rgba(176,137,79,0.22),transparent 65%); }
   .posture-inner{ display:flex; align-items:center; gap:38px; position:relative; z-index:1; flex-wrap:wrap; }
   .posture-main{ display:flex; align-items:center; gap:22px; }
-  .ring-wrap{ display:flex; align-items:center; gap:22px; }
-  .ring{ position:relative; width:132px; height:132px; flex-shrink:0; }
-  .ring svg{ transform:rotate(-90deg); }
-  .ring .track{ fill:none; stroke:rgba(255,255,255,0.14); stroke-width:11; }
-  .ring .prog{ fill:none; stroke:var(--brass); stroke-width:11; stroke-linecap:round; stroke-dasharray:339.3; stroke-dashoffset:339.3; transition:stroke-dashoffset 1s ease; }
-  .ring-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-  .ring-center .val{ font-family:var(--font-display); font-weight:600; font-size:38px; line-height:1; }
-  .ring-center .of{ font-size:11px; color:rgba(255,255,255,0.55); margin-top:3px; font-weight:500; }
+  /* IK-POSTURE-VARIANT-A */
+  .shield-box{ width:64px; height:64px; flex-shrink:0; border-radius:16px; display:flex; align-items:center; justify-content:center;
+    background:rgba(159,224,184,0.12); border:1px solid rgba(159,224,184,0.28); color:var(--green); }
+  .posture-title .live{ display:inline-flex; align-items:center; gap:8px; margin-top:11px; font-size:12px; font-weight:500; color:var(--green); }
+  .posture-title .live-dot{ width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(159,224,184,0.55); animation:ik-pulse 2s infinite; }
+  @keyframes ik-pulse{ 0%{ box-shadow:0 0 0 0 rgba(159,224,184,0.5); } 70%{ box-shadow:0 0 0 8px rgba(159,224,184,0); } 100%{ box-shadow:0 0 0 0 rgba(159,224,184,0); } }
   .posture-title .ey{ font-size:12px; font-weight:600; letter-spacing:0.3px; color:var(--brass); margin-bottom:7px; }
   .posture-title h1{ font-family:var(--font-display); font-weight:400; font-size:30px; line-height:1.12; letter-spacing:-0.4px; }
   .posture-title .band{ display:inline-flex; align-items:center; gap:7px; margin-top:11px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.16); padding:5px 12px; border-radius:20px; font-size:12px; font-weight:500; }
@@ -183,18 +181,15 @@
     <!-- POSTURE -->
     <div class="posture">
       <div class="posture-inner">
+        <!-- IK-POSTURE-VARIANT-A -->
         <div class="posture-main">
-          <div class="ring">
-            <svg width="132" height="132" viewBox="0 0 132 132">
-              <circle class="track" cx="66" cy="66" r="54"></circle>
-              <circle class="prog" id="postureRing" cx="66" cy="66" r="54"></circle>
-            </svg>
-            <div class="ring-center"><div class="val" id="postureVal">—</div><div class="of">/ 100</div></div>
+          <div class="shield-box">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
           </div>
           <div class="posture-title">
             <div class="ey">GOVERNANCE POSTURE</div>
-            <h1 id="postureHeadline">Checking your posture…</h1>
-            <div class="band"><span class="d" id="postureDot"></span> <span id="postureBand">Loading…</span></div>
+            <h1>All access under watch</h1>
+            <div class="live"><span class="live-dot"></span> Live · connected to S/4HANA</div>
           </div>
         </div>
         <div class="posture-div"></div>
@@ -219,7 +214,7 @@
 
     <!-- NEEDS ATTENTION -->
     <div class="block">
-      <div class="sec-h"><h2>Needs attention</h2><a class="sec-link" href="reviews-hub.html">View all activity →</a></div>
+      <div class="sec-h"><h2>Needs attention</h2></div>
       <div class="panel worklist" id="worklist">
         <div class="wl-empty">
           <span class="ok"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -300,44 +295,8 @@
   }
   function logout(){ fetch('/api/logout',{method:'POST'}).finally(function(){ location.href='/login.html'; }); }
 
-  /* ============================================================
-     POSTURE SCORE — single place to tune the formula & weights.
-     score = 100 − SU53�&mdash;4 − openSoD�&mdash;6 − pendingApprovals�&mdash;2 − overdueUar�&mdash;5
-     Bands: 85+ Strong · 70–84 Moderate · <70 Needs work
-     (We don't have a separate open-SoD count endpoint yet, so SoD
-      weight uses 0 for now — see SOD_COUNT note below.)
-  ============================================================ */
-  var POSTURE_W = { su53:4, sod:6, approvals:2, uar:5 };
-  function computePosture(d){
-    var openSod = (typeof d.openSod === 'number') ? d.openSod : 0; // SOD_COUNT: wire when endpoint exists
-    var raw = 100
-      - (d.su53Fails||0) * POSTURE_W.su53
-      - openSod * POSTURE_W.sod
-      - (d.pendingApprovals||0) * POSTURE_W.approvals
-      - (d.overdueUar||0) * POSTURE_W.uar;
-    return Math.max(0, Math.min(100, Math.round(raw)));
-  }
-  function bandOf(score){
-    if(score >= 85) return { label:'Strong', color:'var(--green)', dot:'#9FE0B8' };
-    if(score >= 70) return { label:'Moderate', color:'var(--amber)', dot:'#F2C57C' };
-    return { label:'Needs work', color:'var(--red)', dot:'#FF9A9A' };
-  }
-  function paintPosture(d){
-    var score = computePosture(d);
-    document.getElementById('postureVal').textContent = score;
-    // ring fill (circumference 2πr = 339.3)
-    var C = 339.3;
-    document.getElementById('postureRing').style.strokeDashoffset = C - (C * score/100);
-    var b = bandOf(score);
-    document.getElementById('postureBand').textContent = b.label;
-    document.getElementById('postureDot').style.background = b.dot;
-
-    var issues = (d.su53Fails||0) + (d.pendingApprovals||0) + (d.overdueUar||0) + (d.openSod||0);
-    var h = document.getElementById('postureHeadline');
-    if(issues === 0) h.textContent = "You're all clear";
-    else if(issues === 1) h.textContent = 'One item needs\u00a0your attention';
-    else h.textContent = issues + ' items need\u00a0your attention';
-  }
+  /* IK-POSTURE-VARIANT-A: posture score ring removed (rejected — arbitrary/undefendable).
+     Header is now static "All access under watch"; the 4 metrics carry live data. */
 
   // ---- metrics into posture header ----
   function set(id, v){ var el=document.getElementById(id); if(el) el.textContent = (v==null?'\u2014':v); }
@@ -379,11 +338,9 @@
     set('mUar', d.activeUar);
     set('mUsers', d.sapUsers);
     if(d.su53Fails > 0){ var b=document.getElementById('su53Badge'); if(b){ b.textContent=d.su53Fails; b.style.display='flex'; } }
-    paintPosture(d);
     renderWorklist(d);
   }).catch(function(){
-    document.getElementById('postureHeadline').textContent = 'Live counts unavailable';
-    document.getElementById('postureBand').textContent = 'Unknown';
+    set('mSu53','—'); set('mApprovals','—'); set('mUar','—'); set('mUsers','—');
     document.getElementById('worklist').innerHTML = '<div class="wl-empty">Could not load activity right now.</div>';
   });
 
