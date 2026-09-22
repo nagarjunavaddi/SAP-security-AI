@@ -46,12 +46,16 @@ app.get('/api/requests', requireLogin, (req, res) => {
 // Reject
 
 // SAP Connection Config
+/* IK-SAPCONFIG-ENV: SAP connection now .env-driven for per-deployment portability.
+   Fallbacks preserve the original values so this machine keeps working if
+   .env isn't set. On a new client, set SAP_HOST/SAP_PORT/SAP_CLIENT/
+   SAP_USER/SAP_PASSWORD in .env and these are used automatically. */
 const SAP_CONFIG = {
-  hostname: 's4hana2020.support.com',
-  port: 8009,
-  client: '800',
-  username: 'best',
-  password: 'Welcome123'
+  hostname: process.env.SAP_HOST     || 's4hana2020.support.com',
+  port:     parseInt(process.env.SAP_PORT, 10) || 8009,
+  client:   process.env.SAP_CLIENT   || '800',
+  username: process.env.SAP_USER     || 'best',
+  password: process.env.SAP_PASSWORD || 'Welcome123'
 };
 
 // ===================== SoD RISK ANALYSIS (Role-Level) =====================
