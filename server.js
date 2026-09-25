@@ -14,7 +14,10 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 8 * 60 * 60 * 1000 } // 8 hour login
 }));
+require('./security-gatekeeper').installStaticGuard(app); /* IK-SEC-STATIC-GUARD */
 app.use(express.static(__dirname));
+require('./security-headers').install(app); /* IK-SEC-HEADERS */
+require('./security-gatekeeper').install(app); /* IK-SEC-INSTALL */
 
 // ===================== AUTH (Phase 1) =====================
 // User auth handled via PostgreSQL (db.js) through approval-routes.js
@@ -51,11 +54,11 @@ app.get('/api/requests', requireLogin, (req, res) => {
    .env isn't set. On a new client, set SAP_HOST/SAP_PORT/SAP_CLIENT/
    SAP_USER/SAP_PASSWORD in .env and these are used automatically. */
 const SAP_CONFIG = {
-  hostname: process.env.SAP_HOST     || 's4hana2020.support.com',
+  hostname: process.env.SAP_HOST,
   port:     parseInt(process.env.SAP_PORT, 10) || 8009,
   client:   process.env.SAP_CLIENT   || '800',
-  username: process.env.SAP_USER     || 'best',
-  password: process.env.SAP_PASSWORD || 'Welcome123'
+  username: process.env.SAP_USER,
+  password: process.env.SAP_PASSWORD
 };
 
 // ===================== SoD RISK ANALYSIS (Role-Level) =====================
@@ -113,9 +116,7 @@ function getRoleTcodesFromSAP(roleName) {
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
         try {
-          console.log('===ROLE TCODE RAW RESPONSE===');
-          console.log(data.substring(0, 500));
-          console.log('===END RAW===');
+          /* IK-SEC-LOGCLEAN : RAW SAP response logging removed */
           const parsed = JSON.parse(data);
           const results = parsed.d.results;
           const tcodes = results.map(r => r.Tcode);
@@ -148,9 +149,7 @@ function getRoleAuthObjects(roleName) {
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
         try {
-          console.log('===ROLE AUTH OBJECT RAW RESPONSE===');
-          console.log(data.substring(0, 500));
-          console.log('===END RAW===');
+          /* IK-SEC-LOGCLEAN : RAW SAP response logging removed */
           const parsed = JSON.parse(data);
           const results = parsed.d.results;
           const authObjects = results.map(r => ({
@@ -282,6 +281,8 @@ function checkObjectLevelSoD(roleAuthObjects) {
 }
 
 function checkSapUserExists(username) {
+  // IK-SEC-BNAME-SANITIZE : allow only valid SAP BNAME chars, neutralise injection
+  username = String(username == null ? '' : username).toUpperCase().replace(/[^A-Z0-9_.\-]/g, '');
   return new Promise((resolve, reject) => {
     const tokenOpts = {
       hostname: SAP_CONFIG.hostname, port: SAP_CONFIG.port,
@@ -295,7 +296,7 @@ function checkSapUserExists(username) {
       tokenRes.on('end', () => {
         const csrf = tokenRes.headers['x-csrf-token'];
         const cookies = (tokenRes.headers['set-cookie'] || []).map(c => c.split(';')[0]).join('; ');
-        const payload = JSON.stringify({ TableName: 'USR02', Fields: 'BNAME', WhereClause: "BNAME = '" + username + "'", MaxRows: '1', ResultData: '' });
+        const payload = JSON.stringify({ TableName: 'USR02', Fields: 'BNAME', WhereClause: "BNAME = '" + username.replace(/'/g, "''") + "'", MaxRows: '1', ResultData: '' });
         const postOpts = {
           hostname: SAP_CONFIG.hostname, port: SAP_CONFIG.port,
           path: '/sap/opu/odata/sap/ZUSER_LOCK_SRV_SRV/GenericTableReadSet?sap-client=' + SAP_CONFIG.client,
@@ -631,9 +632,7 @@ function getLockedUsersFromSAP() {
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
         try {
-          console.log('===RAW SAP RESPONSE===');
-          console.log(data.substring(0, 800));
-          console.log('===END RAW===');
+          /* IK-SEC-LOGCLEAN : RAW SAP response logging removed */
           const parsed = JSON.parse(data);
           const users = parsed.d.results;
           const lockedUsers = users
@@ -671,9 +670,7 @@ function getCriticalProfileUsersFromSAP() {
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
         try {
-          console.log('===RAW SAP_ALL RESPONSE===');
-          console.log(data.substring(0, 800));
-          console.log('===END RAW===');
+          /* IK-SEC-LOGCLEAN : RAW SAP response logging removed */
           const parsed = JSON.parse(data);
           const users = parsed.d.results;
           const criticalProfileUsers = users.map(u => ({
@@ -709,12 +706,7 @@ function getDevAccessUsersFromSAP() {
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
         try {
-          console.log('===DEVACCESS RAW RESPONSE===');
-          console.log('LENGTH:', data.length);
-          console.log(data.substring(0, 500));
-          console.log('...LAST 300 CHARS...');
-          console.log(data.substring(data.length - 300));
-          console.log('===END DEVACCESS RAW===');
+          /* IK-SEC-LOGCLEAN : DEVACCESS RAW logging removed */
           const parsed = JSON.parse(data);
           const users = parsed.d.results;
           const devAccessUsers = users.map(u => ({
@@ -755,8 +747,11 @@ app.get('/api/sap-data', async (req, res) => {
   }
 });
 
+const chatGuard = require('./chat-guard'); /* IK-SEC-CHATGUARD */
 app.post('/api/chat', async (req, res) => {
   const { question } = req.body;
+  const chk = chatGuard.checkQuestion(question); /* IK-SEC-CHATGUARD */
+  if (!chk.ok) return res.status(400).json({ answer: chk.reason });
   try {
     const lockedResult = await getLockedUsersFromSAP();
     const devAccessUsers = await getDevAccessUsersFromSAP();
@@ -771,18 +766,18 @@ Total Users: ${lockedResult.totalUsers}
 Locked Users: ${JSON.stringify(lockedResult.lockedUsers)}
 Dev Access Users (S_DEVELOP with Create/Change activity): ${JSON.stringify(devAccessUsers)}
 Critical Profile Users (SAP_ALL assigned): ${JSON.stringify(criticalProfileResult.criticalProfileUsers)}
-Question: ${question}`
+${chatGuard.wrapQuestion(chk.value)}`
           }]
         }]
       },
       { timeout: 30000 }
     );
-    console.log('Gemini response:', JSON.stringify(response.data));
+    console.log('Gemini response received (len):', JSON.stringify(response.data || '').length);
     const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     res.json({ answer: text || 'No answer received' });
   } catch (error) {
-    console.log('Error:', error.response?.data || error.message);
-    res.status(500).json({ answer: 'Error: ' + (error.response?.data?.error?.message || error.message) });
+    console.error('[/api/chat] error:', error.response?.data || error.message);
+    res.status(500).json({ answer: 'Sorry, the assistant is temporarily unavailable. Please try again.' });
   }
 });
 
@@ -845,7 +840,7 @@ function createSapUser(username, lastName, password, validFrom, validTo) { /* IK
         res.on('data', (chunk) => { data += chunk; });
         res.on('end', () => {
           try {
-            console.log('RAW SAP RESPONSE:', data.substring(0, 500));
+            /* IK-SEC-LOGCLEAN : RAW SAP response logging removed */
             const parsed = JSON.parse(data);
             resolve(parsed.d || parsed);
           } catch (e) {
@@ -992,66 +987,9 @@ app.post('/api/create-users-bulk', async (req, res) => {
   res.json({ results });
 });
 
-// TEMP DIAGNOSTIC - checks why a specific risk did/didn't match at permission level
-app.get('/api/debug-permission/:roleName/:riskId', async (req, res) => {
-  try {
-    const roleAuthObjects = await getRoleAuthObjects(req.params.roleName);
-    const risk = SOD_RULESET.find(r => r.riskId === req.params.riskId);
-    if (!risk) return res.status(404).json({ error: 'Risk not found' });
+// [IK-SEC] debug-permission endpoint removed
 
-    const debug = risk.functions.map(func => {
-      const requiredObjects = PERMISSION_RULESET[func.functionId] || [];
-      const objectStatus = requiredObjects.map(reqObj => {
-        const roleHasObject = roleAuthObjects.filter(a => (a.object || '').toUpperCase() === reqObj.object.toUpperCase());
-        return {
-          object: reqObj.object,
-          roleHasThisObject: roleHasObject.length > 0,
-          roleEntriesFound: roleHasObject,
-          requiredFields: reqObj.fields,
-          satisfied: objectRequirementSatisfied(reqObj, roleAuthObjects)
-        };
-      });
-      return {
-        functionId: func.functionId,
-        overallSatisfied: functionPermissionSatisfied(func.functionId, roleAuthObjects),
-        objectStatus
-      };
-    });
-
-    res.json({ role: req.params.roleName, riskId: req.params.riskId, authObjectCount: roleAuthObjects.length, debug });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// TEMP DIAGNOSTIC - summary of permission-level satisfaction across ALL functions matched at action level
-app.get('/api/debug-permission-summary/:roleName', async (req, res) => {
-  try {
-    const roleAuthObjects = await getRoleAuthObjects(req.params.roleName);
-    const roleTcodes = await getRoleTcodesFromSAP(req.params.roleName);
-    const actionViolations = analyzeRoleLevelSoD(roleTcodes);
-
-    const functionIds = new Set();
-    actionViolations.forEach(v => v.matchedFunctions.forEach(f => functionIds.add(f.functionId)));
-
-    const summary = Array.from(functionIds).map(fid => {
-      const actionGroups = PERMISSION_RULESET[fid] || [];
-      const bestGroup = actionGroups.find(g => g.objects.every(o => objectRequirementSatisfied(o, roleAuthObjects)))
-                       || actionGroups[0] || { action: 'N/A', objects: [] };
-      return {
-        functionId: fid,
-        requiredObjectCount: bestGroup.objects.length,
-        satisfied: functionPermissionSatisfied(fid, roleAuthObjects),
-        objectsMissing: bestGroup.objects.filter(o => !objectRequirementSatisfied(o, roleAuthObjects)).map(o => o.object),
-        checkedAction: bestGroup.action
-      };
-    });
-
-    res.json({ role: req.params.roleName, authObjectCount: roleAuthObjects.length, functionsChecked: summary.length, summary });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+// [IK-SEC] debug-permission-summary endpoint removed
 
 // ── IKAegis Approval Workflow Routes ──
 app.assignSapRole = assignSapRoleInSAP; app.createSapUser = createSapUser; require('./routes/approval-routes')(app); require('./routes/user-create-requests')(app); app.setUserLock = require('./user-lock').setUserLock; require('./routes/user-lock-requests')(app); /* IK-USERLOCK */ app.getRoleTcodes = getRoleTcodesFromSAP; require('./routes/composite-routes')(app); /* IK-COMPOSITE */

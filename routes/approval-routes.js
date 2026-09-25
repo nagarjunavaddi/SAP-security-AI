@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { requireRole, attachUser } = require('../middleware/role-check');
 const emailService = require('../email-service');
 const db = require('../db');
+const pwHash = require('../pw-hash'); /* IK-SEC-BCRYPT */
 
 function hashPw(pw) {
   return crypto.createHash('sha256').update(pw).digest('hex');
@@ -24,8 +25,14 @@ module.exports = function(app) {
         return res.status(400).json({ error: 'Username and password are required' });
       }
       const user = await db.getUserByUsername(username.toUpperCase());
-      if (!user || user.active === false || user.password !== hashPw(password)) {
+      const pwOk = user ? await pwHash.verify(password, user.password) : false;
+      if (!user || user.active === false || !pwOk) {
         return res.status(401).json({ error: 'Invalid username or password.' });
+      }
+      // migrate-on-login: silently upgrade legacy SHA-256 users to bcrypt
+      if (pwOk && pwHash.needsUpgrade(user.password)) {
+        try { await db.updateUser(user.username, { password: await pwHash.hash(password) }); }
+        catch (e) { console.error('bcrypt migrate failed for', user.username, e.message); }
       }
       req.session.user = {
         username: user.username,
@@ -83,7 +90,7 @@ module.exports = function(app) {
         displayName: displayName || username,
         role,
         active: true,
-        password: hashPw(password),
+        password: await pwHash.hash(password),
         email: email || ''
       });
       await db.logAudit('USER_CREATED', req.ikUser.username, { targetUser: username.toUpperCase(), role });
@@ -131,7 +138,7 @@ module.exports = function(app) {
       }
       const user = await db.getUserByUsername(target);
       if (!user) return res.status(404).json({ error: `User ${target} not found` });
-      await db.updateUser(target, { password: hashPw(newPassword) });
+      await db.updateUser(target, { password: await pwHash.hash(newPassword) });
       await db.logAudit('PASSWORD_RESET', req.ikUser.username, { targetUser: target });
       res.json({ success: true, message: `Password reset for ${target}` });
     } catch (err) {

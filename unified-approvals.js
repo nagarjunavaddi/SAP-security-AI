@@ -232,6 +232,23 @@
     if (!host) return;
     host.innerHTML = VIEW === 'detail' && CURRENT ? detailHtml(CURRENT) : queueHtml();
     bindHost();
+    syncStatCards();   /* IK-STATS-ALLTYPES */
+  }
+
+  /* IK-STATS-ALLTYPES: keep the top stat cards in sync with ALL request types
+     (role + user_create + user_lock). The legacy inline script fills these from
+     ROLE requests only; this runs after it and overwrites with unified totals. */
+  function syncStatCards() {
+    try {
+      var pend = ITEMS.filter(function (i) { return i.status === 'pending' || i.status === 'manager_approved'; }).length;
+      var appr = ITEMS.filter(function (i) { return i.status === 'approved'; }).length;
+      var rej  = ITEMS.filter(function (i) { return i.status === 'rejected'; }).length;
+      var set  = function (id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+      set('sPending',  pend);
+      set('sApproved', appr);
+      set('sRejected', rej);
+      set('sTotal',    ITEMS.length);
+    } catch (e) { /* non-fatal: stat cards are cosmetic */ }
   }
 
   function queueHtml() {
@@ -548,7 +565,7 @@
     root.innerHTML =
       '<div class="ikq-tabs">' +
       '<button class="ikq-tab active" data-tab="unified">Unified queue</button>' +
-      '<button class="ikq-tab" data-tab="classic">Role requests (classic)</button>' +
+      /* IK-STATS-ALLTYPES: classic tab removed */
       '</div><div id="ikqHost"></div>';
 
     root.querySelectorAll('.ikq-tab').forEach(function (t) {

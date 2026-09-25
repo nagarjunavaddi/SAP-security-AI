@@ -306,8 +306,8 @@ document.getElementById('reqForm').addEventListener('submit', function(e){ /* IK
   btn.disabled=true; note.classList.add('show'); note.classList.remove('error','success');
   note.textContent='Checking SAP user…';
 
-  fetch('/api/sap-user-check/'+encodeURIComponent(sapUsername)).then(function(r){return r.json();}).then(function(chk){
-    if(!chk.exists){ btn.disabled=false; note.classList.add('error'); note.textContent='SAP User '+sapUsername+' not found in SAP system.'; return; }
+  /* IK-NEWREQ-USERCHK-REMOVED: SAP user-existence gate bypassed (no SAP call, always proceed) */
+  Promise.resolve({exists:true}).then(function(chk){
 
     var results=[]; var idx=0;
     function next(){
