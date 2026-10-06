@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Approval Configuration — IK° Kontrol</title>
+<title>Approval Configuration — IKontrol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -141,7 +141,7 @@
 
 <nav class="ik-nav">
   <div class="ik-nav-inner">
-    <a href="index.html" class="ik-brand">IK<span class="deg">°</span><span class="name">Kontrol</span></a>
+    <a href="index.html" class="ik-brand"><span class="ikw"><span style="color:var(--brass)">IK</span><span class="name" style="margin-left:0">ontrol</span></span></a>
     <div class="ik-nav-links">
 <button class="ik-signout" onclick="fetch('/api/logout',{method:'POST'}).then(()=>window.location='/login.html')">Sign Out</button>
     </div>
@@ -152,7 +152,7 @@
   <div class="page-head-inner">
     <a class="back-link" href="index.html">&larr; Back to dashboard</a>
     <h2>Approval Configuration</h2>
-    <p>Manage IK° Kontrol users, approval routing, and role ownership mappings.</p>
+    <p>Manage IKontrol users, approval routing, and role ownership mappings.</p>
   </div>
 </div>
 
@@ -160,7 +160,7 @@
   <div class="section-inner">
     <div class="config-stats" id="statsArea"></div>
     <div class="config-tabs">
-      <button class="config-tab active" data-tab="users">IK° Kontrol Users</button>
+      <button class="config-tab active" data-tab="users">IKontrol Users</button>
       <button class="config-tab" data-tab="managers">User &rarr; Manager</button>
       <button class="config-tab" data-tab="owners">Role &rarr; Owner</button>
     </div>
@@ -213,7 +213,7 @@
   </div>
 </section>
 
-<footer><div class="footer-inner"><span class="footer-brand">IK<span class="ik-gold">°</span> Kontrol</span><span>&copy; 2026 Infokrafts Technologies</span></div></footer>
+<footer><div class="footer-inner"><span class="footer-brand"><span class="ikw"><span style="color:var(--brass)">IK</span>ontrol</span></span><span>&copy; 2026 Infokrafts Technologies</span></div></footer>
 <div class="toast" id="toast"></div>
 <div class="overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -283,7 +283,7 @@
     }catch(e){toast('Failed to load matrix','error');}
   }
   function updateStats(uc,mc,oc){const a=document.getElementById('statsArea');const e=a.dataset;if(uc!=null)e.users=uc;if(mc!=null)e.mgrs=mc;if(oc!=null)e.owners=oc;
-    a.innerHTML=`<div class="config-stat"><div class="v">${e.users||0}</div><div class="l">IK° Kontrol Users</div></div><div class="config-stat"><div class="v">${e.mgrs||0}</div><div class="l">Manager Mappings</div></div><div class="config-stat"><div class="v">${e.owners||0}</div><div class="l">Role Owners</div></div>`;
+    a.innerHTML=`<div class="config-stat"><div class="v">${e.users||0}</div><div class="l">IKontrol Users</div></div><div class="config-stat"><div class="v">${e.mgrs||0}</div><div class="l">Manager Mappings</div></div><div class="config-stat"><div class="v">${e.owners||0}</div><div class="l">Role Owners</div></div>`;
   }
   window.addUser=async function(){
     const username=document.getElementById('addUserName').value.trim();
@@ -315,7 +315,7 @@
     }catch(e){toast('Error: '+e.message,'error');}
   };
   window.confirmDeleteUser=function(username){
-    showConfirm('Delete User',`Remove ${username} from IK° Kontrol? This cannot be undone.`,async()=>{
+    showConfirm('Delete User',`Remove ${username} from IKontrol? This cannot be undone.`,async()=>{
       try{const res=await fetch('/api/ikaegis-users/'+encodeURIComponent(username),{method:'DELETE'});if(!res.ok){const d=await res.json();toast(d.error||'Failed','error');return;}toast(`${username} deleted`);loadUsers();}catch(e){toast('Error: '+e.message,'error');}
     });
   };

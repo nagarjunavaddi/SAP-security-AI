@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* IK° Kontrol rebrand — rollback: restore every *.rebrand-bak over its file */
+/* IKontrol rebrand — rollback: restore every *.rebrand-bak over its file */
 'use strict';
 const fs = require('fs');
 const path = require('path');

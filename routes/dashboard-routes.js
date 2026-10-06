@@ -1,5 +1,5 @@
 // routes/dashboard-routes.js
-// IK° Kontrol — Dashboard summary counts (additive, isolated).
+// IKontrol — Dashboard summary counts (additive, isolated).
 // Mounted at /api/dashboard in server.js:
 //   app.use('/api/dashboard', require('./routes/dashboard-routes'));
 // Isolated — safe to disable by commenting that one line.

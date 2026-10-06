@@ -1,7 +1,7 @@
 /* ============================================================================
  * security-gatekeeper.js  [IK-SEC-GATEKEEPER v2 - CORRECTED]
  * ----------------------------------------------------------------------------
- * 100% ADDITIVE security layer for IK Kontrol.
+ * 100% ADDITIVE security layer for IKontrol.
  *
  * v2 FIX: the static guard now NEVER touches /api/ routes. It only blocks
  * DIRECT file fetches of sensitive files (.env, server-side .js source,

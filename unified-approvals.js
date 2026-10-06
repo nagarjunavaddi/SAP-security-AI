@@ -1,7 +1,7 @@
 /*!
  * unified-approvals.js
  * ---------------------------------------------------------------------------
- * IK Kontrol - Unified Approval Queue (Level 1 queue + Level 2 drill-down)
+ * IKontrol - Unified Approval Queue (Level 1 queue + Level 2 drill-down)
  *
  * 100% ADDITIVE. This file NEVER touches the legacy IIFE inside approvals.html.
  * It only:

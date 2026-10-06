@@ -162,3 +162,60 @@ a.back:hover {
 .page-head .who {
   display: none !important;
 }
+
+/* ============================================================
+   IK-REBRAND-CENTER-HIDE   (additive, appended 20260926-200231)
+   1. Hide InfoKrafts corp wordmark on every page (keep Trust/Quality/Performance).
+   2. Center the IKontrol brand in the nav bar (desktop); user + Sign out stay right.
+   Revert: delete this whole block.
+   ============================================================ */
+
+/* 1a. hide the InfoKrafts wordmark - all three markup forms */
+.logo-fallback,
+.corp-wordmark,
+.corp-name {
+  display: none !important;
+}
+
+/* 1b. keep Trust . Quality . Performance pinned right once the wordmark is gone */
+.corp-values,
+.corp-tag {
+  margin-left: auto !important;
+}
+
+/* 2. center IKontrol brand in the nav bar (desktop only); controls stay on the right */
+@media (min-width: 769px) {
+  .nav-inner,
+  .ik-nav-inner {
+    position: relative !important;
+  }
+  .nav-inner > .brand,
+  .ik-nav-inner > .ik-brand {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  .nav-inner > .nav-right,
+  .ik-nav-inner > .ik-nav-links {
+    margin-left: auto !important;
+  }
+}
+/* ============ end IK-REBRAND-CENTER-HIDE ============ */
+/* ============================================================
+   IK-REBRAND-WHITE-CORPBAR   (additive, appended 20260926-201102)
+   Make every corp-bar white (matches index.html reference) and keep the
+   Trust/Quality/Performance text brass so it stays visible on white.
+   Only ai-chat / risk-analysis / simulation / SOD were dark; the rest were
+   already #fff, so this global rule changes only those four visually.
+   Revert: delete this whole block.
+   ============================================================ */
+
+.corp-bar {
+  background: #fff !important;
+  border-bottom: 1px solid var(--line, #e6e8ec) !important;
+}
+.corp-tag {
+  color: var(--brass) !important;
+}
+/* ============ end IK-REBRAND-WHITE-CORPBAR ============ */

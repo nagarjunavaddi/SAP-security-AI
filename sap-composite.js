@@ -1,7 +1,7 @@
 /**
  * sap-composite.js
  * ---------------------------------------------------------------------------
- * Composite role support for IK Kontrol.
+ * Composite role support for IKontrol.
  *
  * Why this exists
  * ---------------
